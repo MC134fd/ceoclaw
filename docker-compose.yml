@@ -1,0 +1,30 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ceoclaw:latest
+    container_name: ceoclaw_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist SQLite database across restarts
+      - ceoclaw_data:/data
+    environment:
+      - CEOCLAW_DATABASE_PATH=/data/ceoclaw.db
+      - CEOCLAW_ENV=production
+      - FLOCK_MOCK_MODE=${FLOCK_MOCK_MODE:-true}
+      - FLOCK_ENDPOINT=${FLOCK_ENDPOINT:-http://localhost:8080/v1/chat/completions}
+      - FLOCK_API_KEY=${FLOCK_API_KEY:-}
+      - CEOCLAW_GOAL_MRR=${CEOCLAW_GOAL_MRR:-100.0}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  ceoclaw_data:
+    name: ceoclaw_sqlite
