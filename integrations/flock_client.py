@@ -5,10 +5,17 @@ FlockChatModel wraps the FLock HTTP API as a LangChain BaseChatModel so
 it can be used interchangeably with any other LangChain LLM.  When
 ``mock_mode=True`` (or when the endpoint is unreachable), deterministic
 fallback responses are returned and tagged with ``[MOCK]`` in the content.
+
+Auth strategy (FLOCK_AUTH_STRATEGY):
+  "both"    — sends both Authorization: Bearer and x-litellm-api-key (default)
+  "bearer"  — OpenAI-style: Authorization: Bearer <key>
+  "litellm" — LiteLLM/OpenClaw VPS style: x-litellm-api-key: <key>
 """
 
 import json
+import logging
 import time
+from urllib.parse import urlparse
 from typing import Any, Iterator, Optional
 
 import httpx
@@ -18,6 +25,8 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic import Field
 
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -91,20 +100,49 @@ class FlockChatModel(BaseChatModel):
     """LangChain BaseChatModel adapter for the FLock API.
 
     Attributes:
-        endpoint:    FLock chat completions URL.
-        api_key:     API key sent in the Authorization header.
-        timeout:     HTTP request timeout in seconds.
-        max_retries: Number of retries on transient failures.
-        mock_mode:   When True, skip HTTP and return deterministic responses.
-        cycle_index: Tracks which mock template to use (incremented externally).
+        endpoint:       FLock chat completions URL.
+        api_key:        API key (sent according to auth_strategy).
+        model:          Model name sent in the request payload.
+        auth_strategy:  Header strategy: "both" | "bearer" | "litellm".
+        timeout:        HTTP request timeout in seconds.
+        max_retries:    Number of retries on transient failures.
+        mock_mode:      When True, skip HTTP and return deterministic responses.
+        cycle_index:    Tracks which mock template to use (incremented externally).
     """
 
     endpoint: str = Field(default_factory=lambda: settings.flock_endpoint)
     api_key: str = Field(default_factory=lambda: settings.flock_api_key)
+    model: str = Field(default_factory=lambda: settings.flock_model)
+    auth_strategy: str = Field(default_factory=lambda: settings.flock_auth_strategy)
     timeout: int = Field(default_factory=lambda: settings.flock_timeout)
     max_retries: int = Field(default_factory=lambda: settings.flock_max_retries)
     mock_mode: bool = Field(default_factory=lambda: settings.flock_mock_mode)
     cycle_index: int = Field(default=0)
+
+    def __init__(self, **data: Any) -> None:
+        super().__init__(**data)
+        self._log_startup()
+
+    def _log_startup(self) -> None:
+        if self.mock_mode:
+            logger.info("[FLock] mode=MOCK  (deterministic responses, no HTTP calls)")
+            return
+        host = urlparse(self.endpoint).netloc or self.endpoint or "(no endpoint set)"
+        strategy = self.auth_strategy
+        if self.api_key:
+            auth_desc = f"key=*** strategy={strategy}"
+        else:
+            auth_desc = "key=(none)"
+        if not self.endpoint:
+            logger.warning(
+                "[FLock] mode=LIVE but endpoint is empty — "
+                "calls will fail and activate FALLBACK"
+            )
+        else:
+            logger.info(
+                "[FLock] mode=LIVE  endpoint=%s  model=%s  auth=%s",
+                host, self.model, auth_desc,
+            )
 
     @property
     def _llm_type(self) -> str:
@@ -113,8 +151,9 @@ class FlockChatModel(BaseChatModel):
     @property
     def _identifying_params(self) -> dict[str, Any]:
         return {
-            "model_name": "flock",
+            "model_name": self.model,
             "endpoint": self.endpoint,
+            "auth_strategy": self.auth_strategy,
             "mock_mode": self.mock_mode,
         }
 
@@ -136,18 +175,39 @@ class FlockChatModel(BaseChatModel):
         for attempt in range(self.max_retries):
             try:
                 return self._http_generate(messages)
-            except (httpx.HTTPError, httpx.TimeoutException) as exc:
+            except Exception as exc:  # noqa: BLE001
                 last_error = exc
+                logger.debug(
+                    "[FLock] attempt %d/%d failed: %s: %s",
+                    attempt + 1, self.max_retries, type(exc).__name__, exc,
+                )
                 if attempt < self.max_retries - 1:
                     time.sleep(0.5 * (attempt + 1))
 
-        # All retries exhausted – fall back to mock with warning marker
+        # All retries exhausted — fall back to mock with warning marker
+        logger.warning(
+            "[FLock] FALLBACK activated after %d retries — "
+            "last error: %s: %s. "
+            "Responses will be tagged [FALLBACK]. "
+            "Check endpoint=%r model=%r",
+            self.max_retries,
+            type(last_error).__name__,
+            last_error,
+            self.endpoint or "(empty)",
+            self.model,
+        )
         return self._mock_generate(messages, prefix="[FALLBACK] ")
 
     def _http_generate(self, messages: list[BaseMessage]) -> ChatResult:
         """Call the FLock HTTP endpoint."""
+        if not self.endpoint:
+            raise ValueError(
+                "FLOCK_ENDPOINT is not set. "
+                "Set it in .env or pass endpoint= to FlockChatModel."
+            )
+
         payload = {
-            "model": "flock-default",
+            "model": self.model,
             "messages": [
                 {"role": _lc_role(m), "content": m.content}
                 for m in messages
@@ -156,7 +216,11 @@ class FlockChatModel(BaseChatModel):
         }
         headers = {"Content-Type": "application/json"}
         if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
+            strategy = self.auth_strategy
+            if strategy in ("bearer", "both"):
+                headers["Authorization"] = f"Bearer {self.api_key}"
+            if strategy in ("litellm", "both"):
+                headers["x-litellm-api-key"] = self.api_key
 
         response = httpx.post(
             self.endpoint,
@@ -165,8 +229,18 @@ class FlockChatModel(BaseChatModel):
             timeout=self.timeout,
         )
         response.raise_for_status()
-        data = response.json()
-        content: str = data["choices"][0]["message"]["content"]
+
+        # Parse response — raise ValueError with detail on unexpected structure
+        try:
+            data = response.json()
+            content: str = data["choices"][0]["message"]["content"]
+        except (json.JSONDecodeError, KeyError, IndexError) as exc:
+            raise ValueError(
+                f"Unexpected API response structure ({type(exc).__name__}: {exc}). "
+                f"Status={response.status_code}. "
+                f"Body={response.text[:300]!r}"
+            ) from exc
+
         return _make_result(content)
 
     def _mock_generate(

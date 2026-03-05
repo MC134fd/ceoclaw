@@ -270,6 +270,136 @@ def test_compute_trend_down():
     assert compute_trend(0.3, 0.35) == "down"
 
 
+# ---------------------------------------------------------------------------
+# FlockChatModel: auth strategy, empty endpoint, malformed response
+# ---------------------------------------------------------------------------
+
+def test_flock_auth_strategy_both_sends_dual_headers(httpx_mock):
+    """auth_strategy='both' must send both Authorization and x-litellm-api-key."""
+    import httpx as _httpx
+    from integrations.flock_client import FlockChatModel
+    from langchain_core.messages import HumanMessage
+
+    httpx_mock.add_response(
+        json={"choices": [{"message": {"content": "ok"}}]},
+        status_code=200,
+    )
+    model = FlockChatModel(
+        endpoint="http://fake-endpoint/v1/chat/completions",
+        api_key="test-key",
+        auth_strategy="both",
+        mock_mode=False,
+        max_retries=1,
+    )
+    model.invoke([HumanMessage(content="ping")])
+    request = httpx_mock.get_request()
+    assert request.headers.get("authorization") == "Bearer test-key"
+    assert request.headers.get("x-litellm-api-key") == "test-key"
+
+
+def test_flock_auth_strategy_bearer_only(httpx_mock):
+    """auth_strategy='bearer' must only send Authorization header."""
+    from integrations.flock_client import FlockChatModel
+    from langchain_core.messages import HumanMessage
+
+    httpx_mock.add_response(
+        json={"choices": [{"message": {"content": "ok"}}]},
+        status_code=200,
+    )
+    model = FlockChatModel(
+        endpoint="http://fake-endpoint/v1/chat/completions",
+        api_key="test-key",
+        auth_strategy="bearer",
+        mock_mode=False,
+        max_retries=1,
+    )
+    model.invoke([HumanMessage(content="ping")])
+    request = httpx_mock.get_request()
+    assert request.headers.get("authorization") == "Bearer test-key"
+    assert "x-litellm-api-key" not in request.headers
+
+
+def test_flock_auth_strategy_litellm_only(httpx_mock):
+    """auth_strategy='litellm' must only send x-litellm-api-key header."""
+    from integrations.flock_client import FlockChatModel
+    from langchain_core.messages import HumanMessage
+
+    httpx_mock.add_response(
+        json={"choices": [{"message": {"content": "ok"}}]},
+        status_code=200,
+    )
+    model = FlockChatModel(
+        endpoint="http://fake-endpoint/v1/chat/completions",
+        api_key="test-key",
+        auth_strategy="litellm",
+        mock_mode=False,
+        max_retries=1,
+    )
+    model.invoke([HumanMessage(content="ping")])
+    request = httpx_mock.get_request()
+    assert "authorization" not in request.headers
+    assert request.headers.get("x-litellm-api-key") == "test-key"
+
+
+def test_flock_empty_endpoint_activates_fallback():
+    """Empty endpoint with mock_mode=False must fall back to [FALLBACK] response."""
+    from integrations.flock_client import FlockChatModel
+    from langchain_core.messages import HumanMessage
+
+    model = FlockChatModel(endpoint="", mock_mode=False, max_retries=1)
+    result = model.invoke([HumanMessage(content="ping")])
+    assert "[FALLBACK]" in result.content
+
+
+def test_flock_malformed_response_activates_fallback(httpx_mock):
+    """Non-JSON or missing 'choices' response must fall back, not raise."""
+    from integrations.flock_client import FlockChatModel
+    from langchain_core.messages import HumanMessage
+
+    httpx_mock.add_response(text="<html>Bad Gateway</html>", status_code=200)
+    model = FlockChatModel(
+        endpoint="http://fake-endpoint/v1/chat/completions",
+        mock_mode=False,
+        max_retries=1,
+    )
+    result = model.invoke([HumanMessage(content="ping")])
+    assert "[FALLBACK]" in result.content
+
+
+def test_flock_missing_choices_activates_fallback(httpx_mock):
+    """Response JSON missing 'choices' key must fall back, not raise KeyError."""
+    from integrations.flock_client import FlockChatModel
+    from langchain_core.messages import HumanMessage
+
+    httpx_mock.add_response(json={"error": "model not found"}, status_code=200)
+    model = FlockChatModel(
+        endpoint="http://fake-endpoint/v1/chat/completions",
+        mock_mode=False,
+        max_retries=1,
+    )
+    result = model.invoke([HumanMessage(content="ping")])
+    assert "[FALLBACK]" in result.content
+
+
+def test_settings_invalid_int_env_uses_default(monkeypatch):
+    """Non-integer FLOCK_TIMEOUT must not crash — must use default."""
+    monkeypatch.setenv("FLOCK_TIMEOUT", "not-a-number")
+    import importlib, config.settings as cs
+    s = cs.Settings()
+    assert s.flock_timeout == 30  # default
+
+
+def test_settings_empty_endpoint_live_mode_state(monkeypatch):
+    """Settings must reflect empty endpoint + live mode without crashing."""
+    monkeypatch.setenv("FLOCK_ENDPOINT", "")
+    monkeypatch.setenv("FLOCK_MOCK_MODE", "false")
+    import config.settings as cs
+    s = cs.Settings()
+    # Must not crash — and must expose the misconfiguration via attributes
+    assert s.flock_endpoint == ""
+    assert s.flock_mock_mode is False
+
+
 def test_compute_trend_flat():
     from core.prompts import compute_trend
     assert compute_trend(0.5, 0.501) == "flat"

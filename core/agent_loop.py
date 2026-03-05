@@ -181,6 +181,9 @@ def evaluator_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any
             ),
         )
 
+        # Sentinel used by the streaming loop to detect exactly when evaluator ran
+        evaluation["_eval_cycle"] = cycle_count
+
         return {
             "evaluation": evaluation,
             "weighted_score": new_weighted,
@@ -275,12 +278,12 @@ def _run_evaluator(
         goal_mrr=goal_mrr,
         current_metrics=metrics,
     )
-    # Ensure weighted_score is always set from our computation if model omitted it
+    # Always override metric-derived fields with our computed values.
+    # The live model can hallucinate scores that contradict real metrics.
     data = result.data
-    if not data.get("weighted_score"):
-        data["weighted_score"] = weighted
-    if not data.get("trend_direction"):
-        data["trend_direction"] = trend
+    data["progress_score"] = progress
+    data["weighted_score"] = weighted
+    data["trend_direction"] = trend
     return data
 
 
@@ -493,16 +496,17 @@ def run_graph(
         print("-" * 100)
 
     final_state: dict[str, Any] = {}
-    _last_printed: tuple[int, float] = (-1, -1.0)  # (cycle_count, weighted_score)
+    _last_printed_cycle: int = -1  # print exactly once per cycle, after evaluator runs
     try:
         for event in graph.stream(
             _initial_state(run_id, goal_mrr), config=config, stream_mode="values"
         ):
             final_state = event
-            if not quiet and final_state.get("cycle_count", 0) > 0 and final_state.get("evaluation"):
-                key = (final_state["cycle_count"], final_state.get("weighted_score", -1.0))
-                if key != _last_printed:
-                    _last_printed = key
+            if not quiet:
+                cycle = final_state.get("cycle_count", 0)
+                eval_cycle = (final_state.get("evaluation") or {}).get("_eval_cycle", -1)
+                if cycle > 0 and eval_cycle == cycle and cycle != _last_printed_cycle:
+                    _last_printed_cycle = cycle
                     _print_cycle_summary(final_state)
 
         stop_reason = final_state.get("stop_reason")

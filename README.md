@@ -77,12 +77,52 @@ Environment variables (all optional):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `FLOCK_ENDPOINT` | `http://localhost:8080/v1/chat/completions` | FLock API URL |
-| `FLOCK_API_KEY` | _(empty)_ | FLock API key |
-| `FLOCK_MOCK_MODE` | `false` | Use deterministic mock responses |
+| `FLOCK_ENDPOINT` | _(empty — use mock mode if unset)_ | Hosted FLock / OpenClaw VPS URL |
+| `FLOCK_API_KEY` | _(empty)_ | API key (never logged) |
+| `FLOCK_MODEL` | `flock-default` | Model name sent in request payload |
+| `FLOCK_AUTH_STRATEGY` | `both` | Header strategy: `both` \| `bearer` \| `litellm` |
+| `FLOCK_MOCK_MODE` | `false` | Use deterministic mock responses (no HTTP) |
+| `FLOCK_TIMEOUT` | `30` | HTTP timeout in seconds |
+| `FLOCK_MAX_RETRIES` | `3` | Retries before fallback to mock |
 | `CEOCLAW_DATABASE_PATH` | `data/ceoclaw.db` | SQLite file path |
 | `CEOCLAW_GOAL_MRR` | `100.0` | Default MRR target |
 | `CEOCLAW_LOG_LEVEL` | `INFO` | Log level |
+
+### Auth strategy guide
+
+`FLOCK_AUTH_STRATEGY=both` (default) sends **both** headers simultaneously, which works with
+all OpenAI-compatible wrappers:
+
+```
+Authorization: Bearer <key>        ← OpenAI-style
+x-litellm-api-key: <key>           ← LiteLLM / OpenClaw VPS style
+```
+
+Set `bearer` or `litellm` only if your VPS rejects unknown headers.
+
+### How to tell real responses vs fallback
+
+Real responses contain your model's text. Fallback responses (when all retries fail) are prefixed with `[FALLBACK]` in the content, and the log shows:
+```
+WARNING [FLock] FALLBACK activated after N retries — last error: ...
+```
+
+### Verify your endpoint before running
+
+```bash
+# Test with both auth headers (matches FLOCK_AUTH_STRATEGY=both)
+curl -sf \
+  -H "Authorization: Bearer $FLOCK_API_KEY" \
+  -H "x-litellm-api-key: $FLOCK_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"model\":\"$FLOCK_MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}" \
+  "$FLOCK_ENDPOINT" | python3 -m json.tool
+
+# Expected: JSON with a "choices" array.
+# 401 → check FLOCK_API_KEY and FLOCK_AUTH_STRATEGY
+# 404 / model_not_found → check FLOCK_MODEL
+# connection refused / timeout → check FLOCK_ENDPOINT
+```
 
 ---
 
