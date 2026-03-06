@@ -127,6 +127,8 @@ def evaluator_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any
     try:
         evaluation = _run_evaluator(state, mock_mode, prev_weighted)
 
+        # Extract and remove internal budget sidecar before persisting evaluation
+        budget = evaluation.pop("_budget", {})
         new_weighted = evaluation.get("weighted_score", 0.0)
         trend = evaluation.get("trend_direction", "flat")
 
@@ -191,6 +193,10 @@ def evaluator_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any
             "trend_direction": trend,
             "stagnant_cycles": stagnant_cycles,
             "last_mrr": current_mrr,
+            "model_mode": budget.get("model_mode", state.get("model_mode", "unknown")),
+            "tokens_used": state.get("tokens_used", 0) + budget.get("tokens_delta", 0),
+            "external_calls": state.get("external_calls", 0) + budget.get("external_calls_delta", 0),
+            "fallback_count": state.get("fallback_count", 0) + budget.get("fallback_delta", 0),
         }
 
     except Exception as exc:  # noqa: BLE001
@@ -242,7 +248,7 @@ def _run_evaluator(
             risk_flags.append("no_revenue_after_4_cycles")
 
         rec = _recommendation(progress, trend)
-        return EvaluatorOutput(
+        data = EvaluatorOutput(
             kpi_snapshot={
                 "mrr": current_mrr,
                 "signups": metrics.get("signups", 0),
@@ -255,6 +261,13 @@ def _run_evaluator(
             recommendation=rec,
             risk_flags=risk_flags,
         ).model_dump()
+        data["_budget"] = {
+            "model_mode": "mock",
+            "tokens_delta": 0,
+            "external_calls_delta": 0,
+            "fallback_delta": 0,
+        }
+        return data
 
     # Live model path
     model = get_model(mock_mode=False, cycle_index=cycle_count)
@@ -267,10 +280,14 @@ def _run_evaluator(
         prev_score=prev_weighted,
         trend=trend,
     )
-    response = model.invoke([
+    messages = [
         SystemMessage(content=prompt),
         HumanMessage(content="Evaluate business state. Reply with JSON only."),
-    ])
+    ]
+    response = model.invoke(messages)
+
+    # Extract model mode / budget metadata
+    meta = getattr(response, "response_metadata", {}) or {}
 
     result = safe_parse_evaluator(
         response.content,
@@ -284,6 +301,13 @@ def _run_evaluator(
     data["progress_score"] = progress
     data["weighted_score"] = weighted
     data["trend_direction"] = trend
+    # Attach budget metadata for evaluator_node to consume
+    data["_budget"] = {
+        "model_mode": meta.get("model_mode", "live"),
+        "tokens_delta": meta.get("tokens_estimated", 0),
+        "external_calls_delta": meta.get("external_calls_delta", 1),
+        "fallback_delta": 1 if meta.get("fallback_used") else 0,
+    }
     return data
 
 
@@ -419,6 +443,8 @@ def _initial_state(run_id: str, goal_mrr: float) -> dict[str, Any]:
         "circuit_breaker_active": False,
         "tokens_used": 0,
         "external_calls": 0,
+        "model_mode": "unknown",
+        "fallback_count": 0,
         "errors": [],
         "stop_reason": None,
         "should_stop": False,
@@ -478,7 +504,6 @@ def run_graph(
     start_graph_run(run_id=run_id, goal_mrr=goal_mrr)
 
     effective_max = max_cycles if continuous else min(cycles, max_cycles)
-    graph = build_graph()
     config: RunnableConfig = {
         "configurable": {
             "thread_id": run_id,
@@ -498,6 +523,7 @@ def run_graph(
     final_state: dict[str, Any] = {}
     _last_printed_cycle: int = -1  # print exactly once per cycle, after evaluator runs
     try:
+        graph = build_graph()
         for event in graph.stream(
             _initial_state(run_id, goal_mrr), config=config, stream_mode="values"
         ):
@@ -515,6 +541,10 @@ def run_graph(
             cycles_run=final_state.get("cycle_count", 0),
             stop_reason=stop_reason,
             status="completed",
+            model_mode=final_state.get("model_mode", "unknown"),
+            fallback_count=final_state.get("fallback_count", 0),
+            tokens_used=final_state.get("tokens_used", 0),
+            external_calls=final_state.get("external_calls", 0),
         )
         if not quiet:
             print("-" * 100)

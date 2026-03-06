@@ -1,10 +1,17 @@
 """
 OpenClaw framework adapter.
 
-CEOClaw extends OpenClaw, an internal base framework that provides reusable
-planning heuristics, evaluation scaffolding, and domain routing logic.
-This adapter is the integration seam between OpenClaw conventions and
-CEOClaw's LangGraph node implementations.
+DEPRECATED — not used in the live runtime.
+
+The prompt templates, parsers, and heuristics here were superseded by
+``core/prompts.py``, which adds Pydantic validation, weighted KPI scoring,
+stagnation context, and structured error codes.  This file is kept for
+reference only.  Do not import ``OpenClawAdapter`` in agent or core modules.
+
+Runtime call stack (canonical):
+    PlannerNode   → core/prompts.build_planner_prompt  + safe_parse_planner
+    EvaluatorNode → core/prompts.build_evaluator_prompt + safe_parse_evaluator
+    Model layer   → integrations/flock_client.FlockChatModel
 """
 
 import json

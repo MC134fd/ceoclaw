@@ -213,6 +213,9 @@ def safe_parse_evaluator(
             raw=content,
         )
     except Exception:
+        _valid_trends = {"up", "down", "flat"}
+        raw_trend = raw_data.get("trend_direction", "flat")
+        safe_trend = raw_trend if raw_trend in _valid_trends else "flat"
         fallback = EvaluatorOutput(
             kpi_snapshot=raw_data.get(
                 "kpi_snapshot",
@@ -220,7 +223,7 @@ def safe_parse_evaluator(
             ),
             progress_score=float(raw_data.get("progress_score", progress)),
             weighted_score=float(raw_data.get("weighted_score", weighted)),
-            trend_direction=raw_data.get("trend_direction", "flat"),
+            trend_direction=safe_trend,
             recommendation=str(raw_data.get("recommendation", "Continue iterating.")),
             risk_flags=list(raw_data.get("risk_flags", [])),
         )

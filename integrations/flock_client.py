@@ -81,6 +81,15 @@ def _mock_evaluator_response(progress_score: float = 0.0) -> str:
     return json.dumps(payload)
 
 
+def _estimate_tokens(messages: list[BaseMessage]) -> int:
+    """Rough token estimate: ~1.3 tokens per word across all messages."""
+    total_words = sum(
+        len(m.content.split()) if isinstance(m.content, str) else 0
+        for m in messages
+    )
+    return int(total_words * 1.3)
+
+
 def _classify_prompt(messages: list[BaseMessage]) -> str:
     """Heuristically detect whether this is a planner or evaluator call."""
     combined = " ".join(
@@ -169,7 +178,7 @@ class FlockChatModel(BaseChatModel):
         **kwargs: Any,
     ) -> ChatResult:
         if self.mock_mode:
-            return self._mock_generate(messages)
+            return self._mock_generate(messages, model_mode="mock")
 
         last_error: Optional[Exception] = None
         for attempt in range(self.max_retries):
@@ -185,18 +194,24 @@ class FlockChatModel(BaseChatModel):
                     time.sleep(0.5 * (attempt + 1))
 
         # All retries exhausted — fall back to mock with warning marker
+        fallback_reason = f"{type(last_error).__name__}: {last_error}"
         logger.warning(
             "[FLock] FALLBACK activated after %d retries — "
-            "last error: %s: %s. "
+            "last error: %s. "
             "Responses will be tagged [FALLBACK]. "
             "Check endpoint=%r model=%r",
             self.max_retries,
-            type(last_error).__name__,
-            last_error,
+            fallback_reason,
             self.endpoint or "(empty)",
             self.model,
         )
-        return self._mock_generate(messages, prefix="[FALLBACK] ")
+        return self._mock_generate(
+            messages,
+            prefix="[FALLBACK] ",
+            model_mode="fallback",
+            fallback_reason=fallback_reason,
+            external_calls_delta=self.max_retries,
+        )
 
     def _http_generate(self, messages: list[BaseMessage]) -> ChatResult:
         """Call the FLock HTTP endpoint."""
@@ -241,12 +256,22 @@ class FlockChatModel(BaseChatModel):
                 f"Body={response.text[:300]!r}"
             ) from exc
 
-        return _make_result(content)
+        tokens_est = _estimate_tokens(messages) + int(len(content.split()) * 1.3)
+        return _make_result(content, metadata={
+            "model_mode": "live",
+            "fallback_used": False,
+            "fallback_reason": None,
+            "tokens_estimated": tokens_est,
+            "external_calls_delta": 1,
+        })
 
     def _mock_generate(
         self,
         messages: list[BaseMessage],
         prefix: str = "",
+        model_mode: str = "mock",
+        fallback_reason: Optional[str] = None,
+        external_calls_delta: int = 0,
     ) -> ChatResult:
         """Return a deterministic response without making any HTTP call."""
         prompt_type = _classify_prompt(messages)
@@ -254,7 +279,13 @@ class FlockChatModel(BaseChatModel):
             content = prefix + _mock_evaluator_response()
         else:
             content = prefix + _mock_planner_response(self.cycle_index)
-        return _make_result(content)
+        return _make_result(content, metadata={
+            "model_mode": model_mode,
+            "fallback_used": model_mode == "fallback",
+            "fallback_reason": fallback_reason,
+            "tokens_estimated": 0,
+            "external_calls_delta": external_calls_delta,
+        })
 
     # ------------------------------------------------------------------
     # Stream (delegates to _generate for simplicity)
@@ -284,8 +315,9 @@ def _lc_role(message: BaseMessage) -> str:
     return role_map.get(message.type, "user")
 
 
-def _make_result(content: str) -> ChatResult:
-    return ChatResult(generations=[ChatGeneration(message=AIMessage(content=content))])
+def _make_result(content: str, metadata: dict | None = None) -> ChatResult:
+    msg = AIMessage(content=content, response_metadata=metadata or {})
+    return ChatResult(generations=[ChatGeneration(message=msg)])
 
 
 def get_model(mock_mode: bool = False, cycle_index: int = 0) -> FlockChatModel:

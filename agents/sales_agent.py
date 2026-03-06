@@ -67,8 +67,10 @@ def _dispatch(
     state: CEOClawState, action: str, run_id: str, cycle_count: int
 ) -> dict[str, Any]:
     product_name = _resolve_product_name(state)
-    offset = max((cycle_count - 1) % len(_DEFAULT_TARGETS), 0)
-    targets = _DEFAULT_TARGETS[offset: offset + 2] or _DEFAULT_TARGETS[:2]
+    n = len(_DEFAULT_TARGETS)
+    offset = (cycle_count - 1) % n
+    # Wrap around so we always get exactly 2 distinct targets
+    targets = [_DEFAULT_TARGETS[offset % n], _DEFAULT_TARGETS[(offset + 1) % n]]
 
     raw = outreach_tool.invoke({
         "product_name": product_name,

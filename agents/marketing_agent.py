@@ -75,7 +75,8 @@ def _dispatch(
 
     raw_analytics = analytics_tool.invoke({"lookback": 3, "record_snapshot": False})
     analytics_data = json.loads(raw_analytics)
-    metrics_delta["traffic"] = analytics_data.get("latest", {}).get("website_traffic", 0)
+    analytics_latest = analytics_data.get("latest") or {}
+    metrics_delta["traffic"] = analytics_latest.get("website_traffic", 0)
 
     persist_artifact(
         run_id=run_id, cycle_count=cycle_count,
@@ -91,7 +92,23 @@ def _dispatch(
         execution_status="completed",
         detail={"seo": seo_data, "analytics_summary": analytics_data.get("summary", "")},
     )
-    return {"executor_result": er.model_dump()}
+    result: dict[str, Any] = {"executor_result": er.model_dump()}
+
+    # Refresh latest_metrics from the analytics snapshot so evaluator sees
+    # current DB state without requiring a full ops cycle.
+    if analytics_latest:
+        prev = state.get("latest_metrics") or {}
+        result["latest_metrics"] = {
+            "website_traffic": analytics_latest.get("website_traffic",
+                                                     prev.get("website_traffic", 0)),
+            "signups": analytics_latest.get("signups", prev.get("signups", 0)),
+            "mrr": analytics_latest.get("mrr", prev.get("mrr", 0.0)),
+            "conversion_rate": analytics_latest.get("conversion_rate",
+                                                     prev.get("conversion_rate", 0.0)),
+            "revenue": analytics_latest.get("revenue", prev.get("revenue", 0.0)),
+        }
+
+    return result
 
 
 def _resolve_product_name(state: CEOClawState) -> str:

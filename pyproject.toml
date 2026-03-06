@@ -8,6 +8,7 @@ version = "1.0.0"
 description = "Autonomous founder agent iterating toward $100 MRR — LangGraph edition"
 requires-python = ">=3.11"
 dependencies = [
+    "python-dotenv>=1.0.0",
     "langgraph>=0.2.48",
     "langchain-core>=0.3.19",
     "fastapi>=0.115.0",
@@ -17,7 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3.0"]
+dev = ["pytest>=8.3.0", "pytest-httpx>=0.30.0"]
 
 [project.scripts]
 ceoclaw = "main:main"

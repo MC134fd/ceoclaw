@@ -47,6 +47,7 @@ def get_connection() -> Generator[sqlite3.Connection, None, None]:
 
     conn = sqlite3.connect(str(db_file))
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys = ON")
     try:
         yield conn
@@ -216,12 +217,26 @@ def init_db() -> list[str]:
         conn.executescript(_SCHEMA_ORIGINAL)
         conn.executescript(_SCHEMA_GRAPH)
         conn.executescript(_SCHEMA_V03)
+        _migrate_graph_runs_budget_cols(conn)
 
         rows = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
         ).fetchall()
 
     return [row["name"] for row in rows]
+
+
+def _migrate_graph_runs_budget_cols(conn: sqlite3.Connection) -> None:
+    """Add budget/mode columns to graph_runs if they don't exist (idempotent)."""
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(graph_runs)").fetchall()}
+    for col, definition in [
+        ("model_mode",     "TEXT    NOT NULL DEFAULT 'unknown'"),
+        ("fallback_count", "INTEGER NOT NULL DEFAULT 0"),
+        ("tokens_used",    "INTEGER NOT NULL DEFAULT 0"),
+        ("external_calls", "INTEGER NOT NULL DEFAULT 0"),
+    ]:
+        if col not in existing:
+            conn.execute(f"ALTER TABLE graph_runs ADD COLUMN {col} {definition}")
 
 
 # ---------------------------------------------------------------------------
@@ -245,18 +260,28 @@ def finish_graph_run(
     cycles_run: int,
     stop_reason: Optional[str],
     status: str = "completed",
+    model_mode: str = "unknown",
+    fallback_count: int = 0,
+    tokens_used: int = 0,
+    external_calls: int = 0,
 ) -> None:
     with get_connection() as conn:
         conn.execute(
             """
             UPDATE graph_runs
-            SET    finished_at = ?,
-                   cycles_run  = ?,
-                   stop_reason = ?,
-                   status      = ?
+            SET    finished_at    = ?,
+                   cycles_run     = ?,
+                   stop_reason    = ?,
+                   status         = ?,
+                   model_mode     = ?,
+                   fallback_count = ?,
+                   tokens_used    = ?,
+                   external_calls = ?
             WHERE  run_id = ?
             """,
-            (utc_now(), cycles_run, stop_reason, status, run_id),
+            (utc_now(), cycles_run, stop_reason, status,
+             model_mode, fallback_count, tokens_used, external_calls,
+             run_id),
         )
 
 

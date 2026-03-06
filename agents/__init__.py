@@ -82,6 +82,12 @@ class CEOClawState(TypedDict, total=False):
     external_calls: int
 
     # ------------------------------------------------------------------
+    # Model mode / fallback transparency
+    # ------------------------------------------------------------------
+    model_mode: str        # "live" | "mock" | "fallback" | "unknown"
+    fallback_count: int    # accumulated across all model calls this run
+
+    # ------------------------------------------------------------------
     # Accumulated errors  (append reducer)
     # ------------------------------------------------------------------
     errors: Annotated[list[dict[str, Any]], add]

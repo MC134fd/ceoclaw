@@ -48,8 +48,15 @@ def planner_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
 
     try:
         result = _run_planner(state, mock_mode, cycle_count, stagnant_cycles, stagnation_threshold)
+        budget = result.pop("_budget", {})
         log_node_finish(exec_id, output_summary=str(result.get("selected_action")))
-        return result
+        return {
+            **result,
+            "model_mode": budget.get("model_mode", "unknown"),
+            "tokens_used": state.get("tokens_used", 0) + budget.get("tokens_delta", 0),
+            "external_calls": state.get("external_calls", 0) + budget.get("external_calls_delta", 0),
+            "fallback_count": state.get("fallback_count", 0) + budget.get("fallback_delta", 0),
+        }
     except Exception as exc:  # noqa: BLE001
         error_entry = {
             "node": "planner",
@@ -90,10 +97,14 @@ def _run_planner(
         weighted_score=state.get("weighted_score", 0.0),
     )
 
-    response = model.invoke([
+    messages = [
         SystemMessage(content=prompt),
         HumanMessage(content="What should we do next? Reply with JSON only."),
-    ])
+    ]
+    response = model.invoke(messages)
+
+    # Extract model mode / budget metadata from response
+    meta = getattr(response, "response_metadata", {}) or {}
 
     parse_result = safe_parse_planner(response.content)
     parsed: PlannerOutput = PlannerOutput.model_validate(parse_result.data)
@@ -120,6 +131,13 @@ def _run_planner(
             "parse_error_code": parse_result.error_code,
         },
         "cycle_count": cycle_count + 1,
+        # Budget / transparency fields (accumulated by caller)
+        "_budget": {
+            "model_mode": meta.get("model_mode", "unknown"),
+            "tokens_delta": meta.get("tokens_estimated", 0),
+            "external_calls_delta": meta.get("external_calls_delta", 0),
+            "fallback_delta": 1 if meta.get("fallback_used") else 0,
+        },
     }
 
 

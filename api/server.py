@@ -17,12 +17,15 @@ v0.4 endpoints:
     GET /summary/latest   — one-shot judge-friendly run summary
 """
 
+import logging
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+
+logger = logging.getLogger(__name__)
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
@@ -90,7 +93,8 @@ def runs_recent(limit: int = 10) -> list[dict[str, Any]]:
     """The *limit* most recent graph runs."""
     try:
         return _sm.get_recent_graph_runs(limit=min(limit, 100))
-    except Exception:
+    except Exception as exc:
+        logger.warning("GET /runs/recent failed: %s", exc)
         return []
 
 
@@ -114,7 +118,8 @@ def run_timeline(run_id: str) -> list[dict[str, Any]]:
         raise HTTPException(status_code=404, detail=f"Run {run_id!r} not found.")
     try:
         return _sm.get_run_timeline(run_id)
-    except Exception:
+    except Exception as exc:
+        logger.warning("GET /runs/%s/timeline failed: %s", run_id, exc)
         return []
 
 
@@ -123,7 +128,8 @@ def artifacts_recent(limit: int = 20) -> list[dict[str, Any]]:
     """The *limit* most recently created artifacts across all runs."""
     try:
         return _sm.get_recent_artifacts(limit=min(limit, 200))
-    except Exception:
+    except Exception as exc:
+        logger.warning("GET /artifacts/recent failed: %s", exc)
         return []
 
 
@@ -132,7 +138,8 @@ def kpi_trend(limit: int = 20) -> list[dict[str, Any]]:
     """KPI trend across the *limit* most recent cycles (oldest→newest)."""
     try:
         return _sm.get_kpi_trend(limit=min(limit, 100))
-    except Exception:
+    except Exception as exc:
+        logger.warning("GET /kpi/trend failed: %s", exc)
         return []
 
 
@@ -173,6 +180,12 @@ def summary_latest() -> dict[str, Any]:
             "kpi_trend": trend,
             "artifact_count": len(run_artifacts),
             "recent_artifacts": run_artifacts[:5],
+            # Budget / transparency fields (Fix 2 + Fix 4)
+            "model_mode": run.get("model_mode", "unknown"),
+            "fallback_count": run.get("fallback_count", 0),
+            "tokens_used": run.get("tokens_used", 0),
+            "external_calls": run.get("external_calls", 0),
         }
     except Exception as exc:
-        return {"status": "error", "message": str(exc)}
+        logger.warning("GET /summary/latest failed: %s", exc)
+        return {"status": "error", "message": str(exc), "diagnostics": type(exc).__name__}
