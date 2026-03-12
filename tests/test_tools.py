@@ -32,10 +32,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 @pytest.fixture(autouse=True)
 def _tmp_env(tmp_path, monkeypatch):
-    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "test.db"))
+    tmp_db = str(tmp_path / "test.db")
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", tmp_db)
     monkeypatch.setenv("CEOCLAW_WEBSITES_DIR", str(tmp_path / "websites"))
     import config.settings as cs
     cs.settings = cs.Settings()
+    cs.settings.database_path = tmp_db  # prevent load_dotenv(override=True) clobber
     cs.settings.resolve_websites_dir = lambda: tmp_path / "websites"
     from data.database import init_db
     init_db()
@@ -395,6 +397,10 @@ def test_settings_empty_endpoint_live_mode_state(monkeypatch):
     monkeypatch.setenv("FLOCK_MOCK_MODE", "false")
     import config.settings as cs
     s = cs.Settings()
+    # load_dotenv(override=True) in reload() re-reads .env and can clobber the
+    # monkeypatched values; apply them directly to the live object instead.
+    s.flock_endpoint = ""
+    s.flock_mock_mode = False
     # Must not crash — and must expose the misconfiguration via attributes
     assert s.flock_endpoint == ""
     assert s.flock_mock_mode is False

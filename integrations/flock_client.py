@@ -1,10 +1,24 @@
 """
-FLock LangChain-compatible chat model adapter.
+FLock / OpenClaw model adapter — the canonical OpenClaw integration point.
 
-FlockChatModel wraps the FLock HTTP API as a LangChain BaseChatModel so
-it can be used interchangeably with any other LangChain LLM.  When
-``mock_mode=True`` (or when the endpoint is unreachable), deterministic
-fallback responses are returned and tagged with ``[MOCK]`` in the content.
+This module is CEOClaw's **OpenClaw boundary**: it wraps the FLock HTTP
+API (the model endpoint provided by the OpenClaw framework) as a standard
+LangChain ``BaseChatModel``.  Every model call in the CEOClaw agent loop
+goes through ``FlockChatModel``; nothing else in the codebase makes direct
+HTTP calls to the model layer.
+
+OpenClaw provides:
+  - The FLock HTTP endpoint (OpenAI-compatible chat completions)
+  - The LiteLLM / x-litellm-api-key auth strategy
+
+CEOClaw extends that with:
+  - Retry logic with exponential back-off
+  - Deterministic mock mode (for testing and demo without API credentials)
+  - Automatic fallback on retry exhaustion (``[FALLBACK]`` prefix)
+  - Structured ``response_metadata`` on every ``AIMessage``:
+      model_mode, fallback_used, fallback_reason,
+      tokens_estimated, external_calls_delta
+  - Budget accumulation so the graph can track spend per run
 
 Auth strategy (FLOCK_AUTH_STRATEGY):
   "both"    — sends both Authorization: Bearer and x-litellm-api-key (default)

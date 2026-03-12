@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Tracker for Gym-Goers</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cal+Sans:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        :root {
+            --primary: #f43f5e;
+            --secondary: #fb7185;
+            --background: #0f0508;
+            --surface: #1a0b11;
+            --text: #fff1f2;
+            --muted: #9f8090;
+            --border-radius: 12px;
+            --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+        }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        header {
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(16px);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        nav a {
+            color: var(--text);
+            margin: 0 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        nav a:hover {
+            color: var(--primary);
+        }
+        .hero {
+            padding: 5rem 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-family: 'Cal Sans', sans-serif;
+            font-size: 3rem;
+            letter-spacing: -0.02em;
+            font-weight: 700;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin: 1rem 0;
+        }
+        .cta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .cta button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .cta .primary {
+            background-color: var(--primary);
+            color: var(--text);
+        }
+        .cta .secondary {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        .features {
+            padding: 5rem 0;
+            display: flex;
+            justify-content: space-around;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        .testimonials {
+            padding: 5rem 0;
+            display: flex;
+            justify-content: space-around;
+        }
+        .testimonial {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+        footer {
+            padding: 2rem 0;
+            text-align: center;
+            background-color: var(--surface);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand">Calorie Tracker</div>
+        <nav>
+            <a href="#features">Features</a>
+            <a href="#testimonials">Testimonials</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Track Your Calories, Achieve Your Goals</h1>
+            <p>Join our community of gym-goers who are transforming their fitness journey.</p>
+            <div class="cta">
+                <button class="primary">Get Started</button>
+                <button class="secondary">Learn More</button>
+            </div>
+        </section>
+        <section id="features" class="features">
+            <div class="feature">
+                <h2>Easy Tracking</h2>
+                <p>Log your meals effortlessly with our intuitive interface.</p>
+            </div>
+            <div class="feature">
+                <h2>Personalized Insights</h2>
+                <p>Receive tailored recommendations based on your goals.</p>
+            </div>
+            <div class="feature">
+                <h2>Community Support</h2>
+                <p>Connect with fellow gym-goers for motivation and tips.</p>
+            </div>
+        </section>
+        <section id="testimonials" class="testimonials">
+            <div class="testimonial">
+                <h3>J.D.</h3>
+                <p>“This app has transformed my fitness journey!”</p>
+            </div>
+            <div class="testimonial">
+                <h3>A.S.</h3>
+                <p>“I love how easy it is to track my calories!”</p>
+            </div>
+            <div class="testimonial">
+                <h3>M.K.</h3>
+                <p>“The community support is amazing!”</p>
+            </div>
+        </section>
+        <section class="cta">
+            <h2>Ready to Get Started?</h2>
+            <p>Join thousands of satisfied users and take control of your fitness journey.</p>
+            <button class="primary">Sign Up Now</button>
+        </section>
+    </main>
+    <footer>
+        <div class="brand">Calorie Tracker</div>
+        <nav>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </nav>
+        <p>&copy; 2023 Calorie Tracker. All rights reserved.</p>
+    </footer>
+</body>
+</html>

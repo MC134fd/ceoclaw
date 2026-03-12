@@ -1,0 +1,7 @@
+{
+  "product": "CEOClaw MVP",
+  "endpoints": [
+    "/api/health",
+    "/api/data"
+  ]
+}

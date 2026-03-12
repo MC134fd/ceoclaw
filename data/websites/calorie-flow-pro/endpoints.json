@@ -1,0 +1,7 @@
+{
+  "product": "Calorie Flow Pro",
+  "endpoints": [
+    "/api/health",
+    "/api/entries"
+  ]
+}

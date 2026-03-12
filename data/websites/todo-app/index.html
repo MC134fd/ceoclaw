@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The smarter core functionality platform built for developers.">
+  <title>Todo App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    /* ── Design tokens ─────────────────────────────────────────────────── */
+    :root {
+      /* Colors — category: devtools */
+      --color-primary: #22d3ee;
+      --color-secondary: #67e8f9;
+      --color-tertiary: #a5f3fc;
+      --color-bg: #030712;
+      --color-surface: #0a0f1e;
+      --color-border: rgba(34,211,238,0.1);
+      --color-text: #e0f7fa;
+      --color-muted: #4d7a88;
+
+      /* Typography */
+      --font-display: 'JetBrains Mono', Georgia, serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 10px;
+      --radius-lg: 20px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,.6);
+
+      /* Spacing scale */
+      --space-1: 0.25rem;   /*  4px */
+      --space-2: 0.5rem;    /*  8px */
+      --space-3: 0.75rem;   /* 12px */
+      --space-4: 1rem;      /* 16px */
+      --space-5: 1.5rem;    /* 24px */
+      --space-6: 2rem;      /* 32px */
+      --space-8: 3rem;      /* 48px */
+
+      /* Layout */
+      --max-content-width: 1240px;
+      --space-container-x: clamp(1.25rem, 5vw, 2.5rem);
+      --space-section: clamp(4rem, 8vw, 6.75rem);
+      --space-stack-sm: var(--space-3);
+      --space-stack-md: var(--space-5);
+      --space-stack-lg: clamp(2rem, 4vw, 3rem);
+      --hero-text-width: 660px;
+      --card-pad: clamp(1.5rem, 3vw, 2rem);
+      --grid-gap: clamp(1rem, 2vw, 1.5rem);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-bg);
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────── */
+    .container {
+      max-width: var(--max-content-width);
+      margin-inline: auto;
+      padding-inline: var(--space-container-x);
+    }
+
+    /* ── Navbar ────────────────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding-block: var(--space-4);
+      background: rgba(10,10,15,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.25s ease, border-color 0.25s ease, padding 0.25s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(10,10,15,0.92);
+      border-bottom-color: rgba(255,255,255,0.12);
+      padding-block: var(--space-3);
+    }
+    .navbar-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--color-text);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: var(--space-6); list-style: none; }
+    .nav-links a {
+      color: var(--color-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--color-text); }
+    .nav-cta {
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── Hero ──────────────────────────────────────────────────────────── */
+    .hero {
+      padding-block: clamp(5rem, 10vw, 9rem) clamp(4rem, 7vw, 7rem);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(34,211,238,0.15) 0%, transparent 65%);
+      pointer-events: none;
+      transform: translateY(0);
+      transition: transform 0.35s ease;
+    }
+    .hero-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-stack-md);
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      max-width: var(--hero-text-width);
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--color-muted);
+      max-width: 520px;
+      line-height: 1.65;
+    }
+    .audience-note {
+      font-size: 0.875rem;
+      color: var(--color-secondary);
+      letter-spacing: 0.01em;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+    }
+
+    .proof-strip {
+      padding-block: 0 var(--space-section);
+    }
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--grid-gap);
+    }
+    .proof-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding: var(--card-pad);
+      text-align: left;
+    }
+    .proof-value {
+      display: block;
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-2);
+      color: var(--color-text);
+    }
+    .proof-label {
+      color: var(--color-muted);
+      font-size: 0.875rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.8125rem 2rem;
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      letter-spacing: -0.01em;
+      box-shadow: var(--shadow-md);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.8125rem 2rem;
+      background: transparent;
+      color: var(--color-text);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9375rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+    /* ── Section heading system ────────────────────────────────────────── */
+    .section-header { margin-bottom: var(--space-stack-lg); }
+    .section-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: var(--space-stack-sm);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+    }
+    .section-intro {
+      margin-top: var(--space-stack-sm);
+      font-size: 1rem;
+      color: var(--color-muted);
+      max-width: 520px;
+      line-height: 1.65;
+    }
+
+    /* ── Features ──────────────────────────────────────────────────────── */
+    .features { padding-block: var(--space-section); }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: var(--grid-gap);
+    }
+    .feature-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--card-pad);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+      box-shadow: var(--shadow-sm);
+    }
+    .feature-icon {
+      font-size: 1.75rem;
+      line-height: 1;
+      margin-bottom: var(--space-3);
+    }
+    .feature-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: var(--space-2);
+      line-height: 1.4;
+    }
+    .feature-text { color: var(--color-muted); font-size: 0.875rem; line-height: 1.65; }
+
+    /* ── Signup form ────────────────────────────────────────────────────── */
+    .signup-form { width: 100%; max-width: 480px; margin-inline: auto; }
+    .form-row {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .form-input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.8125rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.04);
+      color: var(--color-text);
+      font-size: 0.9375rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input::placeholder { color: var(--color-muted); }
+    .form-input:focus { border-color: var(--color-primary); }
+    .form-btn { flex-shrink: 0; }
+    .form-note { margin-top: var(--space-2); font-size: 0.8125rem; color: var(--color-muted); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* ── Testimonials ──────────────────────────────────────────────────── */
+    .testimonials { padding-block: var(--space-section); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: var(--grid-gap);
+    }
+    .testimonial-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--card-pad);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+    .testimonial-quote {
+      font-size: 0.9375rem;
+      color: var(--color-muted);
+      line-height: 1.7;
+      flex: 1;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: var(--space-3); }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8125rem;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+    .author-name { font-weight: 600; font-size: 0.875rem; line-height: 1.3; }
+    .author-role { font-size: 0.75rem; color: var(--color-muted); margin-top: var(--space-1); }
+
+    /* ── CTA section ───────────────────────────────────────────────────── */
+    .cta-section { padding-block: var(--space-section); text-align: center; }
+    .cta-box {
+      background: var(--color-surface);
+      border: 1px solid rgba(99,102,241,0.22);
+      border-radius: var(--radius-lg);
+      padding: clamp(3rem, 7vw, 5rem) var(--space-container-x);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(99,102,241,0.09) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-box h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: var(--space-stack-sm);
+      position: relative;
+    }
+    .cta-box p {
+      color: var(--color-muted);
+      margin-bottom: var(--space-stack-lg);
+      position: relative;
+      font-size: 1rem;
+      max-width: 440px;
+      margin-inline: auto;
+    }
+    .cta-box .btn-primary { position: relative; }
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--color-border);
+      padding-block: clamp(2rem, 4vw, 3rem);
+      font-size: 0.875rem;
+      color: var(--color-muted);
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+    .footer-links { display: flex; gap: var(--space-5); list-style: none; }
+    .footer-links a { color: var(--color-muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--color-text); }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      will-change: opacity, transform;
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .proof-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .hero-ctas { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <a class="brand" href="/">Todo App</a>
+        <nav aria-label="Primary">
+          <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#testimonials">Reviews</a></li>
+            <li><a href="#signup">Get Started</a></li>
+          </ul>
+        </nav>
+        <a class="nav-cta" href="#signup">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-gradient" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-inner">
+          <p class="section-label">Todo App</p>
+          <h1 id="hero-heading">The smarter core functionality platform built for developers.</h1>
+          <p class="hero-sub">Ship every core functionality — then see exactly where you stand with Todo App.</p>
+          <p class="audience-note">Built for developers</p>
+          <div class="hero-ctas">
+            <a class="btn-primary" href="#signup">Get Started</a>
+            <a class="btn-secondary" href="#features">See how it works</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof-strip" aria-label="Performance highlights">
+      <div class="container">
+        <div class="proof-grid">
+          <article class="proof-card reveal">
+            <strong class="proof-value"><span data-count="87">0</span>%</strong>
+            <p class="proof-label">Teams report faster release cycles in the first month.</p>
+          </article>
+          <article class="proof-card reveal">
+            <strong class="proof-value"><span data-count="320">0</span>K+</strong>
+            <p class="proof-label">Automated actions executed across production workflows.</p>
+          </article>
+          <article class="proof-card reveal">
+            <strong class="proof-value"><span data-count="4">0</span>.9/5</strong>
+            <p class="proof-label">Average user satisfaction from product and growth teams.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Features</span>
+          <h2 class="section-title" id="features-heading">Everything you need to succeed</h2>
+        </div>
+        <div class="features-grid">
+      <div class="feature-card reveal" style="transition-delay:70ms">
+        <div class="feature-icon" aria-hidden="true">✦</div>
+        <h3 class="feature-title">Core functionality</h3>
+        <p class="feature-text">core functionality</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:140ms">
+        <div class="feature-icon" aria-hidden="true">📈</div>
+        <h3 class="feature-title">User dashboard</h3>
+        <p class="feature-text">user dashboard</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:210ms">
+        <div class="feature-icon" aria-hidden="true">📁</div>
+        <h3 class="feature-title">Data export</h3>
+        <p class="feature-text">data export</p>
+      </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="testimonials" id="testimonials" aria-labelledby="testimonials-heading">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Testimonials</span>
+          <h2 class="section-title" id="testimonials-heading">Loved by teams worldwide</h2>
+        </div>
+        <div class="testimonials-grid">
+          <div class="testimonial-card reveal">
+            <p class="testimonial-quote">"This completely changed how our team operates. The ROI was immediately apparent within the first week of use."</p>
+            <div class="testimonial-author">
+              <div class="avatar" aria-hidden="true">AK</div>
+              <div><div class="author-name">Alex Kim</div><div class="author-role">Head of Product, Nexus</div></div>
+            </div>
+          </div>
+          <div class="testimonial-card reveal" style="transition-delay:80ms">
+            <p class="testimonial-quote">"We evaluated a dozen tools and nothing came close. Onboarding took minutes and the results speak for themselves."</p>
+            <div class="testimonial-author">
+              <div class="avatar" aria-hidden="true">SL</div>
+              <div><div class="author-name">Sofia Laurent</div><div class="author-role">CTO, Meridian Labs</div></div>
+            </div>
+          </div>
+          <div class="testimonial-card reveal" style="transition-delay:140ms">
+            <p class="testimonial-quote">"I was skeptical at first, but after one month our productivity increased by 40%. Genuinely impressive."</p>
+            <div class="testimonial-author">
+              <div class="avatar" aria-hidden="true">MR</div>
+              <div><div class="author-name">Marcus Reid</div><div class="author-role">Founder, Orbit</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section" id="signup" aria-labelledby="cta-heading">
+      <div class="container">
+        <div class="cta-box">
+          <h2 id="cta-heading">Start your free trial today</h2>
+          <p>Join thousands of people already using Todo App. Set up in under 2 minutes.</p>
+          
+          <form class="signup-form" onsubmit="return handleSignup(event)">
+            <div class="form-row">
+              <label for="email" class="sr-only">Email address</label>
+              <input id="email" type="email" name="email" class="form-input"
+                placeholder="Enter your email" autocomplete="email" required
+                aria-label="Email address" />
+              <button type="submit" class="btn-primary form-btn">Get Started</button>
+            </div>
+            <p class="form-note">No credit card required. Cancel anytime.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span>&copy; <span id="year">2025</span> Todo App. All rights reserved.</span>
+        <ul class="footer-links">
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="mailto:hello@todoapp.com">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script>
+    (() => {
+      const navbar = document.querySelector(".navbar");
+      const heroGradient = document.querySelector(".hero-gradient");
+      const revealables = document.querySelectorAll(".reveal");
+      const counters = document.querySelectorAll("[data-count]");
+      let countersStarted = false;
+
+      const setNavState = () => {
+        if (!navbar) return;
+        navbar.classList.toggle("scrolled", window.scrollY > 14);
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+
+      revealables.forEach((el) => observer.observe(el));
+
+      const animateCounters = () => {
+        if (countersStarted) return;
+        countersStarted = true;
+        counters.forEach((node) => {
+          const target = Number(node.getAttribute("data-count") || "0");
+          let current = 0;
+          const step = Math.max(1, Math.ceil(target / 36));
+          const tick = () => {
+            current = Math.min(target, current + step);
+            node.textContent = String(current);
+            if (current < target) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      };
+
+      const counterSection = document.querySelector(".proof-strip");
+      if (counterSection) {
+        const counterObserver = new IntersectionObserver((entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            animateCounters();
+            counterObserver.disconnect();
+          }
+        }, { threshold: 0.35 });
+        counterObserver.observe(counterSection);
+      }
+
+      window.addEventListener("scroll", () => {
+        setNavState();
+        if (heroGradient) {
+          const shift = Math.min(window.scrollY * 0.12, 36);
+          heroGradient.style.transform = `translateY(${shift}px)`;
+        }
+      }, { passive: true });
+
+      const yearNode = document.getElementById("year");
+      if (yearNode) yearNode.textContent = String(new Date().getFullYear());
+      setNavState();
+    })();
+
+    function handleSignup(e) {
+      e.preventDefault();
+      const form = e.target;
+      const email = form.querySelector('input[type="email"]');
+      if (!email || !email.value.includes('@')) {
+        email && (email.style.borderColor = '#ef4444');
+        return false;
+      }
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) { btn.textContent = 'Check your email ✓'; btn.disabled = true; }
+      return false;
+    }
+  </script>
+</body>
+</html>

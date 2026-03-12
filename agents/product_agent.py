@@ -54,6 +54,7 @@ def product_executor_node(state: CEOClawState, config: RunnableConfig) -> dict[s
 def _dispatch(
     state: CEOClawState, action: str, run_id: str, cycle_count: int
 ) -> dict[str, Any]:
+    intent = state.get("product_intent") or {}
     product_name = _resolve_product_name(state)
 
     if "seo" in action.lower() or "optimis" in action.lower():
@@ -62,7 +63,6 @@ def _dispatch(
             "target_keyword": product_name.lower().replace(" ", "-"),
         })
         data = json.loads(raw)
-        # Persist artifact
         persist_artifact(
             run_id=run_id, cycle_count=cycle_count,
             node_name="product_executor", artifact_type="seo_report",
@@ -77,28 +77,55 @@ def _dispatch(
         )
         return {"executor_result": er.model_dump()}
 
-    # Default: build/rebuild landing page
+    # Build V1: use product_intent data if available
+    features = intent.get("core_features") or ["Instant setup", "No credit card required", "Cancel anytime"]
+    target_user = intent.get("target_user", "")
+    endpoints = intent.get("desired_endpoints") or []
+
+    # On iteration cycles, prepend audit fix tasks to feature list
+    iteration_tasks = state.get("iteration_tasks") or []
+    if iteration_tasks and "iterate" in action.lower():
+        # Summarise top fix as a feature note
+        fix_note = iteration_tasks[0].replace("[quality_fix] ", "Improved: ")
+        features = [fix_note] + features[:4]
+
+    tagline = _build_tagline(product_name, intent)
+
     raw = website_builder_tool.invoke({
         "product_name": product_name,
-        "tagline": f"The smart way to solve your problem with {product_name}.",
-        "features": ["Instant setup", "No credit card required", "Cancel anytime"],
-        "cta_text": "Get Early Access",
+        "tagline": tagline,
+        "features": features[:5],
+        "cta_text": "Get Early Access — Free",
+        "target_user": target_user,
+        "endpoint_manifest": endpoints,
     })
     data = json.loads(raw)
     page_path = data.get("path", "")
 
-    # Persist artifact
     persist_artifact(
         run_id=run_id, cycle_count=cycle_count,
         node_name="product_executor", artifact_type="landing_page",
         path_or_hash=page_path,
-        content_summary=f"product={product_name} slug={data.get('slug')}",
+        content_summary=(
+            f"product={product_name} slug={data.get('slug')} "
+            f"endpoints={len(endpoints)} features={len(features)}"
+        ),
     )
 
-    active_product = {"name": product_name, "landing_page_path": page_path, "status": "active"}
+    active_product = {
+        "name": product_name,
+        "landing_page_path": page_path,
+        "app_path": data.get("app_path", ""),
+        "endpoint_manifest": data.get("endpoint_manifest", []),
+        "status": "active",
+    }
+
+    # Emit v1_generated event via memory store flag so agent_loop can pick it up
+    _mark_v1_built(run_id, product_name, page_path)
+
     er = ExecutorOutput(
         action_taken=action,
-        artifacts_created=[page_path],
+        artifacts_created=[page_path, data.get("app_path", ""), "endpoints.json"],
         metrics_delta={},
         execution_status="completed",
         detail=data,
@@ -106,7 +133,28 @@ def _dispatch(
     return {"executor_result": er.model_dump(), "active_product": active_product}
 
 
+def _build_tagline(product_name: str, intent: dict) -> str:
+    target = intent.get("target_user", "")
+    features = intent.get("core_features", [])
+    top_feature = features[0] if features else "productivity"
+    if target:
+        return f"The {top_feature} tool built for {target}."
+    return f"The smart {top_feature} platform for modern teams."
+
+
+def _mark_v1_built(run_id: str, product_name: str, page_path: str) -> None:
+    try:
+        from core.memory_store import build_memory_store
+        build_memory_store().set("v1_built", f"yes path={page_path}", namespace=run_id)
+        build_memory_store().set("product_name", product_name, namespace=run_id)
+    except Exception:
+        pass
+
+
 def _resolve_product_name(state: CEOClawState) -> str:
+    intent = state.get("product_intent") or {}
+    if intent.get("product_name"):
+        return intent["product_name"]
     if state.get("active_product"):
         return state["active_product"].get("name", "CEOClaw MVP")
     return "CEOClaw MVP"

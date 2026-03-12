@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make A App — Food Blogs</title>
+  <style>
+    /* Google Fonts: display + body fonts (import inside style block) */
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+
+    :root{
+      /* Colors (design system: rose) */
+      --color-primary: #f43f5e;
+      --color-secondary: #fb7185;
+      --color-bg: #0f0508;
+      --color-surface: #1a0b11;
+      --color-text: #fff1f2;
+      --color-muted: #9f8090;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+
+      /* Shadows (elevation) */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      /* Spacing system (mobile-first). Use scale ratio 1.25 when needed */
+      --space-xxs: 0.25rem;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 2.5rem;
+      --section-space: 3.5rem; /* mobile base */
+
+      /* Layout tokens */
+      --nav-width: 220px; /* desktop nav width */
+      --container-max: 1200px;
+
+      /* Motion */
+      --ease: all 0.18s ease;
+
+      /* Typography */
+      --font-display: 'Fraunces', serif;
+      --font-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+
+      /* Utility */
+      --glass-surface: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      --glass-strong: rgba(255,255,255,0.04);
+    }
+
+    /* Reset + base */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:var(--font-body);
+      background: linear-gradient(180deg,var(--color-bg) 0%, #0b0410 100%);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      min-height:100vh;
+      display:flex;flex-direction:column;
+    }
+
+    /* Sticky translucent nav that becomes sidebar on larger screens */
+    nav{
+      display:flex;align-items:center;gap:var(--space-sm);
+      width:100%;padding:calc(var(--space-sm)) calc(var(--space-md));
+      position:sticky;top:0;z-index:60;
+      background: rgba(26,11,17,0.55);
+      backdrop-filter: blur(16px) saturate(120%);
+      border-bottom:1px solid rgba(255,255,255,0.03);
+      transition: var(--ease);
+    }
+    nav .logo{
+      font-family:var(--font-display);font-weight:700;letter-spacing:-0.02em;color:var(--color-text);font-size:1rem;
+      display:inline-block;
+    }
+    nav .nav-links{display:flex;gap:var(--space-md);margin-left:auto;align-items:center}
+    nav a{color:var(--color-text);text-decoration:none;font-weight:500;padding:0.45rem 0.6rem;border-radius:var(--radius-sm);transition:var(--ease);font-size:0.95rem;opacity:0.95}
+    nav a:hover{transform:translateY(-2px);color:var(--color-primary)}
+    nav .cta-btn{background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));color:var(--color-text);padding:0.5rem 0.75rem;border-radius:10px;border:none;cursor:pointer}
+
+    /* Main layout */
+    main{flex:1;padding:var(--section-space) calc(var(--space-md));width:100%}
+    .container{max-width:var(--container-max);margin:0 auto}
+
+    /* Hero */
+    .hero{
+      display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-md);
+      padding:calc(var(--section-space) / 1.2) 1rem;
+      border-radius:var(--radius-lg);
+      background: linear-gradient(135deg, rgba(244,63,94,0.12), rgba(251,113,133,0.06));
+      box-shadow:var(--shadow-md);
+      backdrop-filter: blur(6px);
+    }
+    .hero h1{
+      font-family:var(--font-display);font-size:clamp(1.6rem,4.6vw,2.6rem);font-weight:700;letter-spacing:-0.02em;margin:0;color:var(--color-text);
+    }
+    .hero p{max-width:62ch;color:var(--color-text);opacity:0.95}
+    .hero .cta{display:flex;gap:var(--space-sm);align-items:center}
+    .btn{padding:0.75rem 1.1rem;border-radius:12px;border:none;cursor:pointer;font-weight:600;transition:var(--ease)}
+    .btn-primary{background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));color:var(--color-text);box-shadow:0 6px 24px rgba(244,63,94,0.12)}
+    .btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,0.06);color:var(--color-text)}
+
+    /* Section headings */
+    h2.section-title{font-family:var(--font-display);font-size:1.15rem;margin-bottom:var(--space-md)}
+
+    /* Features grid: mobile-first: stacked; tablet two-up; desktop three-up */
+    .features-grid{display:grid;gap:var(--space-md);align-items:stretch}
+    .feature{
+      background:var(--glass-surface);border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(8px) saturate(120%);
+      border-radius:var(--radius-md);padding:1.25rem;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:0.75rem;
+      transition:transform 0.18s ease,box-shadow 0.18s ease;
+    }
+    .feature:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
+    .feature .meta{display:flex;gap:0.75rem;align-items:center}
+    .feature .icon{
+      width:56px;height:56px;border-radius:12px;background:linear-gradient(180deg,rgba(244,63,94,0.16),rgba(251,113,133,0.09));display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex:0 0 56px;box-shadow:var(--shadow-sm)
+    }
+    .feature .title{font-weight:700;font-family:var(--font-display);font-size:1.05rem}
+    .feature p{color:var(--color-text);opacity:0.95;font-size:0.98rem}
+
+    /* Small utility for a compact feature variant used in some dashboards */
+    .feature.compact{padding:0.9rem;gap:0.5rem}
+    .feature.compact .icon{width:44px;height:44px;border-radius:10px;font-size:1.2rem;flex:0 0 44px}
+
+    /* Testimonials */
+    .testimonials{display:grid;gap:var(--space-md)}
+    .testimonial{background:var(--glass-surface);border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(8px);padding:1.15rem;border-radius:var(--radius-md);display:flex;gap:0.85rem;align-items:flex-start}
+    .avatar{width:48px;height:48px;border-radius:12px;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--color-text);flex:0 0 48px}
+    .testimonial .who{font-weight:700}
+    .testimonial p{color:var(--color-text);opacity:0.9;margin-top:0.25rem}
+
+    /* CTA before footer */
+    .pre-footer{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-md);padding:calc(var(--section-space) / 1.1);border-radius:var(--radius-lg);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0));box-shadow:var(--shadow-md)}
+
+    /* Footer */
+    footer{padding:calc(var(--space-md));border-top:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,rgba(0,0,0,0.02),transparent)}
+    .footer-inner{display:flex;flex-direction:column;gap:var(--space-md);align-items:center}
+
+    /* Card reveal animation (initially hidden) */
+    .card{opacity:0;transform:translateY(10px);transition:opacity 0.46s cubic-bezier(.2,.9,.2,1),transform 0.46s cubic-bezier(.2,.9,.2,1)}
+    .card.visible{opacity:1;transform:none}
+
+    /* Mobile first layout: features single column */
+    @media (min-width:520px){
+      .features-grid{grid-template-columns:repeat(2,1fr)}
+      .testimonials{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (min-width:900px){
+      .features-grid{grid-template-columns:repeat(3,1fr)}
+      .testimonials{grid-template-columns:repeat(3,1fr)}
+      :root{--section-space:5rem}
+    }
+
+    /* Sidebar nav layout for larger screens */
+    @media (min-width:720px){
+      body{flex-direction:row}
+      nav{flex-direction:column;align-items:flex-start;width:var(--nav-width);min-height:100vh;padding:calc(var(--space-lg)) calc(var(--space-md));border-right:1px solid rgba(255,255,255,0.03);border-bottom:none}
+      nav .nav-links{flex-direction:column;gap:var(--space-sm);margin-left:0;width:100%}
+      nav a{width:100%;padding:0.6rem 0.75rem}
+      main{padding:calc(var(--space-lg)) calc(var(--space-lg))}
+    }
+
+    /* Fine tune typography scaling on wide screens */
+    @media (min-width:1200px){
+      .hero h1{font-size:3.2rem}
+      .feature .title{font-size:1.12rem}
+    }
+
+  </style>
+</head>
+<body>
+  <nav aria-label="Main navigation">
+    <div class="logo">SavorWrite</div>
+    <div class="nav-links">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#features">Features</a>
+      <a href="#testimonials">Community</a>
+      <a href="#compose">Compose</a>
+      <button class="cta-btn">New Post</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+      <!-- Hero / top area -->
+      <section class="hero card">
+        <h1>Write, Share, and Taste — Your Food Stories Deserve an Audience</h1>
+        <p>From weeknight recipes to Michelin reviews, publish beautiful posts with photos and video, connect with fellow food lovers, and grow a dedicated readership.</p>
+        <div class="cta">
+          <button class="btn btn-primary">Start Your First Post</button>
+          <button class="btn btn-ghost">Explore Popular Blogs</button>
+        </div>
+      </section>
+
+      <!-- Features section -->
+      <section id="features" style="margin-top:var(--space-lg);">
+        <h2 class="section-title">Designed for food creators</h2>
+        <div class="features-grid">
+          <article class="feature card compact" aria-labelledby="f1">
+            <div class="meta">
+              <div class="icon">🍽️</div>
+              <div>
+                <div id="f1" class="title">Easy to Use</div>
+                <div class="muted" style="color:var(--color-muted);font-size:0.92rem">Write quickly with structured blocks and instant previews.</div>
+              </div>
+            </div>
+            <p>Create step-by-step recipes, save draft versions, and format ingredients and instructions with a single click. Publishing is painless—focus on flavor, not friction.</p>
+          </article>
+
+          <article class="feature card compact" aria-labelledby="f2">
+            <div class="meta">
+              <div class="icon">🤝</div>
+              <div>
+                <div id="f2" class="title">Community Engagement</div>
+                <div class="muted" style="color:var(--color-muted);font-size:0.92rem">Built-in comments, collections, and follower feeds.</div>
+              </div>
+            </div>
+            <p>Grow an audience with comment threads, save-to-collection actions, and discover pages that showcase local food trends and top contributors.</p>
+          </article>
+
+          <article class="feature card compact" aria-labelledby="f3">
+            <div class="meta">
+              <div class="icon">📸</div>
+              <div>
+                <div id="f3" class="title">Rich Media Support</div>
+                <div class="muted" style="color:var(--color-muted);font-size:0.92rem">High-quality image layouts and lightweight video embeds.</div>
+              </div>
+            </div>
+            <p>Build visually compelling posts—image galleries, step photos, and short recipe clips. Images are optimized automatically for fast load times.</p>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- Social proof / testimonials -->
+      <section id="testimonials" style="margin-top:var(--space-lg);">
+        <h2 class="section-title">What food creators say</h2>
+        <div class="testimonials">
+          <blockquote class="testimonial card">
+            <div class="avatar">JD</div>
+            <div>
+              <div class="who">Jane D., Home Chef</div>
+              <p>“SavorWrite helped me organize my recipes and build a small following. The design makes every post look like a magazine feature.”</p>
+            </div>
+          </blockquote>
+
+          <blockquote class="testimonial card">
+            <div class="avatar">MS</div>
+            <div>
+              <div class="who">Mason S., Food Photographer</div>
+              <p>“Uploading galleries and arranging layouts is surprisingly fast. My photos finally get the presentation they deserve.”</p>
+            </div>
+          </blockquote>
+
+          <blockquote class="testimonial card">
+            <div class="avatar">EL</div>
+            <div>
+              <div class="who">Elaine L., Restaurant Critic</div>
+              <p>“The community discussions are insightful—I've discovered local gems and sources for unique ingredients.”</p>
+            </div>
+          </blockquote>
+        </div>
+      </section>
+
+      <!-- High-conversion CTA before footer -->
+      <section class="pre-footer card" style="margin-top:var(--space-lg);">
+        <h2 class="section-title">Ready to share your next recipe?</h2>
+        <p>Join thousands of food writers who publish trusted recipes, stunning food photography, and honest reviews. Your first post takes less than five minutes.</p>
+        <div>
+          <button class="btn btn-primary">Create Your Free Blog</button>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer style="margin-top:var(--space-lg);">
+        <div class="footer-inner">
+          <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+            <div style="font-family:var(--font-display);font-weight:700">SavorWrite</div>
+            <nav aria-label="Footer nav" style="display:flex;gap:1rem;align-items:center;">
+              <a href="#features">Features</a>
+              <a href="#testimonials">Community</a>
+              <a href="#contact">Support</a>
+            </nav>
+          </div>
+          <div style="display:flex;gap:1rem;align-items:center;justify-content:center;opacity:0.85">
+            <span title="twitter">[T]</span>
+            <span title="instagram">[IG]</span>
+            <span title="rss">[RSS]</span>
+          </div>
+          <div style="color:var(--color-muted);font-size:0.95rem">© <span id="year"></span> SavorWrite — Built for food creators</div>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+
+  <script>
+    // set year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal-on-scroll for .card elements (lightweight IntersectionObserver)
+    (function(){
+      const cards = document.querySelectorAll('.card');
+      if(!('IntersectionObserver' in window)){
+        cards.forEach(c=>c.classList.add('visible'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      },{threshold:0.14});
+      cards.forEach(c => io.observe(c));
+    })();
+
+    // Sticky nav compacting effect on scroll (adds subtle elevation)
+    (function(){
+      const nav = document.querySelector('nav');
+      let last = 0;
+      window.addEventListener('scroll', ()=>{
+        const y = window.scrollY;
+        if(y > 10){
+          nav.style.boxShadow = 'var(--shadow-md)';
+        } else {
+          nav.style.boxShadow = 'none';
+        }
+        last = y;
+      },{passive:true});
+    })();
+
+    // Accessibility: keyboard trap for quick new post (optional small behavior)
+    (function(){
+      const btn = document.querySelector('.cta-btn');
+      if(!btn) return;
+      btn.addEventListener('keydown', (e)=>{
+        if((e.key === 'Enter' || e.key === ' ') ){
+          e.preventDefault();
+          btn.click();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

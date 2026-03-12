@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CEOClaw Studio — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── App-specific additions ── */
+    body { overflow: hidden; }
+
+    /* ── Notification toast ── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--r-md);
+      padding: 12px var(--sp-4);
+      font-size: var(--text-sm);
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform var(--dur-slow) var(--ease-spring),
+                  opacity var(--dur-base) var(--ease-out);
+      max-width: 340px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast__icon { font-size: 16px; flex-shrink: 0; }
+    .toast__close {
+      margin-left: auto;
+      padding: 2px;
+      color: var(--text-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .toast__close:hover { color: var(--text); }
+
+    /* ── Panel tab system ── */
+    .panel-tab-content { display: none; width: 100%; height: 100%; }
+    .panel-tab-content.active { display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── Project search ── */
+    .projects-header {
+      padding: var(--sp-5) var(--sp-6);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-4);
+      flex-shrink: 0;
+    }
+    .projects-header h2 {
+      font-size: var(--text-md);
+      font-weight: var(--fw-semibold);
+      color: var(--text);
+      flex: 1;
+    }
+    .projects-search {
+      max-width: 240px;
+      position: relative;
+    }
+    .projects-search svg {
+      position: absolute;
+      left: 10px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      pointer-events: none;
+    }
+    .projects-search input {
+      padding-left: 32px;
+    }
+
+    /* ── Version history ── */
+    .history-panel {
+      padding: var(--sp-5);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+      max-width: 420px;
+    }
+    .history-item {
+      display: flex;
+      gap: var(--sp-3);
+      align-items: flex-start;
+      padding: var(--sp-4);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: border-color var(--dur-fast), background var(--dur-fast);
+    }
+    .history-item:hover { border-color: var(--border-bright); }
+    .history-item.current { border-color: var(--primary); background: rgba(0,229,160,0.04); }
+
+    .history-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border-bright);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .history-item.current .history-dot {
+      background: var(--primary);
+      box-shadow: 0 0 6px var(--primary-glow);
+    }
+
+    .history-item__msg {
+      font-size: var(--text-xs);
+      font-family: var(--font-mono);
+      color: var(--text-2);
+      margin-bottom: 4px;
+      line-height: var(--lh-snug);
+    }
+    .history-item__meta {
+      font-size: 10px;
+      color: var(--text-3);
+    }
+    .history-item.current .history-item__msg { color: var(--primary); }
+
+    /* ── Deploy content ── */
+    .deploy-content {
+      overflow-y: auto;
+      padding: var(--sp-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-5);
+      max-width: 560px;
+    }
+    .deploy-domain-row {
+      display: flex;
+      gap: var(--sp-3);
+      align-items: flex-end;
+    }
+    .deploy-domain-row .input-group { flex: 1; }
+    .input-label {
+      font-size: var(--text-xs);
+      font-family: var(--font-mono);
+      color: var(--text-3);
+      margin-bottom: var(--sp-2);
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Sidebar collapse ── */
+    .app-sidebar.collapsed { width: 56px; }
+    .app-sidebar.collapsed .sidebar-item__label,
+    .app-sidebar.collapsed .sidebar-section-label,
+    .app-sidebar.collapsed .app-sidebar__logo span,
+    .app-sidebar.collapsed .sidebar-user__info,
+    .app-sidebar.collapsed .sidebar-item__badge { display: none; }
+    .app-sidebar.collapsed .sidebar-item { justify-content: center; padding: 8px; }
+    .app-sidebar.collapsed .sidebar-user { justify-content: center; }
+    .app-sidebar.collapsed .sidebar-item__icon { margin: 0; }
+
+    /* ── Active page tabs top ── */
+    .open-tabs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 var(--sp-4);
+      height: 36px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-raised);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .open-tab {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 4px 12px;
+      font-size: 12px;
+      border-radius: var(--r-sm) var(--r-sm) 0 0;
+      color: var(--text-3);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color var(--dur-fast), border-color var(--dur-fast);
+    }
+    .open-tab:hover { color: var(--text-2); }
+    .open-tab.active { color: var(--text); border-bottom-color: var(--primary); }
+    .open-tab-close {
+      width: 14px; height: 14px;
+      border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--text-3);
+      background: none; border: none; cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--dur-fast), background var(--dur-fast);
+    }
+    .open-tab:hover .open-tab-close { opacity: 1; }
+    .open-tab-close:hover { background: var(--surface); color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="app-layout" id="app">
+
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside class="app-sidebar" id="app-sidebar" aria-label="Application sidebar">
+    <div class="app-sidebar__header">
+      <div class="app-sidebar__logo">
+        <span class="app-sidebar__logo-mark" aria-hidden="true">C</span>
+        <span>Studio</span>
+      </div>
+      <button class="btn-icon" id="sidebar-collapse-btn" aria-label="Collapse sidebar" title="Collapse sidebar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M9 2L4 7l5 5"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="app-sidebar__nav" aria-label="Studio navigation">
+      <p class="sidebar-section-label">Workspace</p>
+
+      <div class="sidebar-item active" data-panel="studio" role="button" tabindex="0" aria-label="Studio - Chat and preview" aria-current="page">
+        <span class="sidebar-item__icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="1" y="1" width="13" height="10" rx="1.5"/>
+            <path d="M1 11l3.5-3 2.5 2 3-4 3 3"/>
+          </svg>
+        </span>
+        <span class="sidebar-item__label">Studio</span>
+      </div>
+
+      <div class="sidebar-item" data-panel="projects" role="button" tabindex="0" aria-label="Projects">
+        <span class="sidebar-item__icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="1" y="4" width="13" height="10" rx="1.5"/>
+            <path d="M4 4V3a1 1 0 011-1h5a1 1 0 011 1v1"/>
+          </svg>
+        </span>
+        <span class="sidebar-item__label">Projects</span>
+        <span class="sidebar-item__badge">7</span>
+      </div>
+
+      <div class="sidebar-item" data-panel="history" role="button" tabindex="0" aria-label="Version history">
+        <span class="sidebar-item__icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="7.5" cy="7.5" r="6"/>
+            <path d="M7.5 4v3.5l2 1.5"/>
+          </svg>
+        </span>
+        <span class="sidebar-item__label">History</span>
+      </div>
+
+      <div class="sidebar-item" data-panel="deploy" role="button" tabindex="0" aria-label="Deploy">
+        <span class="sidebar-item__icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M7.5 10V2M4 5.5L7.5 2 11 5.5"/>
+            <path d="M2 13h11"/>
+          </svg>
+        </span>
+        <span class="sidebar-item__label">Deploy</span>
+      </div>
+
+      <p class="sidebar-section-label" style="margin-top:var(--sp-4)">Settings</p>
+
+      <div class="sidebar-item" role="button" tabindex="0" aria-label="API keys">
+        <span class="sidebar-item__icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="5.5" cy="9.5" r="3.5"/>
+            <path d="M8 7l5-5M11 2l2 2M9.5 3.5L12 6"/>
+          </svg>
+        </span>
+        <span class="sidebar-item__label">API Keys</span>
+      </div>
+
+      <div class="sidebar-item" role="button" tabindex="0" aria-label="Settings">
+        <span class="sidebar-item__icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="7.5" cy="7.5" r="2.5"/>
+            <path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3.1 3.1l1.4 1.4M10.5 10.5l1.4 1.4M10.5 4.5l1.4-1.4M3.1 11.9l1.4-1.4"/>
+          </svg>
+        </span>
+        <span class="sidebar-item__label">Settings</span>
+      </div>
+    </nav>
+
+    <div class="app-sidebar__footer">
+      <div class="sidebar-user" role="button" tabindex="0" aria-label="Account: Marcus Chien, Pro plan">
+        <div class="sidebar-user__avatar" aria-hidden="true">MC</div>
+        <div class="sidebar-user__info">
+          <p class="sidebar-user__name">Marcus Chien</p>
+          <p class="sidebar-user__plan">Pro plan · 42 gens left</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Area ───────────────────────────────────────── -->
+  <div class="app-main">
+
+    <!-- Topbar -->
+    <div class="app-topbar" role="banner">
+      <div class="app-breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">CEOClaw</a>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 2l4 3-4 3"/></svg>
+        <span>mvp-saas-dashboard</span>
+      </div>
+
+      <div class="app-topbar__actions">
+        <div class="status-bar__item active" style="display:flex;gap:5px;align-items:center">
+          <div class="status-bar__dot"></div>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--primary)">v12 · saved</span>
+        </div>
+
+        <button class="btn btn-ghost btn-sm" id="export-btn" aria-label="Export project files">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M6.5 8V1M3.5 5L6.5 1l3 4M1 11h11" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Export
+        </button>
+
+        <button class="btn btn-primary btn-sm" id="deploy-btn-top" aria-label="Deploy project">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M6.5 9V2M3.5 5L6.5 2l3 3M1 11h11" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Deploy
+        </button>
+      </div>
+    </div>
+
+    <!-- Open file tabs -->
+    <div class="open-tabs" role="tablist" aria-label="Open files">
+      <div class="open-tab active" role="tab" aria-selected="true">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="1"/></svg>
+        index.html
+        <button class="open-tab-close" aria-label="Close index.html">×</button>
+      </div>
+      <div class="open-tab" role="tab" aria-selected="false">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="1"/></svg>
+        styles.css
+        <button class="open-tab-close" aria-label="Close styles.css">×</button>
+      </div>
+      <div class="open-tab" role="tab" aria-selected="false">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1" y="1" width="8" height="8" rx="1"/></svg>
+        main.js
+        <button class="open-tab-close" aria-label="Close main.js">×</button>
+      </div>
+    </div>
+
+    <!-- App Content -->
+    <div class="app-content" id="app-content">
+
+      <!-- ── PANEL: Studio (default) ── -->
+      <div class="panel-tab-content active" id="panel-studio" role="main" aria-label="Studio workspace">
+        <div class="studio-split">
+
+          <!-- Chat Panel -->
+          <aside class="chat-panel" aria-label="AI chat">
+            <div class="chat-panel__header">
+              <span class="chat-panel__title">Chat</span>
+              <div style="display:flex;gap:var(--sp-2)">
+                <button class="btn btn-ghost btn-sm" aria-label="New conversation">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke-linecap="round"/></svg>
+                  New
+                </button>
+                <button class="btn-icon" aria-label="Chat options">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <circle cx="7" cy="3" r="1"/><circle cx="7" cy="7" r="1"/><circle cx="7" cy="11" r="1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="chat-panel__messages" id="chat-messages" aria-live="polite" aria-label="Conversation">
+
+              <div class="chat-msg ai">
+                <span class="chat-msg__role">Studio AI</span>
+                <div class="chat-msg__bubble">
+                  👋 I'm your AI designer. Describe what you want to build — a landing page, app dashboard, form, anything — and I'll generate it with a live preview. What are we building today?
+                </div>
+              </div>
+
+              <div class="chat-msg user">
+                <span class="chat-msg__role">You</span>
+                <div class="chat-msg__bubble">Build a SaaS dashboard for a project management tool. Dark theme, clean metrics, sidebar nav, activity feed.</div>
+              </div>
+
+              <div class="chat-msg ai">
+                <span class="chat-msg__role">Studio AI</span>
+                <div class="chat-msg__bubble">
+                  Great brief. I'm generating a full SaaS dashboard — sidebar navigation with 6 sections, KPI metric cards, task board with Kanban columns, team activity feed, and a responsive layout. Using a Technical Grid archetype with dark teal accents.
+                </div>
+
+                <div class="gen-progress" id="gen-progress" aria-live="polite" aria-label="Generation progress">
+                  <div class="gen-progress__header">
+                    <span class="gen-progress__label" id="gen-label">● Building layout scaffolding…</span>
+                    <span class="gen-progress__pct" id="gen-pct">0%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-bar__fill" id="gen-bar" style="width:0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <div class="gen-steps" aria-hidden="true">
+                    <div class="gen-step done" id="step-1">
+                      <span class="gen-step__icon">✓</span> Design tokens & CSS variables
+                    </div>
+                    <div class="gen-step active" id="step-2">
+                      <span class="gen-step__icon">◦</span> HTML structure
+                    </div>
+                    <div class="gen-step" id="step-3">
+                      <span class="gen-step__icon">◦</span> Component styles
+                    </div>
+                    <div class="gen-step" id="step-4">
+                      <span class="gen-step__icon">◦</span> Responsive breakpoints
+                    </div>
+                    <div class="gen-step" id="step-5">
+                      <span class="gen-step__icon">◦</span> Accessibility audit
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chat-msg user" id="followup-msg" style="display:none">
+                <span class="chat-msg__role">You</span>
+                <div class="chat-msg__bubble">Make the sidebar narrower and add a notification bell to the topbar.</div>
+              </div>
+
+              <div class="chat-msg ai" id="followup-reply" style="display:none">
+                <span class="chat-msg__role">Studio AI</span>
+                <div class="chat-msg__bubble">
+                  Done. Sidebar reduced from 240px to 200px, added notification bell icon with a badge counter to the topbar, and adjusted the layout grid accordingly. Preview updated.
+                </div>
+                <div class="chat-msg__actions">
+                  <button class="badge badge-neutral" style="cursor:pointer">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h6M5 2l3 3-3 3"/></svg>
+                    Accept changes
+                  </button>
+                  <button class="badge badge-neutral" style="cursor:pointer">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8l6-6M8 8L2 2"/></svg>
+                    Revert
+                  </button>
+                </div>
+              </div>
+
+              <!-- Typing indicator (hidden by default) -->
+              <div class="typing-indicator" id="typing-indicator" style="display:none" aria-label="AI is generating…">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+
+            </div>
+
+            <div class="chat-panel__input-area">
+              <div class="chat-input-wrap">
+                <textarea
+                  id="chat-input"
+                  placeholder="Describe what to change or build next…"
+                  rows="3"
+                  aria-label="Chat message input"
+                  aria-multiline="true"></textarea>
+                <div class="chat-input-footer">
+                  <div class="chat-input-hints" aria-label="Quick prompts">
+                    <button class="hint-chip" aria-label="Prompt: make it more minimal">minimal</button>
+                    <button class="hint-chip" aria-label="Prompt: add dark mode">dark mode</button>
+                    <button class="hint-chip" aria-label="Prompt: add pricing table">pricing table</button>
+                  </div>
+                  <button class="chat-send-btn" id="chat-send" aria-label="Send message">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M2 10L10 6 2 2v3l5 1-5 1v3z" fill="currentColor"/>
+                    </svg>
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Preview Panel -->
+          <div class="preview-panel" aria-label="Live preview">
+            <div class="preview-panel__header">
+              <div class="preview-tabs" role="tablist" aria-label="Preview mode">
+                <button class="preview-tab active" role="tab" aria-selected="true" data-view="preview" aria-controls="preview-frame">Preview</button>
+                <button class="preview-tab" role="tab" aria-selected="false" data-view="code" aria-controls="code-view">Code</button>
+                <button class="preview-tab" role="tab" aria-selected="false" data-view="split" aria-controls="split-view">Split</button>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:var(--sp-2);align-items:center">
+                <span class="badge badge-primary" aria-label="Generation complete">✓ Generated</span>
+              </div>
+            </div>
+
+            <div class="preview-viewport" role="toolbar" aria-label="Viewport controls">
+              <button class="viewport-btn active" data-vp="desktop" aria-label="Desktop view" title="Desktop">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="2" width="12" height="8" rx="1.5"/><path d="M4 12h6M7 10v2"/></svg>
+              </button>
+              <button class="viewport-btn" data-vp="tablet" aria-label="Tablet view" title="Tablet">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="1" width="9" height="12" rx="1.5"/><circle cx="7" cy="11" r="0.8" fill="currentColor"/></svg>
+              </button>
+              <button class="viewport-btn" data-vp="mobile" aria-label="Mobile view" title="Mobile">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="1" width="6" height="12" rx="1.5"/><circle cx="7" cy="11" r="0.8" fill="currentColor"/></svg>
+              </button>
+              <div class="preview-url-bar" aria-label="Preview URL">
+                <span style="color:var(--primary);margin-right:4px">●</span>
+                localhost:3000/preview/mvp-dash
+              </div>
+              <button class="btn-icon" aria-label="Open in new tab">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2H2a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V8M7 1h5v5M12 1L6 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Preview Frame -->
+            <div class="preview-panel__frame" id="preview-frame" aria-label="Generated UI preview">
+              <!-- Loading state -->
+              <div class="preview-loading" id="preview-loading" aria-live="polite">
+                <div class="preview-loading__spinner" aria-hidden="true"></div>
+                <p class="preview-loading__text" id="preview-loading-text">Generating your UI…</p>
+              </div>
+
+              <!-- Generated preview content (shown after generation) -->
+              <div id="preview-content" style="display:none;width:100%;height:100%;overflow:auto;background:var(--bg)">
+
+                <!-- Mocked generated dashboard inside preview -->
+                <div style="display:flex;height:100%;font-family:var(--font-sans)">
+                  <!-- Mini sidebar -->
+                  <div style="width:180px;background:#0d1117;border-right:1px solid #1e2d40;padding:12px 8px;display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:8px">
+                      <div style="width:20px;height:20px;background:#00e5a0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#060911;font-family:var(--font-mono)">P</div>
+                      <span style="font-size:12px;font-weight:600;color:#e8f0f8">ProjectHQ</span>
+                    </div>
+                    <div style="padding:6px 8px;border-radius:6px;font-size:11px;color:#00e5a0;background:rgba(0,229,160,0.08);display:flex;align-items:center;gap:6px">
+                      <span>⊞</span> Dashboard
+                    </div>
+                    <div style="padding:6px 8px;border-radius:6px;font-size:11px;color:#8fa8c4;display:flex;align-items:center;gap:6px">
+                      <span>✦</span> Projects
+                    </div>
+                    <div style="padding:6px 8px;border-radius:6px;font-size:11px;color:#8fa8c4;display:flex;align-items:center;gap:6px">
+                      <span>✓</span> Tasks
+                    </div>
+                    <div style="padding:6px 8px;border-radius:6px;font-size:11px;color:#8fa8c4;display:flex;align-items:center;gap:6px">
+                      <span>👥</span> Team
+                    </div>
+                    <div style="padding:6px 8px;border-radius:6px;font-size:11px;color:#8fa8c4;display:flex;align-items:center;gap:6px">
+                      <span>📈</span> Reports
+                    </div>
+                  </div>
+                  <!-- Mini dashboard content -->
+                  <div style="flex:1;background:#080b10;padding:16px;overflow:auto">
+                    <div style="font-size:14px;font-weight:600;color:#e8f0f8;margin-bottom:12px">Good morning, Marcus ☀️</div>
+                    <!-- KPI cards -->
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+                      <div style="background:#131920;border:1px solid #1e2d40;border-radius:8px;padding:12px">
+                        <div style="font-size:9px;color:#4a6480;font-family:monospace;margin-bottom:4px">OPEN TASKS</div>
+                        <div style="font-size:22px;font-weight:700;color:#e8f0f8;letter-spacing:-0.02em">24</div>
+                        <div style="font-size:9px;color:#00e5a0;margin-top:2px">↑ 3 this week</div>
+                      </div>
+                      <div style="background:#131920;border:1px solid #1e2d40;border-radius:8px;padding:12px">
+                        <div style="font-size:9px;color:#4a6480;font-family:monospace;margin-bottom:4px">COMPLETED</div>
+                        <div style="font-size:22px;font-weight:700;color:#e8f0f8;letter-spacing:-0.02em">87</div>
+                        <div style="font-size:9px;color:#00e5a0;margin-top:2px">↑ 12 this week</div>
+                      </div>
+                      <div style="background:#131920;border:1px solid #1e2d40;border-radius:8px;padding:12px">
+                        <div style="font-size:9px;color:#4a6480;font-family:monospace;margin-bottom:4px">TEAM MEMBERS</div>
+                        <div style="font-size:22px;font-weight:700;color:#e8f0f8;letter-spacing:-0.02em">8</div>
+                        <div style="font-size:9px;color:#8fa8c4;margin-top:2px">Active now: 3</div>
+                      </div>
+                      <div style="background:#131920;border:1px solid #1e2d40;border-radius:8px;padding:12px">
+                        <div style="font-size:9px;color:#4a6480;font-family:monospace;margin-bottom:4px">VELOCITY</div>
+                        <div style="font-size:22px;font-weight:700;color:#e8f0f8;letter-spacing:-0.02em">94<span style="font-size:13px;color:#8fa8c4">%</span></div>
+                        <div style="font-size:9px;color:#f5a623;margin-top:2px">↓ 2% vs last sprint</div>
+                      </div>
+                    </div>
+                    <!-- Activity feed -->
+                    <div style="background:#131920;border:1px solid #1e2d40;border-radius:8px;padding:12px">
+                      <div style="font-size:11px;font-weight:600;color:#e8f0f8;margin-bottom:10px">Recent Activity</div>
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:#8fa8c4">
+                          <div style="width:22px;height:22px;border-radius:50%;background:#2d6a4f;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0">A</div>
+                          <span><strong style="color:#e8f0f8">Alicia</strong> completed <strong style="color:#e8f0f8">API integration task</strong></span>
+                          <span style="margin-left:auto;color:#4a6480">2m ago</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:#8fa8c4">
+                          <div style="width:22px;height:22px;border-radius:50%;background:#4a3580;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0">K</div>
+                          <span><strong style="color:#e8f0f8">Kwame</strong> opened PR <strong style="color:#00c8ff">#47 — dashboard redesign</strong></span>
+                          <span style="margin-left:auto;color:#4a6480">18m ago</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:#8fa8c4">
+                          <div style="width:22px;height:22px;border-radius:50%;background:#1a5276;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0">M</div>
+                          <span><strong style="color:#e8f0f8">Marcus</strong> deployed <strong style="color:#e8f0f8">v2.1.0</strong> to production</span>
+                          <span style="margin-left:auto;color:#4a6480">1h ago</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Code view (hidden by default) -->
+            <div id="code-view" style="display:none;flex:1;overflow:hidden">
+              <div class="code-editor" aria-label="Generated HTML code">
+<span class="cmt">&lt;!-- Generated by CEOClaw Studio — aurora-73 --&gt;</span>
+<span class="tag">&lt;!DOCTYPE</span> <span class="attr">html</span><span class="tag">&gt;</span>
+<span class="tag">&lt;html</span> <span class="attr">lang</span>=<span class="val">"en"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;head&gt;</span>
+  <span class="tag">&lt;meta</span> <span class="attr">charset</span>=<span class="val">"UTF-8"</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;title&gt;</span>ProjectHQ — Dashboard<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"stylesheet"</span> <span class="attr">href</span>=<span class="val">"styles.css"</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;/head&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"app-layout"</span><span class="tag">&gt;</span>
+
+  <span class="tag">&lt;aside</span> <span class="attr">class</span>=<span class="val">"sidebar"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"sidebar__logo"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="val">"logo-mark"</span><span class="tag">&gt;</span>P<span class="tag">&lt;/span&gt;</span>
+      ProjectHQ
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="tag">&lt;nav</span> <span class="attr">class</span>=<span class="val">"sidebar__nav"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"#"</span> <span class="attr">class</span>=<span class="val">"nav-item active"</span><span class="tag">&gt;</span>Dashboard<span class="tag">&lt;/a&gt;</span>
+      <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"#"</span> <span class="attr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;</span>Projects<span class="tag">&lt;/a&gt;</span>
+      <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"#"</span> <span class="attr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;</span>Tasks<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/nav&gt;</span>
+  <span class="tag">&lt;/aside&gt;</span>
+
+  <span class="tag">&lt;main</span> <span class="attr">class</span>=<span class="val">"dashboard"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h1&gt;</span>Good morning, Marcus ☀️<span class="tag">&lt;/h1&gt;</span>
+
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="val">"kpi-grid"</span><span class="tag">&gt;</span>
+      <span class="cmt">&lt;!-- KPI cards generated here --&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/main&gt;</span>
+
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── PANEL: Projects ── -->
+      <div class="panel-tab-content" id="panel-projects" aria-label="Projects list">
+        <div class="projects-header">
+          <h2>Projects</h2>
+          <div class="projects-search">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <circle cx="5.5" cy="5.5" r="4.5"/>
+              <path d="M9 9l3 3"/>
+            </svg>
+            <input class="input" type="search" placeholder="Search projects…" aria-label="Search projects" />
+          </div>
+          <button class="btn btn-primary btn-sm">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 1v10M1 6h10" stroke-linecap="round"/></svg>
+            New project
+          </button>
+        </div>
+
+        <div class="projects-grid">
+          <article class="project-card" tabindex="0" role="button" aria-label="Project: SaaS Dashboard MVP">
+            <div class="project-card__thumb">
+              <div class="project-card__thumb-pattern" aria-hidden="true"></div>
+              <span aria-hidden="true">⊞</span>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__name">SaaS Dashboard MVP</p>
+              <div class="project-card__meta">
+                <span class="badge badge-primary">v12</span>
+                <span>2 hours ago</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="project-card" tabindex="0" role="button" aria-label="Project: CalorieFlow Landing">
+            <div class="project-card__thumb" style="background:rgba(123,92,240,0.1)">
+              <div class="project-card__thumb-pattern" aria-hidden="true"></div>
+              <span aria-hidden="true">🥗</span>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__name">CalorieFlow Landing</p>
+              <div class="project-card__meta">
+                <span class="badge badge-accent">v7</span>
+                <span>Yesterday</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="project-card" tabindex="0" role="button" aria-label="Project: DogTrack Onboarding">
+            <div class="project-card__thumb" style="background:rgba(0,200,255,0.06)">
+              <div class="project-card__thumb-pattern" aria-hidden="true"></div>
+              <span aria-hidden="true">🐕</span>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__name">DogTrack Onboarding</p>
+              <div class="project-card__meta">
+                <span class="badge badge-info">v3</span>
+                <span>3 days ago</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="project-card" tabindex="0" role="button" aria-label="Project: FitRunners App Shell">
+            <div class="project-card__thumb" style="background:rgba(245,166,35,0.06)">
+              <div class="project-card__thumb-pattern" aria-hidden="true"></div>
+              <span aria-hidden="true">🏃</span>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__name">FitRunners App Shell</p>
+              <div class="project-card__meta">
+                <span class="badge badge-neutral">v5</span>
+                <span>1 week ago</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="project-card" tabindex="0" role="button" aria-label="Project: Startup Portfolio">
+            <div class="project-card__thumb" style="background:rgba(0,229,160,0.04)">
+              <div class="project-card__thumb-pattern" aria-hidden="true"></div>
+              <span aria-hidden="true">🚀</span>
+            </div>
+            <div class="project-card__body">
+              <p class="project-card__name">Startup Portfolio</p>
+              <div class="project-card__meta">
+                <span class="badge badge-neutral">v2</span>
+                <span>2 weeks ago</span>
+              </div>
+            </div>
+          </article>
+
+          <div class="project-card project-card--new" tabindex="0" role="button" aria-label="Create new project">
+            <div class="project-card__icon" aria-hidden="true">＋</div>
+            <div class="project-card__label">New project</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: History ── -->
+      <div class="panel-tab-content" id="panel-history" aria-label="Version history">
+        <div class="projects-header">
+          <h2>Version History — SaaS Dashboard MVP</h2>
+        </div>
+        <div class="history-panel">
+          <div class="history-item current" tabindex="0" role="button" aria-label="Current version 12: Add notification bell, narrow sidebar. Selected.">
+            <div class="history-dot"></div>
+            <div>
+              <p class="history-item__msg">Add notification bell, narrow sidebar</p>
+              <p class="history-item__meta">v12 · 2 hours ago · current</p>
+            </div>
+          </div>
+          <div class="history-item" tabindex="0" role="button" aria-label="Version 11: Add activity feed panel">
+            <div class="history-dot"></div>
+            <div>
+              <p class="history-item__msg">Add activity feed panel</p>
+              <p class="history-item__meta">v11 · 3 hours ago</p>
+            </div>
+          </div>
+          <div class="history-item" tabindex="0" role="button" aria-label="Version 10: Tweak KPI card colors, add warning state">
+            <div class="history-dot"></div>
+            <div>
+              <p class="history-item__msg">Tweak KPI card colors, add warning state</p>
+              <p class="history-item__meta">v10 · 4 hours ago</p>
+            </div>
+          </div>
+          <div class="history-item" tabindex="0" role="button" aria-label="Version 9: Mobile responsive pass">
+            <div class="history-dot"></div>
+            <div>
+              <p class="history-item__msg">Mobile responsive pass</p>
+              <p class="history-item__meta">v9 · 5 hours ago</p>
+            </div>
+          </div>
+          <div class="history-item" tabindex="0" role="button" aria-label="Version 1: Initial generation from brief">
+            <div class="history-dot"></div>
+            <div>
+              <p class="history-item__msg">Initial generation from brief</p>
+              <p class="history-item__meta">v1 · 6 hours ago</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: Deploy ── -->
+      <div class="panel-tab-content" id="panel-deploy" aria-label="Deploy project">
+        <div class="projects-header">
+          <h2>Deploy — SaaS Dashboard MVP</h2>
+        </div>
+        <div class="deploy-content">
+          <div>
+            <p class="deploy-section-title">Choose a platform</p>
+            <div style="display:flex;flex-direction:column;gap:var(--sp-3)">
+              <div class="deploy-option selected" role="button" tabindex="0" aria-label="Vercel — selected" aria-selected="true">
+                <div class="deploy-option__left">
+                  <span class="deploy-option__icon" aria-hidden="true">▲</span>
+                  <div>
+                    <p class="deploy-option__name">Vercel</p>
+                    <p class="deploy-option__desc">Instant global edge deployment</p>
+                  </div>
+                </div>
+                <div class="deploy-status">
+                  <div class="deploy-status-dot"></div>
+                  Connected
+                </div>
+              </div>
+              <div class="deploy-option" role="button" tabindex="0" aria-label="Netlify — connect">
+                <div class="deploy-option__left">
+                  <span class="deploy-option__icon" aria-hidden="true">⬡</span>
+                  <div>
+                    <p class="deploy-option__name">Netlify</p>
+                    <p class="deploy-option__desc">CDN with form handling</p>
+                  </div>
+                </div>
+                <span class="badge badge-neutral">Connect</span>
+              </div>
+              <div class="deploy-option" role="button" tabindex="0" aria-label="Download ZIP — export files">
+                <div class="deploy-option__left">
+                  <span class="deploy-option__icon" aria-hidden="true">📦</span>
+                  <div>
+                    <p class="deploy-option__name">Download ZIP</p>
+                    <p class="deploy-option__desc">Export clean HTML/CSS/JS files</p>
+                  </div>
+                </div>
+                <span class="badge badge-neutral">Export</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="deploy-section-title">Custom domain (optional)</p>
+            <div class="deploy-domain-row">
+              <div class="input-group" style="flex:1">
+                <label class="input-label" for="domain-input">Domain</label>
+                <input class="input" id="domain-input" type="text" placeholder="your-project.vercel.app or mycustom.com" aria-label="Custom domain" />
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="deploy-action-btn" style="width:fit-content" aria-label="Deploy to Vercel">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 11V2M3.5 5.5L7 2l3.5 3.5M1 13h12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Deploy to Vercel
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /app-content -->
+
+    <!-- Status bar -->
+    <div class="status-bar" role="status" aria-label="Application status">
+      <div class="status-bar__item active">
+        <div class="status-bar__dot"></div>
+        <span>Model: claude-sonnet-4-6</span>
+      </div>
+      <div class="status-bar__item">
+        <span>Project: mvp-saas-dashboard</span>
+      </div>
+      <div class="status-bar__item">
+        <span>v12 · index.html</span>
+      </div>
+      <div class="status-bar__item" style="margin-left:auto">
+        <span>Ln 47, Col 12</span>
+      </div>
+      <div class="status-bar__item">
+        <span>UTF-8</span>
+      </div>
+    </div>
+
+  </div><!-- /app-main -->
+</div><!-- /app-layout -->
+
+<!-- Toast notification -->
+<div class="toast" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  <span class="toast__icon" aria-hidden="true" id="toast-icon">✓</span>
+  <span id="toast-text">Files exported successfully.</span>
+  <button class="toast__close" id="toast-close" aria-label="Dismiss notification">×</button>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

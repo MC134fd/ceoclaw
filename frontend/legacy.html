@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEOClaw — Build your product</title>
+<style>
+/* ─── Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+/* ─── Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:          #f5f5f7;
+  --surface:     rgba(255,255,255,0.78);
+  --surface-2:   rgba(255,255,255,0.6);
+  --border:      rgba(0,0,0,0.08);
+  --border-2:    rgba(0,0,0,0.05);
+  --text:        #1d1d1f;
+  --text-2:      #6e6e73;
+  --text-3:      #a1a1a6;
+  --accent:      #0071e3;
+  --accent-h:    #0077ed;
+  --accent-text: #fff;
+  --danger:      #ff3b30;
+  --warn:        #ff9500;
+  --ok:          #30d158;
+  --user-bubble: #0071e3;
+  --ai-bubble:   rgba(255,255,255,0.9);
+  --radius:      14px;
+  --radius-sm:   8px;
+  --shadow:      0 2px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  --font:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono:        'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Topbar ─────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.logo span { color: var(--accent); }
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-3);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.status-dot.ok     { background: var(--ok); }
+.status-dot.warn   { background: var(--warn); }
+.status-dot.error  { background: var(--danger); }
+
+.status-label { font-size: 12px; }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-ghost {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-ghost:hover { background: var(--surface); color: var(--text); border-color: rgba(0,0,0,0.15); }
+
+.btn-primary {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--accent-h); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Layout ─────────────────────────────────────────────────────────── */
+.workspace {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── Chat panel ─────────────────────────────────────────────────────── */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  width: 480px;
+  min-width: 380px;
+  max-width: 520px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.chat-header {
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--border-2);
+}
+.chat-header h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ─── Messages ───────────────────────────────────────────────────────── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 88%;
+  animation: msg-in 0.2s ease;
+}
+@keyframes msg-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.ai   { align-self: flex-start; align-items: flex-start; }
+.msg.system { align-self: center; max-width: 100%; }
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.msg.user .bubble {
+  background: var(--user-bubble);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.msg.ai .bubble {
+  background: var(--ai-bubble);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow);
+}
+
+.msg.system .bubble {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  font-size: 12px;
+  text-align: center;
+  padding: 4px 8px;
+  box-shadow: none;
+}
+
+.msg-meta {
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 0 4px;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--ai-bubble);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow);
+  width: fit-content;
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  animation: bounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+/* ─── Quick chips ────────────────────────────────────────────────────── */
+.chips-row {
+  padding: 10px 14px 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid var(--border-2);
+}
+
+.chip {
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.chip:hover { background: var(--surface); color: var(--accent); border-color: var(--accent); }
+.chip.accent { border-color: var(--accent); color: var(--accent); background: rgba(0,113,227,0.06); }
+
+/* ─── Composer ───────────────────────────────────────────────────────── */
+.composer {
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border-2);
+}
+
+.composer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.composer-inner:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,113,227,0.12);
+}
+
+#composer-textarea {
+  width: 100%;
+  min-height: 100px;
+  max-height: 240px;
+  padding: 14px 16px 6px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text);
+  background: transparent;
+}
+#composer-textarea::placeholder { color: var(--text-3); }
+
+.composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 8px;
+}
+
+.composer-hint {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+#send-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+#send-btn:hover { background: var(--accent-h); }
+#send-btn:active { transform: scale(0.92); }
+#send-btn:disabled { background: var(--border); cursor: not-allowed; }
+#send-btn svg { pointer-events: none; }
+
+/* ─── Preview panel ──────────────────────────────────────────────────── */
+.preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg);
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.preview-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 8px;
+  padding: 3px;
+}
+.preview-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font);
+  transition: all 0.12s;
+}
+.preview-tab.active {
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.preview-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.preview-product-name {
+  font-weight: 600;
+  color: var(--text-2);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-links {
+  display: flex;
+  gap: 6px;
+}
+
+.preview-link {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.12s;
+}
+.preview-link:hover { color: var(--accent); border-color: var(--accent); background: var(--surface); }
+
+.preview-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+  display: block;
+}
+
+.preview-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+.preview-empty-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.preview-empty p {
+  text-align: center;
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+/* ─── Toast ──────────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(29,29,31,0.88);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  font-size: 13px;
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 0.2s ease;
+  max-width: 300px;
+}
+.toast.error { background: rgba(255,59,48,0.92); }
+@keyframes toast-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+/* ─── Error banner ───────────────────────────────────────────────────── */
+.error-banner {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255,59,48,0.08);
+  border-bottom: 1px solid rgba(255,59,48,0.2);
+  font-size: 12px;
+  color: var(--danger);
+}
+.error-banner.show { display: flex; }
+
+/* ─── Session picker dropdown ────────────────────────────────────────── */
+.session-picker {
+  position: fixed;
+  top: 48px;
+  right: 12px;
+  z-index: 300;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  backdrop-filter: blur(20px);
+  min-width: 260px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px;
+}
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  gap: 8px;
+}
+.session-item:hover { background: rgba(0,0,0,0.04); }
+.session-item-name { font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-item-date { color: var(--text-3); font-size: 11px; flex-shrink: 0; }
+.session-picker-empty { padding: 14px 12px; font-size: 13px; color: var(--text-3); text-align: center; }
+
+/* ─── Change summary pill ─────────────────────────────────────────────── */
+.change-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(52,199,89,0.12);
+  color: #1a7f37;
+  margin: 2px 2px 0 0;
+}
+.change-pill.warn { background: rgba(255,149,0,0.12); color: #995200; }
+
+/* ─── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .preview-panel { display: none; }
+  .chat-panel { width: 100%; max-width: 100%; border-right: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ──────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="logo">CEO<span>Claw</span></div>
+
+  <div class="status-row">
+    <div class="status-dot" id="status-dot"></div>
+    <span class="status-label" id="status-label">Checking…</span>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="btn-ghost" id="btn-check-model" title="Check model connection">⚡ Model check</button>
+    <button class="btn-ghost" id="btn-sessions" title="Restore a previous session">↩ Sessions</button>
+    <button class="btn-ghost" id="btn-new-session" title="Start fresh session">+ New</button>
+  </div>
+</header>
+
+<!-- ── Error banner ───────────────────────────────────────────────── -->
+<div class="error-banner" id="error-banner">
+  <span>⚠</span>
+  <span id="error-banner-text"></span>
+</div>
+
+<!-- ── Workspace ──────────────────────────────────────────────────── -->
+<div class="workspace">
+
+  <!-- Chat panel -->
+  <aside class="chat-panel">
+    <div class="chat-header">
+      <h2>Website Builder</h2>
+    </div>
+
+    <div class="messages" id="messages">
+      <!-- Welcome message -->
+      <div class="msg ai">
+        <div class="bubble">
+          Hi! I'm your AI product builder.<br><br>
+          Describe any product or website you want — I'll build it, show you a live preview, and iterate from your feedback.<br><br>
+          Try: <em>"build a calorie tracker SaaS for gym-goers"</em>
+        </div>
+        <div class="msg-meta">CEOClaw</div>
+      </div>
+    </div>
+
+    <!-- Quick chips -->
+    <div class="chips-row">
+      <button class="chip accent" id="chip-cc">✦ CC Prompt</button>
+      <button class="chip" data-prompt="Change the hero headline to be more compelling">Edit hero</button>
+      <button class="chip" data-prompt="Make the color scheme more vibrant and modern">New colors</button>
+      <button class="chip" data-prompt="Add a pricing section with 3 tiers">Add pricing</button>
+      <button class="chip" data-prompt="Improve the CTA button and make it stand out more">Fix CTA</button>
+      <button class="chip" data-prompt="Add social proof / testimonials section">Testimonials</button>
+    </div>
+
+    <!-- Composer -->
+    <div class="composer">
+      <div class="composer-inner">
+        <textarea
+          id="composer-textarea"
+          placeholder="Describe your product or request a change…"
+          rows="4"
+          autocomplete="off"
+          spellcheck="true"
+        ></textarea>
+        <div class="composer-footer">
+          <span class="composer-hint">⇧⏎ new line &nbsp;·&nbsp; ⏎ send</span>
+          <button id="send-btn" title="Send (Enter)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 12V2M7 2L2.5 6.5M7 2L11.5 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Preview panel -->
+  <section class="preview-panel">
+    <div class="preview-header">
+      <div class="preview-tabs">
+        <button class="preview-tab active" id="tab-landing" data-page="index">Landing page</button>
+        <button class="preview-tab" id="tab-app" data-page="app">App</button>
+      </div>
+
+      <span class="preview-product-name" id="preview-product-name">No site yet</span>
+
+      <div class="preview-links">
+        <a class="preview-link" id="link-open" href="#" target="_blank" rel="noopener">↗ Open</a>
+        <button class="preview-link" id="btn-refresh-preview">↺ Refresh</button>
+      </div>
+    </div>
+
+    <div class="preview-body">
+      <div class="preview-empty" id="preview-empty">
+        <div class="preview-empty-icon">🏗</div>
+        <p>Your generated site will appear here after your first message.</p>
+      </div>
+      <iframe id="preview-iframe" title="Generated site preview" style="display:none;"></iframe>
+    </div>
+  </section>
+
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+// ─── State ─────────────────────────────────────────────────────────────────
+const state = {
+  sessionId: crypto.randomUUID(),
+  slug: null,
+  currentPage: 'index',   // 'index' | 'app'
+  landingUrl: null,
+  appUrl: null,
+  modelMode: 'heuristic',
+  busy: false,
+};
+
+// ─── DOM refs ───────────────────────────────────────────────────────────────
+const $messages       = document.getElementById('messages');
+const $textarea       = document.getElementById('composer-textarea');
+const $sendBtn        = document.getElementById('send-btn');
+const $statusDot      = document.getElementById('status-dot');
+const $statusLabel    = document.getElementById('status-label');
+const $errorBanner    = document.getElementById('error-banner');
+const $errorText      = document.getElementById('error-banner-text');
+const $iframe         = document.getElementById('preview-iframe');
+const $previewEmpty   = document.getElementById('preview-empty');
+const $previewName    = document.getElementById('preview-product-name');
+const $linkOpen       = document.getElementById('link-open');
+const $btnRefresh     = document.getElementById('btn-refresh-preview');
+const $btnCheckModel  = document.getElementById('btn-check-model');
+const $btnNewSession  = document.getElementById('btn-new-session');
+const $btnSessions    = document.getElementById('btn-sessions');
+const $chipCC         = document.getElementById('chip-cc');
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function ts() {
+  return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function toast(msg, isError = false) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function setStatus(mode, label) {
+  $statusDot.className = 'status-dot ' + (mode || '');
+  $statusLabel.textContent = label || '';
+}
+
+function showError(msg) {
+  $errorBanner.classList.add('show');
+  $errorText.textContent = msg;
+  setTimeout(() => $errorBanner.classList.remove('show'), 6000);
+}
+
+function setBusy(v) {
+  state.busy = v;
+  $sendBtn.disabled = v;
+  $textarea.disabled = v;
+}
+
+// ─── Messages ───────────────────────────────────────────────────────────────
+function addMsg(role, html) {
+  // Remove typing indicator if it exists
+  const existing = $messages.querySelector('.typing-wrapper');
+  if (existing) existing.remove();
+
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+
+  if (role === 'system') {
+    wrap.innerHTML = `<div class="bubble">${html}</div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="bubble">${html}</div>
+      <div class="msg-meta">${role === 'user' ? 'You' : 'CEOClaw'} · ${ts()}</div>
+    `;
+  }
+
+  $messages.appendChild(wrap);
+  $messages.scrollTop = $messages.scrollHeight;
+  return wrap;
+}
+
+function showTyping() {
+  const existing = $messages.querySelector('.typing-wrapper');
+  if (existing) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ai typing-wrapper';
+  wrap.innerHTML = `
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  $messages.appendChild(wrap);
+  $messages.scrollTop = $messages.scrollHeight;
+}
+
+function removeTyping() {
+  const el = $messages.querySelector('.typing-wrapper');
+  if (el) el.remove();
+}
+
+// ─── Preview ────────────────────────────────────────────────────────────────
+function updatePreview(slug, landingUrl, appUrl, productName) {
+  if (!slug) return;
+  state.slug       = slug;
+  state.landingUrl = landingUrl || `/websites/${slug}/index`;
+  state.appUrl     = appUrl     || `/websites/${slug}/app`;
+
+  if (productName) {
+    $previewName.textContent = productName;
+    document.title = `${productName} — CEOClaw`;
+  }
+
+  loadPreviewPage(state.currentPage);
+}
+
+function loadPreviewPage(page) {
+  if (!state.slug) return;
+  state.currentPage = page;
+  const url = page === 'index' ? state.landingUrl : state.appUrl;
+
+  // Update tab styles
+  document.querySelectorAll('.preview-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.page === page);
+  });
+
+  // Update open link
+  $linkOpen.href = url;
+
+  // Show iframe, hide empty
+  $previewEmpty.style.display = 'none';
+  $iframe.style.display = 'block';
+
+  // Force reload by appending a cache-buster
+  $iframe.src = url + '?t=' + Date.now();
+}
+
+// ─── Model status check ─────────────────────────────────────────────────────
+async function checkModelStatus(mockMode = true) {
+  setStatus('', 'Checking…');
+  try {
+    const res = await fetch('/model/check', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({mock_mode: mockMode}),
+    });
+    const data = await res.json();
+    state.modelMode = data.model_mode || 'heuristic';
+
+    if (data.status === 'ok') {
+      const mode = data.model_mode;
+      if (mode === 'mock') {
+        setStatus('warn', 'Mock mode');
+      } else if (data.fallback_used) {
+        setStatus('warn', `Fallback (${data.fallback_reason || 'model unreachable'})`);
+      } else {
+        setStatus('ok', `Live · ${mode}`);
+      }
+    } else {
+      setStatus('warn', 'Heuristic mode');
+    }
+  } catch (e) {
+    setStatus('error', 'Offline');
+    showError('Cannot reach server. Is it running?');
+  }
+}
+
+// ─── Send message ────────────────────────────────────────────────────────────
+async function sendMessage(text) {
+  text = text.trim();
+  if (!text || state.busy) return;
+
+  // Clear textarea
+  $textarea.value = '';
+  $textarea.style.height = '';
+
+  // Add user bubble
+  addMsg('user', esc(text).replace(/\n/g, '<br>'));
+  showTyping();
+  setBusy(true);
+
+  try {
+    const res = await fetch('/website/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        session_id: state.sessionId,
+        message: text,
+        mock_mode: false,
+      }),
+    });
+
+    removeTyping();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({detail: res.statusText}));
+      addMsg('ai', `⚠ Error: ${esc(err.detail || 'Request failed')}`);
+      showError(`Server error ${res.status}`);
+      return;
+    }
+
+    const data = await res.json();
+
+    // Update model status badge from response
+    const meta = data.model || {};
+    if (meta.model_mode) {
+      state.modelMode = meta.model_mode;
+      const mode = meta.model_mode;
+      const provider = meta.provider || '';
+      if (mode === 'mock') {
+        setStatus('warn', 'Template mode — add API key');
+      } else if (mode === 'flock_live') {
+        setStatus('ok', 'Flock live');
+      } else if (mode === 'openai') {
+        setStatus('ok', 'OpenAI live');
+      } else if (provider) {
+        setStatus('ok', `Live · ${provider}`);
+      } else {
+        setStatus('warn', mode);
+      }
+    }
+
+    // Build assistant reply HTML
+    const assistantHtml = buildAssistantHtml(data);
+    addMsg('ai', assistantHtml);
+
+    // Update preview
+    if (data.slug) {
+      updatePreview(data.slug, data.landing_url, data.app_url, data.product_name);
+    }
+
+  } catch (e) {
+    removeTyping();
+    addMsg('ai', `⚠ Network error: ${esc(e.message)}`);
+    setStatus('error', 'Error');
+  } finally {
+    setBusy(false);
+    $textarea.focus();
+  }
+}
+
+function buildAssistantHtml(data) {
+  let html = '';
+
+  // Main message
+  if (data.assistant_message) {
+    // Convert **bold** to <strong>, newlines to <br>
+    const formatted = esc(data.assistant_message)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    html += formatted;
+  }
+
+  // Product/link info
+  if (data.slug) {
+    html += `<br><br>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;">
+        <a href="${esc(data.landing_url)}" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;
+                  border-radius:6px;background:rgba(0,113,227,0.1);color:#0071e3;
+                  text-decoration:none;font-size:12px;font-weight:500;">
+          ↗ Landing page
+        </a>
+        <a href="${esc(data.app_url)}" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;
+                  border-radius:6px;background:rgba(0,0,0,0.05);color:#1d1d1f;
+                  text-decoration:none;font-size:12px;font-weight:500;">
+          ↗ App page
+        </a>
+      </div>`;
+  }
+
+  // Version/provider info
+  const versionId = data.version_id;
+  const provider = (data.model || {}).provider;
+  const mode = (data.model || {}).model_mode;
+  if (versionId || provider) {
+    const vStr = versionId ? `v${versionId}` : '';
+    const pStr = provider && provider !== 'mock' ? `${provider}` : (mode === 'mock' ? 'template' : '');
+    const badges = [vStr, pStr].filter(Boolean).join(' · ');
+    if (badges) {
+      html += `<br><span style="font-size:11px;color:#6e6e73;margin-top:4px;display:inline-block;">
+        ${esc(badges)}</span>`;
+    }
+  }
+
+  // File changes summary
+  if (Array.isArray(data.changes) && data.changes.length) {
+    const applied = data.changes.filter(c => c.status === 'applied');
+    const rejected = data.changes.filter(c => c.status === 'rejected');
+    if (applied.length) {
+      html += '<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">';
+      applied.forEach(c => {
+        const fname = c.path.split('/').pop();
+        html += `<span class="change-pill" title="${esc(c.summary)}">${esc(c.action)} ${esc(fname)}</span>`;
+      });
+      html += '</div>';
+    }
+    if (rejected.length) {
+      html += `<br><span style="font-size:11px;color:#b45309;">⚠ ${rejected.length} file(s) rejected — ${esc(rejected.map(c=>c.error||c.path).join(', '))}</span>`;
+    }
+  }
+
+  // Warnings
+  if (Array.isArray(data.warnings) && data.warnings.length) {
+    html += `<br><details style="margin-top:6px;font-size:11px;color:#b45309;">
+      <summary style="cursor:pointer;">⚠ ${data.warnings.length} warning(s)</summary>
+      <ul style="margin:4px 0 0 12px;">${data.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+    </details>`;
+  }
+
+  return html || 'Done.';
+}
+
+// ─── Session list + restore ───────────────────────────────────────────────────
+async function loadAndShowSessions() {
+  const existing = document.getElementById('session-picker');
+  if (existing) { existing.remove(); return; }  // toggle off
+
+  let sessions = [];
+  try {
+    const res = await fetch('/website/sessions?limit=20');
+    if (res.ok) sessions = await res.json();
+  } catch (_) {}
+
+  const picker = document.createElement('div');
+  picker.id = 'session-picker';
+  picker.className = 'session-picker';
+
+  if (!sessions.length) {
+    picker.innerHTML = '<div class="session-picker-empty">No saved sessions yet.</div>';
+  } else {
+    picker.innerHTML = sessions.map(s => {
+      const name = s.product_name || s.slug || s.session_id.slice(0, 8);
+      const date = s.updated_at ? new Date(s.updated_at).toLocaleDateString([], {month:'short', day:'numeric'}) : '';
+      return `<button class="session-item" data-sid="${esc(s.session_id)}">
+        <span class="session-item-name">${esc(name)}</span>
+        <span class="session-item-date">${esc(date)}</span>
+      </button>`;
+    }).join('');
+  }
+
+  document.body.appendChild(picker);
+
+  picker.querySelectorAll('.session-item').forEach(btn => {
+    btn.addEventListener('click', () => restoreSession(btn.dataset.sid));
+  });
+}
+
+async function restoreSession(sessionId) {
+  document.getElementById('session-picker')?.remove();
+  try {
+    const res = await fetch(`/website/session/${encodeURIComponent(sessionId)}/history`);
+    if (!res.ok) { toast('Session not found', true); return; }
+    const data = await res.json();
+
+    state.sessionId  = sessionId;
+    state.slug       = data.slug || null;
+    state.landingUrl = data.slug ? `/websites/${data.slug}/index` : null;
+    state.appUrl     = data.slug ? `/websites/${data.slug}/app` : null;
+
+    $messages.innerHTML = '';
+    (data.messages || []).forEach(m => {
+      if (m.role === 'user') {
+        addMsg('user', esc(m.content).replace(/\n/g,'<br>'));
+      } else if (m.role === 'assistant') {
+        const formatted = esc(m.content)
+          .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+          .replace(/\n/g,'<br>');
+        addMsg('ai', formatted);
+      }
+    });
+
+    if (data.slug) {
+      updatePreview(data.slug, state.landingUrl, state.appUrl, data.product_name);
+    }
+    document.title = data.product_name ? `${data.product_name} — CEOClaw` : 'CEOClaw';
+    toast(`Restored: ${data.product_name || data.slug || sessionId.slice(0,8)}`);
+  } catch (e) {
+    toast(`Restore failed: ${e.message}`, true);
+  }
+}
+
+// ─── CC Prompt template ──────────────────────────────────────────────────────
+const CC_PROMPT = `Product name: [Your product name]
+Target audience: [Who you're building this for]
+Core problem: [The main pain point you solve]
+MVP features:
+  1. [Feature 1]
+  2. [Feature 2]
+  3. [Feature 3]
+Monetization: [How you plan to charge — SaaS, one-time, freemium]
+Design feel: [e.g. clean & minimal, bold & colorful, professional & trustworthy]
+Launch goal: [What success looks like in 30 days]`;
+
+$chipCC.addEventListener('click', () => {
+  $textarea.value = CC_PROMPT;
+  $textarea.focus();
+  $textarea.setSelectionRange(CC_PROMPT.indexOf('['), CC_PROMPT.indexOf(']') + 1);
+  autoResize();
+});
+
+// ─── Chip quick prompts ──────────────────────────────────────────────────────
+document.querySelectorAll('.chip[data-prompt]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $textarea.value = chip.dataset.prompt;
+    $textarea.focus();
+    autoResize();
+  });
+});
+
+// ─── Preview tabs ────────────────────────────────────────────────────────────
+document.querySelectorAll('.preview-tab').forEach(tab => {
+  tab.addEventListener('click', () => loadPreviewPage(tab.dataset.page));
+});
+
+$btnRefresh.addEventListener('click', () => loadPreviewPage(state.currentPage));
+
+// ─── Textarea auto-resize ────────────────────────────────────────────────────
+function autoResize() {
+  $textarea.style.height = 'auto';
+  $textarea.style.height = Math.min($textarea.scrollHeight, 240) + 'px';
+}
+$textarea.addEventListener('input', autoResize);
+
+// ─── Send on Enter / newline on Shift+Enter ──────────────────────────────────
+$textarea.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage($textarea.value);
+  }
+  // Shift+Enter falls through → default textarea newline behaviour
+});
+
+$sendBtn.addEventListener('click', () => sendMessage($textarea.value));
+
+// ─── Model check button ──────────────────────────────────────────────────────
+$btnCheckModel.addEventListener('click', async () => {
+  $btnCheckModel.textContent = '⚡ Checking…';
+  $btnCheckModel.disabled = true;
+  await checkModelStatus(true);
+  $btnCheckModel.textContent = '⚡ Model check';
+  $btnCheckModel.disabled = false;
+});
+
+// ─── Sessions button ─────────────────────────────────────────────────────────
+$btnSessions.addEventListener('click', loadAndShowSessions);
+document.addEventListener('click', e => {
+  const picker = document.getElementById('session-picker');
+  if (picker && !picker.contains(e.target) && e.target !== $btnSessions) picker.remove();
+});
+
+// ─── New session ─────────────────────────────────────────────────────────────
+$btnNewSession.addEventListener('click', () => {
+  state.sessionId  = crypto.randomUUID();
+  state.slug       = null;
+  state.landingUrl = null;
+  state.appUrl     = null;
+  $previewName.textContent = 'No site yet';
+  $iframe.style.display = 'none';
+  $previewEmpty.style.display = 'flex';
+  $iframe.src = 'about:blank';
+  $linkOpen.href = '#';
+  document.title = 'CEOClaw — Build your product';
+  $messages.innerHTML = '';
+  addMsg('ai', 'New session started. What would you like to build?');
+  $textarea.value = '';
+  $textarea.focus();
+  toast('New session started');
+});
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+(async () => {
+  // Check health
+  try {
+    const r = await fetch('/health');
+    if (!r.ok) throw new Error('not ok');
+    setStatus('ok', 'Connected');
+  } catch {
+    setStatus('error', 'Cannot reach server');
+    showError('Server not reachable. Run: uvicorn api.server:app --port 8000');
+    return;
+  }
+
+  // Restore most recent session (if any)
+  try {
+    const sessRes = await fetch('/website/sessions?limit=1');
+    if (sessRes.ok) {
+      const sessions = await sessRes.json();
+      if (sessions.length && sessions[0].message_count > 0) {
+        await restoreSession(sessions[0].session_id);
+        toast(`Session restored: ${sessions[0].product_name || sessions[0].slug || 'last session'}`);
+      }
+    }
+  } catch (_) {}
+
+  // Check model in background
+  await checkModelStatus(true);
+  $textarea.focus();
+})();
+</script>
+</body>
+</html>

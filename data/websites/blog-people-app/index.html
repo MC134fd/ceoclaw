@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetShare — Share loving stories about your pets</title>
+  <style>
+    /* Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+
+    :root{
+      /* Palette: slate */
+      --color-primary: #94a3b8; /* primary */
+      --color-secondary: #cbd5e1; /* secondary */
+      --bg: #0f172a; /* background */
+      --surface: #1e293b; /* surface */
+      --text: #f8fafc; /* text */
+      --muted: #64748b; /* muted */
+
+      /* Typography */
+      --font-display: 'Fraunces', serif;
+      --font-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      --scale-ratio: 1.25;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      /* Spacing (fluid) */
+      --section-pad: clamp(2.5rem, 4vw, 6rem);
+      --container-gutter: clamp(1rem, 2vw, 2.5rem);
+      --stack: clamp(1rem, 2.5vw, 2rem);
+      --container-max: 1150px;
+
+      /* Motion */
+      --ease: cubic-bezier(.2,.9,.2,1);
+
+      /* Utility */
+      --glass-rgba: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.06);
+
+      /* Gradient accent */
+      --accent-grad: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    }
+
+    /* Basic reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(146,161,186,0.06), transparent 8%),
+                  linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%),
+                  var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.5;
+      overflow-x:hidden;
+    }
+
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
+    .container{max-width:var(--container-max);margin:0 auto;padding:0 var(--container-gutter)}
+
+    /* NAVBAR */
+    header.navbar{
+      position:sticky;top:0;z-index:60;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding: clamp(0.6rem, 1.2vw, 1rem) var(--container-gutter)}
+    .brand{display:flex;align-items:center;gap:0.75rem;font-weight:700}
+    .brand-badge{width:44px;height:44px;border-radius:12px;display:grid;place-items:center; background:var(--accent-grad);box-shadow:var(--shadow-sm);font-family:var(--font-display);font-size:1.05rem}
+    .brand span{display:block;font-family:var(--font-display);font-size:1rem;letter-spacing:-0.02em}
+
+    nav.primary{display:flex;gap:1.1rem;align-items:center}
+    .nav-link{color:var(--muted);font-weight:500}
+    .nav-actions{display:flex;gap:0.6rem;align-items:center}
+    .btn{font-weight:600;border-radius:12px;padding:0.5rem 0.9rem;cursor:pointer;transition:all .18s var(--ease);border:1px solid transparent}
+    .btn-primary{background:var(--color-primary);color:var(--bg)}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.04)}
+    .btn-outline{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.12)}
+
+    /* HERO */
+    .hero{padding:calc(var(--section-pad) + 1rem) 0;position:relative;overflow:visible}
+    .hero-grid{display:grid;grid-template-columns:1fr 420px;gap: clamp(1.5rem, 3vw, 2.5rem);align-items:center}
+    .hero-copy h1{font-family:var(--font-display);font-weight:700;margin:0;color:var(--text);letter-spacing:-0.02em;line-height:1}
+    .hero-copy h1 .accent{background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));padding:0.12rem 0.36rem;border-radius:8px}
+    .hero-sub{color:var(--muted);margin-top:0.75rem;margin-bottom:1.25rem}
+    .hero-ctas{display:flex;gap:0.75rem;flex-wrap:wrap}
+    .hero-visual{position:relative}
+
+    /* Counter */
+    .counter{display:inline-grid;grid-auto-flow:column;gap:0.6rem;align-items:center;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:0.4rem 0.6rem;border-radius:999px;border:1px solid rgba(255,255,255,0.04);font-weight:600}
+    .counter strong{font-family:var(--font-display);color:var(--color-secondary)}
+
+    /* FEATURES */
+    .features{padding:var(--section-pad) 0}
+    .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+    .feature{background:var(--glass-rgba);border:1px solid var(--glass-border);padding:1.1rem;border-radius:var(--radius-md);backdrop-filter:blur(8px);box-shadow:var(--shadow-sm)}
+    .feature h3{margin:0 0 0.4rem 0;font-family:var(--font-display);font-weight:600}
+    .feature p{margin:0;color:var(--muted)}
+
+    /* POSTS */
+    .posts-section{padding:var(--section-pad) 0}
+    .posts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.2rem}
+    .post-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius-lg);padding:1rem;border:1px solid rgba(255,255,255,0.04);backdrop-filter: blur(6px);box-shadow:var(--shadow-md);display:flex;flex-direction:column;gap:0.8rem;transform:translateY(12px);opacity:0;transition:all .6s var(--ease)}
+    .post-card.in-view{transform:none;opacity:1}
+    .post-media{height:140px;border-radius:12px;overflow:hidden;background:linear-gradient(90deg, rgba(0,0,0,0.12), rgba(0,0,0,0.06));display:grid;place-items:center}
+    .post-meta{display:flex;gap:0.75rem;align-items:center}
+    .avatar{width:44px;height:44px;border-radius:10px;background:var(--accent-grad);display:grid;place-items:center;font-weight:700}
+    .post-title{font-weight:700;margin:0}
+    .post-text{color:var(--muted);overflow-wrap:anywhere}
+
+    /* SOCIAL PROOF */
+    .proof{padding:var(--section-pad) 0}
+    .testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+    .card{background:var(--glass-rgba);border:1px solid var(--glass-border);padding:1rem;border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+    .quote{color:var(--muted);margin-top:0.6rem}
+
+    /* CTA strip */
+    .cta-strip{padding:calc(var(--section-pad) - 1.5rem) 0;text-align:center;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-top:1px solid rgba(255,255,255,0.02)}
+    .cta-strip .cta-inner{max-width:800px;margin:0 auto}
+
+    /* FOOTER */
+    footer{padding:calc(var(--section-pad) - 1rem) 0;border-top:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+    .footer-grid{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center}
+    .socials{display:flex;gap:0.6rem}
+    .social-placeholder{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.02);display:grid;place-items:center}
+
+    /* Modal / Post form */
+    .modal-backdrop{position:fixed;inset:0;background:linear-gradient(180deg, rgba(3,7,18,0.6), rgba(3,7,18,0.6));display:none;align-items:center;justify-content:center;padding:2rem;z-index:80}
+    .modal-backdrop.open{display:flex}
+    .modal{width:100%;max-width:720px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:16px;padding:1.1rem;border:1px solid rgba(255,255,255,0.04);backdrop-filter: blur(10px);box-shadow:var(--shadow-lg)}
+    .form-grid{display:grid;grid-template-columns:1fr 180px;gap:0.75rem}
+    .field{display:flex;flex-direction:column;gap:0.4rem}
+    label{font-weight:600;font-size:0.9rem}
+    input,textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:0.5rem;border-radius:8px;min-width:0}
+    textarea{min-height:120px;resize:vertical}
+
+    /* small utilities */
+    .muted{color:var(--muted)}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    /* Responsive rules */
+    @media (max-width: 1024px){
+      .hero-grid{grid-template-columns:1fr 340px}
+      .form-grid{grid-template-columns:1fr}
+    }
+    @media (max-width: 640px){
+      .nav-inner{padding:0.6rem var(--container-gutter)}
+      .hero-grid{grid-template-columns:1fr}
+      .hero-visual{order:-1;margin-bottom:1rem}
+      .brand span{font-size:0.95rem}
+      .hero-copy h1{font-size:clamp(1.6rem, 7vw, 2.25rem)}
+      .form-grid{grid-template-columns:1fr}
+      .post-media{height:120px}
+    }
+
+    /* Fluid typography for hero heading */
+    .hero-copy h1{font-size:clamp(2rem, 6vw, 3.6rem)}
+
+    /* prevent squish */
+    p, li {overflow-wrap:anywhere}
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner container">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="brand">
+          <div class="brand-badge">PS</div>
+          <span>PetShare</span>
+        </div>
+        <nav class="primary" aria-label="Primary navigation">
+          <a class="nav-link" href="#posts" data-scroll>Explore</a>
+          <a class="nav-link" href="#features" data-scroll>Why PetShare</a>
+          <a class="nav-link" href="#about" data-scroll>About</a>
+        </nav>
+      </div>
+
+      <div class="nav-actions">
+        <div class="counter" aria-hidden>
+          <span class="muted">Stories</span>
+          <strong id="post-counter">0</strong>
+        </div>
+        <button class="btn btn-outline" id="browse-btn">Browse</button>
+        <button class="btn btn-primary" id="open-post">Share your pet</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>PetShare — real stories from people who adore their pets</h1>
+          <p class="hero-sub">Share fun moments, tips, and photos of your dog, cat, bird, reptile, or other companion. Build a friendly feed where people celebrate animals and learn from real owners.</p>
+          <div class="hero-ctas">
+            <button class="btn btn-primary" id="hero-post">Share Your Pet</button>
+            <button class="btn btn-ghost" id="hero-browse">Browse Stories</button>
+          </div>
+          <div style="margin-top:1rem">
+            <small class="muted">Trusted by a diverse community of pet lovers — quick, safe, and welcoming.</small>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div style="border-radius:20px;padding:1rem;background:var(--glass-rgba);border:1px solid var(--glass-border);backdrop-filter:blur(8px);box-shadow:var(--shadow-md)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem">
+              <div>
+                <div class="muted">Featured</div>
+                <div style="display:flex;gap:0.6rem;align-items:center;margin-top:0.4rem">
+                  <div style="width:64px;height:64px;border-radius:12px;background:var(--accent-grad);display:grid;place-items:center;font-weight:700;font-family:var(--font-display)">M</div>
+                  <div>
+                    <div style="font-weight:700">Maya &amp; Nimbus</div>
+                    <div class="muted">Fluffy tabby who loves rainy days</div>
+                  </div>
+                </div>
+                <div style="margin-top:0.75rem" class="muted">"Nimbus taught me the joy of quiet company — and how to nap like a pro."</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:flex-end">
+                <div class="counter"><span class="muted">Stories</span><strong id="hero-counter">0</strong></div>
+                <div style="width:96px;height:96px;border-radius:14px;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));box-shadow:var(--shadow-sm)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.25rem">
+        <div>
+          <h2 style="margin:0;font-family:var(--font-display)">Why PetShare</h2>
+          <div class="muted" style="margin-top:0.4rem">A gentle community to celebrate pets, share care tips, and discover stories from fellow owners.</div>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <div style="font-size:1.25rem">🐾</div>
+          <h3>Instant posts</h3>
+          <p>Publish a story with a photo in seconds — name your pet, pick a species, add a short memory or tip, and share.</p>
+        </div>
+
+        <div class="feature">
+          <div style="font-size:1.25rem">🤝</div>
+          <h3>Kind community feedback</h3>
+          <p>Comments and reactions are lightweight and positive-first — people reward helpful tips and adorable photos.</p>
+        </div>
+
+        <div class="feature">
+          <div style="font-size:1.25rem">🔒</div>
+          <h3>Privacy-first</h3>
+          <p>Control what you share with simple settings. You can post anonymously or with your name attached.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="posts" class="posts-section container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem">
+        <div>
+          <h2 style="margin:0;font-family:var(--font-display)">Recent pet stories</h2>
+          <div class="muted" style="margin-top:0.4rem">Browse heartwarming and helpful stories from real owners worldwide.</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <button class="btn btn-outline" id="refresh-feed">Refresh</button>
+          <button class="btn btn-primary" id="new-post">Share story</button>
+        </div>
+      </div>
+
+      <div class="posts-grid" id="posts-grid" aria-live="polite">
+        <!-- posts rendered by JS -->
+      </div>
+    </section>
+
+    <section id="proof" class="proof container">
+      <h2 style="font-family:var(--font-display)">What owners say</h2>
+      <div class="muted" style="margin-top:0.4rem;margin-bottom:1rem">Real feedback from community members who regularly share stories and tips.</div>
+      <div class="testimonials">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="avatar">MR</div>
+            <div>
+              <div style="font-weight:700">Maya R.</div>
+              <div class="muted">Cat parent &amp; illustrator</div>
+            </div>
+          </div>
+          <p class="quote">"I discovered clever enrichment ideas for my shy cat, and the community's kindness made sharing tips so easy."</p>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="avatar">DS</div>
+            <div>
+              <div style="font-weight:700">Daniel S.</div>
+              <div class="muted">Dog trainer</div>
+            </div>
+          </div>
+          <p class="quote">"Great place for quick training wins and celebrating the small progress moments with others."</p>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="avatar">PK</div>
+            <div>
+              <div style="font-weight:700">Priya K.</div>
+              <div class="muted">Bird owner</div>
+            </div>
+          </div>
+          <p class="quote">"I love seeing so many species represented — helpful, respectful, and full of heart."</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-strip">
+      <div class="cta-inner container">
+        <h2 style="margin:0;font-family:var(--font-display)">Ready to share your pet's next adventure?</h2>
+        <p class="muted" style="margin-top:0.6rem">Add a photo, tell a short story, and join a supportive community that celebrates animals every day.</p>
+        <div style="margin-top:1rem">
+          <button class="btn btn-primary" id="cta-post">Share a story</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="brand-badge">PS</div>
+        <div>
+          <div style="font-weight:700">PetShare</div>
+          <div class="muted" style="font-size:0.9rem">Celebrate pets. Learn together.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;align-items:center">
+        <nav style="display:flex;gap:0.75rem">
+          <a class="muted" href="#posts">Explore</a>
+          <a class="muted" href="#features">Why</a>
+          <a class="muted" href="#about">About</a>
+        </nav>
+        <div class="socials">
+          <div class="social-placeholder">🐶</div>
+          <div class="social-placeholder">🐱</div>
+          <div class="social-placeholder">📸</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="margin-top:1rem;border-top:1px solid rgba(255,255,255,0.02);padding-top:1rem;color:var(--muted);font-size:0.9rem">
+      © PetShare — a friendly community for pet owners • Built with care
+    </div>
+  </footer>
+
+  <!-- Modal: post form -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.75rem">
+        <div style="font-weight:700;font-family:var(--font-display)">Share a pet story</div>
+        <button class="btn btn-ghost" id="close-modal">Close</button>
+      </div>
+
+      <form id="post-form">
+        <div class="form-grid">
+          <div style="display:flex;flex-direction:column;gap:0.65rem">
+            <div class="field">
+              <label for="owner">Your name</label>
+              <input id="owner" name="owner" placeholder="e.g. Alex" required />
+            </div>
+
+            <div class="field">
+              <label for="petName">Pet's name</label>
+              <input id="petName" name="petName" placeholder="e.g. Luna" required />
+            </div>
+
+            <div class="field">
+              <label for="species">Species</label>
+              <select id="species" name="species">
+                <option>Dog</option>
+                <option>Cat</option>
+                <option>Bird</option>
+                <option>Reptile</option>
+                <option>Small mammal</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="story">Short story or tip</label>
+              <textarea id="story" name="story" placeholder="Share a memorable moment, a helpful tip, or a silly habit—keep it friendly and kind." required></textarea>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:0.65rem">
+            <div class="field">
+              <label for="photo">Photo URL (optional)</label>
+              <input id="photo" name="photo" placeholder="https://example.com/photo.jpg" />
+            </div>
+
+            <div class="field">
+              <label for="anonymous">Post as</label>
+              <select id="anonymous" name="anonymous">
+                <option value="no">Your name</option>
+                <option value="yes">Anonymous</option>
+              </select>
+            </div>
+
+            <div style="margin-top:auto;display:flex;gap:0.5rem">
+              <button class="btn btn-primary" type="submit">Publish</button>
+              <button type="button" class="btn btn-outline" id="cancel-post">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Simple client-side blog for pet stories (stored in localStorage). Includes reveal-on-scroll and counters.
+
+    const postsGrid = document.getElementById('posts-grid');
+    const postCounter = document.getElementById('post-counter');
+    const heroCounter = document.getElementById('hero-counter');
+
+    // Initial sample posts to make the blog feel alive
+    const samplePosts = [
+      {
+        id: 'p1',
+        owner: 'Maya R.',
+        petName: 'Nimbus',
+        species: 'Cat',
+        story: 'Nimbus waits by the window for the rain to start — then perches on the sill and watches the drops like a tiny philosopher. He loves to chase reflections!',
+        photo: '',
+        date: Date.now() - 1000 * 60 * 60 * 24 * 3
+      },
+      {
+        id: 'p2',
+        owner: 'Daniel S.',
+        petName: 'Rex',
+        species: 'Dog',
+        story: 'Rex learned to heel with short, fun sessions. A tasty reward after the walk makes the training feel like a game.',
+        photo: '',
+        date: Date.now() - 1000 * 60 * 60 * 24 * 2
+      },
+      {
+        id: 'p3',
+        owner: 'Priya K.',
+        petName: 'Kiwi',
+        species: 'Parrot',
+        story: 'Kiwi loves discovering colorful toys — rotating one new item each week keeps him curious and engaged.',
+        photo: '',
+        date: Date.now() - 1000 * 60 * 60 * 24
+      }
+    ];
+
+    const STORAGE_KEY = 'petshare.posts.v1';
+
+    function loadPosts(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return samplePosts.slice();
+        const parsed = JSON.parse(raw);
+        // merge sample posts if not present
+        const merged = [...samplePosts];
+        parsed.forEach(p => {
+          if(!merged.find(m=>m.id===p.id)) merged.push(p);
+        });
+        return merged.sort((a,b)=>b.date - a.date);
+      }catch(e){
+        console.error('Failed to load posts', e);
+        return samplePosts.slice();
+      }
+    }
+
+    function savePosts(posts){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    }
+
+    function renderPosts(){
+      const posts = loadPosts();
+      postsGrid.innerHTML = '';
+      posts.forEach(post => {
+        const card = document.createElement('article');
+        card.className = 'post-card';
+        card.setAttribute('tabindex', '0');
+        card.innerHTML = `
+          <div class="post-media">${post.photo ? `<img src="${escapeHtml(post.photo)}" alt="Photo of ${escapeHtml(post.petName)}">` : `<div style="color:var(--muted);padding:0 1rem;text-align:center">No photo — just a great story</div>`}</div>
+          <div class="post-meta">
+            <div class="avatar">${initials(post.owner || 'Anonymous')}</div>
+            <div>
+              <div style="font-weight:700">${post.anonymous ? 'Anonymous' : escapeHtml(post.owner)} · <span class="muted">${escapeHtml(post.petName)} • ${escapeHtml(post.species)}</span></div>
+              <div class="muted" style="font-size:0.9rem">${new Date(post.date).toLocaleString()}</div>
+            </div>
+          </div>
+          <div>
+            <h3 class="post-title">${escapeHtml(truncateTitle(post.story))}</h3>
+            <p class="post-text">${escapeHtml(post.story)}</p>
+          </div>
+        `;
+        postsGrid.appendChild(card);
+      });
+      updateCounter(posts.length);
+      observeReveal();
+    }
+
+    function updateCounter(n){
+      // animate increment if changed
+      const el = postCounter;
+      const h = heroCounter;
+      el.textContent = n;
+      h.textContent = n;
+    }
+
+    function initials(name){
+      if(!name) return 'P';
+      return name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    }
+
+    function truncateTitle(text){
+      if(text.length>60) return text.slice(0,57)+'…';
+      return text;
+    }
+
+    // Basic XSS-safe escape
+    function escapeHtml(str){
+      if(!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+
+    // FORM HANDLING
+    const modal = document.getElementById('modal');
+    const openBtns = [document.getElementById('open-post'), document.getElementById('hero-post'), document.getElementById('new-post'), document.getElementById('cta-post')];
+    const closeBtn = document.getElementById('close-modal');
+    const cancelBtn = document.getElementById('cancel-post');
+    const postForm = document.getElementById('post-form');
+
+    openBtns.forEach(b=>b && b.addEventListener('click',()=>openModal()));
+    closeBtn.addEventListener('click',()=>closeModal());
+    cancelBtn.addEventListener('click',()=>closeModal());
+
+    function openModal(){
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      // focus first input
+      setTimeout(()=>document.getElementById('owner').focus(),200);
+    }
+    function closeModal(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    postForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const data = new FormData(postForm);
+      const newPost = {
+        id: 'p_' + Date.now().toString(36),
+        owner: data.get('owner') || 'Anonymous',
+        petName: data.get('petName') || 'My pet',
+        species: data.get('species') || 'Other',
+        story: data.get('story') || '',
+        photo: data.get('photo') || '',
+        anonymous: data.get('anonymous') === 'yes',
+        date: Date.now()
+      };
+      const posts = loadPosts();
+      posts.unshift(newPost);
+      savePosts(posts);
+      renderPosts();
+      closeModal();
+      postForm.reset();
+      // friendly highlight
+      flashSuccess('Posted!');
+    });
+
+    function flashSuccess(msg){
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.position = 'fixed';
+      el.style.right = '1rem';
+      el.style.bottom = '1rem';
+      el.style.padding = '0.6rem 0.9rem';
+      el.style.background = 'var(--color-primary)';
+      el.style.color = 'var(--bg)';
+      el.style.borderRadius = '10px';
+      el.style.boxShadow = 'var(--shadow-md)';
+      el.style.zIndex = 120;
+      document.body.appendChild(el);
+      setTimeout(()=>{el.style.opacity=0;el.style.transform='translateY(10px)';},1200);
+      setTimeout(()=>el.remove(),1800);
+    }
+
+    // Reveal on scroll
+    let observer;
+    function observeReveal(){
+      const items = document.querySelectorAll('.post-card');
+      if('IntersectionObserver' in window){
+        if(observer) observer.disconnect();
+        observer = new IntersectionObserver((entries)=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting){
+              entry.target.classList.add('in-view');
+            }
+          });
+        },{threshold:0.12});
+        items.forEach(i=>observer.observe(i));
+      } else {
+        items.forEach(i=>i.classList.add('in-view'));
+      }
+    }
+
+    // Simple sticky nav state
+    window.addEventListener('scroll', ()=>{
+      const nav = document.querySelector('.navbar');
+      if(window.scrollY>24) nav.style.boxShadow = 'var(--shadow-md)';
+      else nav.style.boxShadow = 'var(--shadow-sm)';
+    });
+
+    // smooth scrolling for internal links
+    document.querySelectorAll('[data-scroll]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const href = a.getAttribute('href');
+        if(href && href.startsWith('#')){
+          const el = document.querySelector(href);
+          if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+      });
+    });
+
+    // quick bindings
+    document.getElementById('hero-browse').addEventListener('click', ()=>document.getElementById('posts').scrollIntoView({behavior:'smooth'}));
+    document.getElementById('browse-btn').addEventListener('click', ()=>document.getElementById('posts').scrollIntoView({behavior:'smooth'}));
+    document.getElementById('refresh-feed').addEventListener('click', ()=>renderPosts());
+    document.getElementById('new-post').addEventListener('click', ()=>openModal());
+
+    // simple helper to keep keyboard accessible: Esc closes modal
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape') closeModal();
+    });
+
+    // initial render
+    renderPosts();
+  </script>
+</body>
+</html>

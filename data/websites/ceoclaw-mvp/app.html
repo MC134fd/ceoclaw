@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEOClaw MVP — App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* ── Design tokens ─────────────────────────────────────────────────── */
+    :root {
+      --color-bg: #0a0a0f;
+      --color-surface: #12121a;
+      --color-surface-2: #1a1a24;
+      --color-border: rgba(255,255,255,0.07);
+      --color-text: #f0f0ff;
+      --color-muted: #6b7280;
+      --color-primary: #6366f1;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --nav-width: 224px;
+      --space-container-x: clamp(1.25rem, 3vw, 2rem);
+      --card-pad: clamp(1.25rem, 2.5vw, 1.75rem);
+      --card-gap: clamp(0.75rem, 1.5vw, 1.25rem);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      display: flex;
+      min-height: 100vh;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-size: 0.9375rem;
+      line-height: 1.55;
+    }
+
+    /* ── Sidebar nav ───────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--nav-width);
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(0.75rem, 1.5vw, 1rem);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    .sidebar-logo {
+      font-weight: 700;
+      font-size: 0.9375rem;
+      color: var(--color-text);
+      letter-spacing: -0.01em;
+      text-decoration: none;
+    }
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .nav-list a {
+      display: block;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--color-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-list a:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--color-text);
+    }
+    .nav-divider {
+      height: 1px;
+      background: var(--color-border);
+      margin-block: 0.5rem;
+    }
+
+    /* ── Main content ──────────────────────────────────────────────────── */
+    .main-content {
+      flex: 1;
+      padding: var(--space-container-x);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--card-gap);
+    }
+    .page-header {
+      padding-bottom: var(--card-gap);
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: calc(var(--card-gap) * 0.25);
+    }
+    .page-title {
+      font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* ── Cards ─────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--card-pad);
+    }
+    .card-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      margin-bottom: var(--card-gap);
+      color: var(--color-text);
+    }
+    .placeholder {
+      min-height: 110px;
+      background: var(--color-surface-2);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      font-size: 0.875rem;
+      border: 1px dashed var(--color-border);
+    }
+
+    /* ── Dashboard extras ──────────────────────────────────────────────── */
+    .page-subtitle { font-size: 0.875rem; color: var(--color-muted); margin-top: 4px; }
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+      gap: var(--card-gap);
+    }
+    .metric-card {
+      background: var(--color-surface-2);
+      border-radius: var(--radius-sm);
+      padding: 0.875rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .metric-value { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+    .metric-label { font-size: 0.75rem; color: var(--color-muted); }
+    .card-desc { font-size: 0.875rem; color: var(--color-muted); margin-bottom: 1rem; }
+    .integration-card { border-color: rgba(99,102,241,0.2); }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-label { font-size: 0.8125rem; font-weight: 500; color: var(--color-text); }
+    .token-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .form-input-dark {
+      flex: 1;
+      min-width: 0;
+      padding: 0.625rem 0.875rem;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .form-input-dark:focus { border-color: var(--color-primary); }
+    .form-hint { font-size: 0.75rem; color: var(--color-muted); }
+    .btn-connect {
+      padding: 0.625rem 1rem;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .btn-connect:hover { opacity: 0.85; }
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+      gap: var(--card-gap);
+    }
+    .action-btn {
+      padding: 0.75rem 1rem;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .action-btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: var(--color-primary);
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--card-gap);
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+      }
+      .nav-list { flex-direction: row; flex-wrap: wrap; gap: 2px; }
+      .nav-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar" aria-label="App navigation">
+    <a class="sidebar-logo" href="/">CEOClaw MVP</a>
+    <ul class="nav-list">
+        <li><a href="#feat-0">✦ Instant setup</a></li>
+        <li><a href="#feat-1">✦ No credit card required</a></li>
+        <li><a href="#feat-2">✦ Cancel anytime</a></li>
+      <li><div class="nav-divider" aria-hidden="true"></div></li>
+      <li><a href="/">← Back to site</a></li>
+    </ul>
+  </nav>
+  <div class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">CEOClaw MVP Dashboard</h1>
+      <p class="page-subtitle">Welcome back. Here's what's happening today.</p>
+    </div>
+
+    <!-- Overview metrics -->
+    <div class="card">
+      <h2 class="card-title">Overview</h2>
+      <div class="metrics-row">
+        <div class="metric-card">
+          <span class="metric-value">—</span>
+          <span class="metric-label">Total this week</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-value">—</span>
+          <span class="metric-label">Daily average</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-value">—</span>
+          <span class="metric-label">Goal progress</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connect account / API integration placeholder -->
+    <div class="card integration-card">
+      <h2 class="card-title">🔗 Connect your account</h2>
+      <p class="card-desc">Link your data source to start tracking automatically.</p>
+      <div class="form-group">
+        <label for="api-token" class="form-label">API Token</label>
+        <div class="token-row">
+          <input id="api-token" type="password" class="form-input-dark"
+            placeholder="sk-..." autocomplete="off"
+            aria-label="API token" />
+          <button class="btn-connect" onclick="connectAccount(this)">Connect</button>
+        </div>
+        <p class="form-hint">Find your token in Settings → API Keys.</p>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="card">
+      <h2 class="card-title">Quick Actions</h2>
+      <div class="actions-grid">
+        <button class="action-btn">+ New entry</button>
+        <button class="action-btn">📤 Export data</button>
+        <button class="action-btn">⚙️ Settings</button>
+        <button class="action-btn">📊 Full report</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function connectAccount(btn) {
+      const input = document.getElementById('api-token');
+      if (!input || !input.value.trim()) {
+        input && (input.style.borderColor = '#ef4444');
+        return;
+      }
+      btn.textContent = 'Connected ✓';
+      btn.disabled = true;
+      btn.style.background = '#10b981';
+    }
+  </script>
+</body>
+</html>

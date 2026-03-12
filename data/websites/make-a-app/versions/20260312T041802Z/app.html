@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PuppyPost — App</title>
+  <style>
+    /* Google Fonts: display + body fonts (import inside style block) */
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #f43f5e;
+      --color-secondary: #fb7185;
+      --color-bg: #0f0508;
+      --color-surface: #1a0b11;
+      --color-text: #fff1f2;
+      --color-muted: #9f8090;
+
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      --space-xxs: clamp(0.25rem, 0.6vw, 0.35rem);
+      --space-xs: clamp(0.5rem, 1.1vw, 0.75rem);
+      --space-sm: clamp(0.9rem, 1.6vw, 1.25rem);
+      --space-md: clamp(1.6rem, 2.8vw, 2.4rem);
+      --space-lg: clamp(2.8rem, 4.6vw, 4rem);
+      --section-space: clamp(2.6rem, 5.6vw, 5rem);
+
+      --container-max: 1100px;
+      --ease: all 0.18s ease;
+
+      --font-display: 'Fraunces', serif;
+      --font-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+
+      --glass-surface: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      --glass-strong: rgba(255,255,255,0.04);
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:var(--font-body);background:linear-gradient(180deg,var(--color-bg) 0%, #0b0410 100%);color:var(--color-text);min-height:100vh}
+
+    .container{max-width:var(--container-max);margin:0 auto;padding:0 1rem}
+
+    header{position:sticky;top:0;z-index:80}
+    nav{display:flex;align-items:center;gap:var(--space-sm);padding:calc(var(--space-xs)) 0;background:rgba(26,11,17,0.55);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.03)}
+    .brand{font-family:var(--font-display);font-weight:700;letter-spacing:-0.02em;font-size:clamp(1rem,2.8vw,1.25rem)}
+    .nav-right{margin-left:auto;display:flex;gap:var(--space-xs);align-items:center}
+    .btn{padding:0.6rem 0.9rem;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));color:var(--color-text)}
+    .glass{background:var(--glass-surface);border:1px solid rgba(255,255,255,0.03);backdrop-filter:blur(8px);border-radius:var(--radius-md);padding:var(--space-sm);box-shadow:var(--shadow-sm)}
+
+    main{padding:var(--section-space) 0}
+    .app-grid{display:grid;grid-template-columns:1fr 360px;gap:var(--space-md);align-items:start}
+
+    /* Form */
+    .post-form{display:flex;flex-direction:column;gap:var(--space-sm)}
+    .input,textarea{width:100%;padding:0.7rem;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--color-text)}
+    textarea{min-height:120px;resize:vertical}
+    .preview{border-radius:12px;overflow:hidden;max-height:320px}
+
+    /* Feed */
+    .feed{display:flex;flex-direction:column;gap:var(--space-md)}
+    .post{background:var(--glass-surface);border-radius:var(--radius-md);padding:var(--space-sm);border:1px solid rgba(255,255,255,0.03);box-shadow:var(--shadow-sm)}
+    .post .meta{display:flex;gap:var(--space-sm);align-items:center}
+    .post img{width:100%;border-radius:10px;display:block}
+    .post .caption{margin-top:var(--space-xs);color:var(--color-text)}
+    .post .actions{display:flex;gap:var(--space-xs);margin-top:var(--space-xs)}
+    .action{padding:0.35rem 0.6rem;border-radius:999px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+
+    /* Right column */
+    .sidebar{display:flex;flex-direction:column;gap:var(--space-sm)}
+    .small-feature{display:flex;gap:var(--space-xs);align-items:center;padding:0.6rem;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+
+    /* Responsive */
+    @media (max-width:1024px){
+      .app-grid{grid-template-columns:1fr 320px}
+    }
+    @media (max-width:640px){
+      .app-grid{grid-template-columns:1fr;}
+      .sidebar{order:2}
+      .feed{order:1}
+    }
+
+    /* Reveal for posts */
+    .reveal{opacity:0;transform:translateY(12px);transition:opacity 360ms, transform 360ms}
+    .reveal.show{opacity:1;transform:none}
+
+    /* Prevent squish */
+    img{max-width:100%;height:auto}
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="container">
+      <div class="brand">PuppyPost</div>
+      <div class="nav-right">
+        <a href="/websites/make-a-app/index.html" style="color:var(--color-text);text-decoration:none">Home</a>
+        <button class="btn btn-primary" id="openNew">New Post</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="app-grid">
+      <div>
+        <div class="glass post-form reveal" id="postPanel">
+          <div style="display:flex;align-items:center;gap:var(--space-sm)">
+            <div style="width:52px;height:52px;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));display:flex;align-items:center;justify-content:center;font-weight:800;font-family:var(--font-display)">PP</div>
+            <div>
+              <div style="font-weight:800">Create a Puppy Post</div>
+              <div style="color:var(--color-muted);font-size:0.95rem">Share a photo and a short caption</div>
+            </div>
+          </div>
+
+          <input class="input" id="title" placeholder="Post title (e.g., Sunny's Zoomies)" />
+          <textarea id="caption" placeholder="Tell a tiny story — what happened, where, why it was cute"></textarea>
+          <input type="file" id="imageInput" accept="image/*" />
+          <div class="preview" id="imagePreview" style="display:none;margin-top:var(--space-xs)"></div>
+          <div style="display:flex;gap:var(--space-xs);justify-content:flex-end;margin-top:var(--space-xs)">
+            <button class="btn" id="clearBtn">Clear</button>
+            <button class="btn btn-primary" id="publishBtn">Publish</button>
+          </div>
+        </div>
+
+        <div class="feed" id="feed" style="margin-top:var(--space-md)">
+          <!-- seed posts -->
+          <article class="post reveal">
+            <div class="meta">
+              <div style="width:44px;height:44px;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));display:flex;align-items:center;justify-content:center;font-weight:800">BB</div>
+              <div>
+                <div style="font-weight:700">Bea Brown</div>
+                <div class="meta" style="font-size:0.85rem;color:var(--color-muted)">Yesterday • Riverside Park</div>
+              </div>
+            </div>
+            <div style="margin-top:var(--space-sm)">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'></svg>" alt="puppy" />
+            </div>
+            <div class="caption">Sunny chased a leaf for 10 minutes and won my heart. Full zoomies report in the comments!</div>
+            <div class="actions">
+              <button class="action">Tail Wag</button>
+              <button class="action">Paw Five</button>
+            </div>
+          </article>
+
+          <article class="post reveal">
+            <div class="meta">
+              <div style="width:44px;height:44px;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));display:flex;align-items:center;justify-content:center;font-weight:800">KC</div>
+              <div>
+                <div style="font-weight:700">Kevin Chen</div>
+                <div class="meta" style="font-size:0.85rem;color:var(--color-muted)">2 days ago • Apartment Balcony</div>
+              </div>
+            </div>
+            <div style="margin-top:var(--space-sm)">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'></svg>" alt="puppy" />
+            </div>
+            <div class="caption">First bath and zero drama. She posed like a tiny model afterwards.</div>
+            <div class="actions">
+              <button class="action">Tail Wag</button>
+              <button class="action">Paw Five</button>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="glass">
+          <div style="font-weight:700">Discover</div>
+          <div style="margin-top:var(--space-xs);display:grid;gap:var(--space-xs)">
+            <div class="small-feature">🔎 <div style="font-weight:600">Nearby meetups</div></div>
+            <div class="small-feature">🏷️ <div style="font-weight:600">Top tags: #napface #zoomies</div></div>
+            <div class="small-feature">⭐ <div style="font-weight:600">Trending collections</div></div>
+          </div>
+        </div>
+
+        <div class="glass">
+          <div style="font-weight:700">Quick Tips</div>
+          <ul style="margin-top:var(--space-xs);color:var(--color-muted);padding-left:1rem">
+            <li>Keep captions short and joyful.</li>
+            <li>Use tags to reach fellow breed fans.</li>
+            <li>Respect local park rules when organizing meetups.</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer style="padding:var(--space-md) 0;color:var(--color-muted);text-align:center">© PuppyPost — Share responsibly • All posts are community-managed</footer>
+
+  <script>
+    // Basic reveal-on-scroll for app content
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target)}})},{threshold:0.08});
+        reveals.forEach(r=>io.observe(r));
+      } else reveals.forEach(r=>r.classList.add('show'));
+    })();
+
+    // Small app behaviors: image preview, publish to local feed
+    (function(){
+      const imageInput = document.getElementById('imageInput');
+      const imagePreview = document.getElementById('imagePreview');
+      const publishBtn = document.getElementById('publishBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const feed = document.getElementById('feed');
+
+      imageInput.addEventListener('change', ()=>{
+        const file = imageInput.files && imageInput.files[0];
+        if(!file) return imagePreview.style.display='none';
+        const url = URL.createObjectURL(file);
+        imagePreview.innerHTML = `<img src="${url}" alt="preview" style="width:100%;display:block" />`;
+        imagePreview.style.display = 'block';
+      });
+
+      clearBtn.addEventListener('click', ()=>{
+        document.getElementById('title').value='';
+        document.getElementById('caption').value='';
+        imageInput.value='';
+        imagePreview.innerHTML=''; imagePreview.style.display='none';
+      });
+
+      publishBtn.addEventListener('click', ()=>{
+        const title = document.getElementById('title').value.trim() || 'Puppy Post';
+        const caption = document.getElementById('caption').value.trim() || '';
+        let imgHtml = '';
+        if(imageInput.files && imageInput.files[0]){
+          const url = URL.createObjectURL(imageInput.files[0]);
+          imgHtml = `<div style="margin-top:var(--space-sm)"><img src="${url}" alt="post image"/></div>`;
+        }
+        const post = document.createElement('article');
+        post.className = 'post reveal';
+        post.innerHTML = `
+          <div class="meta">
+            <div style="width:44px;height:44px;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));display:flex;align-items:center;justify-content:center;font-weight:800">ME</div>
+            <div>
+              <div style="font-weight:700">You</div>
+              <div class="meta" style="font-size:0.85rem;color:var(--color-muted)">Just now</div>
+            </div>
+          </div>
+          ${imgHtml}
+          <div class="caption"><strong>${escapeHtml(title)}</strong><div style="margin-top:6px">${escapeHtml(caption)}</div></div>
+          <div class="actions">
+            <button class="action">Tail Wag</button>
+            <button class="action">Paw Five</button>
+          </div>
+        `;
+        feed.prepend(post);
+        // trigger reveal
+        requestAnimationFrame(()=>post.classList.add('show'));
+        // clear form
+        clearBtn.click();
+      });
+
+      function escapeHtml(str){return String(str).replace(/[&<>"']/g, (s)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s]);}
+    })();
+
+    // Quick scroll to new post form
+    document.getElementById('openNew').addEventListener('click', ()=>{
+      const panel = document.getElementById('postPanel');
+      panel.scrollIntoView({behavior:'smooth',block:'center'});
+      panel.classList.add('show');
+    });
+  </script>
+</body>
+</html>

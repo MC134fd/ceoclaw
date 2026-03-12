@@ -29,9 +29,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 @pytest.fixture(autouse=True)
 def _tmp_db(tmp_path, monkeypatch):
-    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "test_api.db"))
+    tmp_db_path = str(tmp_path / "test_api.db")
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", tmp_db_path)
     import config.settings as cs
     cs.settings = cs.Settings()
+    # load_dotenv(override=True) inside Settings.reload() re-reads .env and
+    # clobbers the monkeypatched env var.  Directly set the path on the live
+    # singleton so _db_path() resolves to our temp file.
+    cs.settings.database_path = tmp_db_path
     from data.database import init_db
     init_db()
     yield

@@ -1,0 +1,11 @@
+{
+  "product": "Calorie Tracker App",
+  "endpoints": [
+    "/api/health",
+    "/api/entries",
+    "/api/entries/{id}",
+    "/api/goals",
+    "/api/reports/daily",
+    "/api/reports/weekly"
+  ]
+}

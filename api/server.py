@@ -17,23 +17,68 @@ v0.4 endpoints:
     GET /summary/latest   — one-shot judge-friendly run summary
 """
 
+import asyncio
+import json
 import logging
+import re
 import sys
+import threading
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+_DEBUG_LOG_PATH = Path("/Users/marcuschien/code/MC134fd/ceoclaw/.cursor/debug-ae58c9.log")
+
+
+def _debug_log(run_id: str, hypothesis_id: str, location: str, message: str, data: dict[str, Any]) -> None:
+    # #region agent log
+    try:
+        payload = {
+            "sessionId": "ae58c9",
+            "runId": run_id,
+            "hypothesisId": hypothesis_id,
+            "location": location,
+            "message": message,
+            "data": data,
+            "timestamp": int(__import__("time").time() * 1000),
+        }
+        _DEBUG_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with _DEBUG_LOG_PATH.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(payload) + "\n")
+    except Exception:
+        pass
+    # #endregion
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from config.settings import settings
+from core import event_bus as _bus
+from core.intent_parser import parse_intent
 from core.state_manager import StateManager
-from data.database import init_db
+from data.database import (
+    append_chat_message,
+    get_chat_history,
+    get_chat_session,
+    get_design_system,
+    get_session_version,
+    init_db,
+    list_chat_sessions,
+    list_session_versions,
+    save_session_version,
+    upsert_chat_session,
+    upsert_design_system,
+)
+from integrations.flock_client import get_model
+from tools.website_builder import website_builder_tool
 
 
 @asynccontextmanager
@@ -45,7 +90,7 @@ async def _lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description="Autonomous founder agent REST API.",
-    version="0.4.0",
+    version="0.7.0",
     lifespan=_lifespan,
 )
 
@@ -75,6 +120,9 @@ def status() -> dict[str, Any]:
         "environment": settings.environment,
         "goal_mrr": settings.default_goal_mrr,
         "mock_mode": settings.flock_mock_mode,
+        "flock_endpoint_configured": bool(settings.flock_endpoint),
+        "flock_model": settings.flock_model,
+        "flock_auth_strategy": settings.flock_auth_strategy,
         "latest_run": latest_run,
     }
 
@@ -189,3 +237,1221 @@ def summary_latest() -> dict[str, Any]:
     except Exception as exc:
         logger.warning("GET /summary/latest failed: %s", exc)
         return {"status": "error", "message": str(exc), "diagnostics": type(exc).__name__}
+
+
+# ---------------------------------------------------------------------------
+# Chat / interactive run endpoints (v0.5)
+# ---------------------------------------------------------------------------
+
+class ChatRequest(BaseModel):
+    message: str = ""
+    goal_mrr: float = 100.0
+    cycles: int = 8
+    mock_mode: bool = True
+    autonomy_mode: str = "A_AUTONOMOUS"
+    workflow_mode: str = "chronological"   # new default: chronological
+    selected_idea: dict[str, Any] | None = None
+
+
+class RunStartRequest(BaseModel):
+    goal_mrr: float = 100.0
+    cycles: int = 8
+    mock_mode: bool = True
+    autonomy_mode: str = "A_AUTONOMOUS"
+    workflow_mode: str = "adaptive"
+
+
+class IdeaGenerateRequest(BaseModel):
+    message: str
+    count: int = 4
+
+
+class WebsiteChatRequest(BaseModel):
+    session_id: str = "default"
+    message: str
+    mock_mode: bool = False   # False = use real LLM when keys are configured
+
+
+class StyleSeed(BaseModel):
+    archetype: str = ""
+    palette: str = ""
+    density: str = ""
+    motion: str = ""
+
+
+class BuilderChatRequest(BaseModel):
+    session_id: str = "default"
+    message: str
+    mock_mode: bool = False
+    style_seed: StyleSeed | None = None
+    operation: dict[str, Any] | None = None
+
+
+class ModelCheckRequest(BaseModel):
+    mock_mode: bool = False
+
+
+def _bg_run(
+    run_id: str,
+    goal_mrr: float,
+    cycles: int,
+    mock_mode: bool,
+    autonomy_mode: str = "A_AUTONOMOUS",
+    product_intent: dict[str, Any] | None = None,
+    workflow_mode: str = "adaptive",
+) -> None:
+    """Run the graph in a background thread, emitting events to the bus."""
+    try:
+        from core.agent_loop import run_graph
+        run_graph(
+            cycles=cycles,
+            goal_mrr=goal_mrr,
+            mock_mode=mock_mode,
+            max_cycles=cycles,
+            quiet=True,
+            run_id=run_id,
+            autonomy_mode=autonomy_mode,
+            product_intent=product_intent,
+            workflow_mode=workflow_mode,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Background run %s failed: %s", run_id[:8], exc)
+        # event_bus already receives run_error from run_graph's except block
+
+
+@app.post("/chat")
+def chat_start(request: ChatRequest) -> dict[str, Any]:
+    """Start an autonomous founder run from a chat message.
+
+    The message is parsed into a structured product intent that drives
+    all downstream agents (product name, features, target user, endpoints).
+
+    Returns immediately with run_id; stream events via GET /runs/{run_id}/events.
+    """
+    from core.intent_parser import parse_intent
+
+    product_intent: dict[str, Any] | None = None
+    if request.selected_idea:
+        product_intent = dict(request.selected_idea)
+        logger.info(
+            "Using selected idea: product=%r type=%s",
+            product_intent.get("product_name"),
+            product_intent.get("product_type"),
+        )
+    elif request.message.strip():
+        product_intent = parse_intent(request.message)
+        logger.info(
+            "Intent parsed: product=%r type=%s confidence=%.2f",
+            product_intent.get("product_name"),
+            product_intent.get("product_type"),
+            product_intent.get("confidence", 0),
+        )
+
+    run_id = str(uuid.uuid4())
+    t = threading.Thread(
+        target=_bg_run,
+        args=(
+            run_id,
+            request.goal_mrr,
+            request.cycles,
+            request.mock_mode,
+            request.autonomy_mode,
+            product_intent,
+            request.workflow_mode,
+        ),
+        daemon=True,
+    )
+    t.start()
+
+    product_name = (product_intent or {}).get("product_name", "your product")
+    return {
+        "run_id": run_id,
+        "message": (
+            f"Building {product_name} — run {run_id[:8]}. "
+            f"Goal: ${request.goal_mrr:.0f} MRR in {request.cycles} cycles "
+            f"({'mock' if request.mock_mode else 'live'} model, {request.workflow_mode} workflow)."
+        ),
+        "stream_url": f"/runs/{run_id}/events",
+        "autonomy_mode": request.autonomy_mode,
+        "workflow_mode": request.workflow_mode,
+        "product_intent": product_intent,
+    }
+
+
+@app.post("/ideas/generate")
+def generate_ideas_endpoint(request: IdeaGenerateRequest) -> dict[str, Any]:
+    """Generate 4 startup ideas and return them for user selection."""
+    from core.idea_generator import generate_ideas
+
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="message is required to generate ideas")
+
+    ideas = generate_ideas(request.message, count=request.count)
+    return {
+        "message": request.message,
+        "count": len(ideas),
+        "ideas": ideas,
+    }
+
+
+@app.post("/model/check")
+def model_check(request: ModelCheckRequest) -> dict[str, Any]:
+    """Check model connectivity for UI diagnostics."""
+    try:
+        model = get_model(mock_mode=request.mock_mode)
+        result = model.invoke("Reply with exactly: CEOClaw model check ok")
+        content = (getattr(result, "content", "") or "").strip()
+        metadata = getattr(result, "response_metadata", {}) or {}
+        return {
+            "status": "ok",
+            "mock_mode": request.mock_mode,
+            "content_preview": content[:120],
+            "model_mode": metadata.get("model_mode", "unknown"),
+            "fallback_used": bool(metadata.get("fallback_used", False)),
+            "fallback_reason": metadata.get("fallback_reason"),
+        }
+    except Exception as exc:
+        return {
+            "status": "error",
+            "mock_mode": request.mock_mode,
+            "error": str(exc),
+        }
+
+
+@app.post("/website/chat")
+def website_chat(request: WebsiteChatRequest) -> dict[str, Any]:
+    """Chat-first website creation and iterative editing (Lovable/Base44 style).
+
+    History is persisted in DB scoped by session_id.
+    Each turn passes the full history + current file contents to the LLM,
+    which generates structured file changes applied to disk with a backup.
+    """
+    from services.code_generation_service import generate
+    from services.file_persistence import read_current_html
+    from services.workspace_editor import apply_changes
+
+    msg = request.message.strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="message is required")
+
+    # Load DB-persisted state
+    session_row = get_chat_session(request.session_id)
+    existing_slug: str = (session_row or {}).get("slug", "")
+
+    # History from DB (last 40 messages)
+    db_history = get_chat_history(request.session_id, limit=40)
+    history = [{"role": m["role"], "content": m["content"]} for m in db_history]
+
+    # Load existing files from disk for iterative editing
+    existing_files: dict[str, str] = {}
+    if existing_slug:
+        for fname in ("index.html", "app.html"):
+            content = read_current_html(existing_slug, fname)
+            if content:
+                existing_files[fname] = content
+
+    # Determine slug before generation (needed in prompt)
+    slug = existing_slug
+    if not slug:
+        intent = parse_intent(msg)
+        product_name = intent.get("product_name") or "my-app"
+        slug = re.sub(r"[^a-z0-9]+", "-", product_name.lower()).strip("-") or "my-app"
+
+    # Generate with LLM (or template fallback)
+    gen = generate(
+        slug=slug,
+        user_message=msg,
+        history=history,
+        existing_files=existing_files or None,
+        mock_mode=request.mock_mode,
+    )
+
+    # Apply file changes to disk (with validation + backup)
+    apply_result = apply_changes(slug=slug, changes=gen.changes)
+
+    # Determine final product name for display
+    product_name = slug.replace("-", " ").title()
+
+    # Persist to DB: upsert session + append both messages
+    upsert_chat_session(
+        request.session_id,
+        slug=slug,
+        product_name=product_name,
+        version_id=apply_result.version_id,
+    )
+    append_chat_message(request.session_id, "user", msg)
+    append_chat_message(request.session_id, "assistant", gen.assistant_message)
+
+    # Build changes summary for frontend
+    changes_summary = [
+        {
+            "path": r.path,
+            "action": r.action,
+            "status": r.status,
+            "summary": r.summary,
+            "error": r.error,
+        }
+        for r in apply_result.results
+    ]
+
+    return {
+        "session_id": request.session_id,
+        "assistant_message": gen.assistant_message,
+        "product_name": product_name,
+        "slug": slug,
+        "landing_url": f"/websites/{slug}/index",
+        "app_url": f"/websites/{slug}/app",
+        "model": {
+            "provider": gen.provider,
+            "model_mode": gen.model_mode,
+            "fallback_used": getattr(gen, "fallback_used", False),
+            "fallback_reason": getattr(gen, "fallback_reason", ""),
+        },
+        "version_id": apply_result.version_id,
+        "changes": changes_summary,
+        "files_applied": apply_result.applied,
+        "files_skipped": apply_result.skipped,
+        "warnings": apply_result.warnings + gen.warnings,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Chat history endpoints (DB-backed)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/website/sessions")
+def list_sessions(limit: int = 20) -> list[dict[str, Any]]:
+    """List recent website chat sessions (newest first)."""
+    return list_chat_sessions(limit=min(limit, 100))
+
+
+@app.get("/website/session/{session_id}")
+def website_session_state(session_id: str) -> dict[str, Any]:
+    """Get session metadata (no messages)."""
+    session = get_chat_session(session_id)
+    if not session:
+        return {"status": "empty", "session_id": session_id}
+    slug = session.get("slug", "")
+    return {
+        "status": "ok",
+        "session_id": session_id,
+        "slug": slug,
+        "product_name": session.get("product_name", ""),
+        "landing_url": f"/websites/{slug}/index" if slug else "",
+        "app_url": f"/websites/{slug}/app" if slug else "",
+        "version_id": session.get("version_id"),
+        "created_at": session.get("created_at"),
+        "updated_at": session.get("updated_at"),
+    }
+
+
+@app.get("/website/session/{session_id}/history")
+def get_session_history(session_id: str, limit: int = 100) -> dict[str, Any]:
+    """Return full chat history + session metadata for session restore."""
+    session = get_chat_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id!r} not found")
+    messages = get_chat_history(session_id, limit=limit)
+    slug = session.get("slug", "")
+    return {
+        "session_id": session_id,
+        "slug": slug,
+        "product_name": session.get("product_name", ""),
+        "version_id": session.get("version_id"),
+        "created_at": session.get("created_at"),
+        "updated_at": session.get("updated_at"),
+        "messages": messages,
+        "landing_url": f"/websites/{slug}/index" if slug else "",
+        "app_url": f"/websites/{slug}/app" if slug else "",
+    }
+
+
+_EXTENSION_MEDIA_TYPES: dict[str, str] = {
+    ".html": "text/html",
+    ".css": "text/css",
+    ".js": "application/javascript",
+    ".json": "application/json",
+    ".md": "text/plain",
+    ".txt": "text/plain",
+}
+_ALLOWED_SERVING_EXTENSIONS = set(_EXTENSION_MEDIA_TYPES.keys())
+
+
+@app.get("/websites/{slug}/{file_path:path}")
+def serve_generated_asset(slug: str, file_path: str) -> FileResponse:
+    """Serve any file under data/websites/<slug>/ with strict path safety.
+
+    Backward-compatible: bare names 'index' and 'app' map to .html files.
+    """
+    from pathlib import Path as _Path
+
+    # 1. Sanitize slug
+    safe_slug = re.sub(r"[^a-z0-9-]+", "-", slug.lower()).strip("-")
+    if not safe_slug:
+        raise HTTPException(status_code=400, detail="invalid slug")
+
+    # 2. Backward compat: bare page names → .html
+    if file_path in ("index", "app"):
+        file_path = file_path + ".html"
+
+    # 3. Basic path safety checks
+    if ".." in file_path:
+        raise HTTPException(status_code=400, detail="path traversal not allowed")
+
+    from pathlib import PurePosixPath
+    ext = PurePosixPath(file_path).suffix.lower()
+    if ext not in _ALLOWED_SERVING_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"file extension {ext!r} not allowed")
+
+    # 4. Build and verify absolute path
+    websites_dir = settings.resolve_websites_dir()
+    slug_dir = websites_dir / safe_slug
+    resolved = (slug_dir / file_path).resolve()
+
+    # 5. Realpath check: must remain under slug_dir
+    try:
+        resolved.relative_to(slug_dir.resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="path escapes slug directory")
+
+    if not resolved.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"File {file_path!r} not found for slug={safe_slug!r}",
+        )
+
+    media_type = _EXTENSION_MEDIA_TYPES.get(ext, "application/octet-stream")
+    return FileResponse(resolved, media_type=media_type)
+
+
+
+
+@app.post("/runs/start")
+def runs_start(request: RunStartRequest) -> dict[str, Any]:
+    """Start a run without a chat message. Alias for /chat."""
+    run_id = str(uuid.uuid4())
+    t = threading.Thread(
+        target=_bg_run,
+        args=(run_id, request.goal_mrr, request.cycles, request.mock_mode,
+              request.autonomy_mode, None, request.workflow_mode),
+        daemon=True,
+    )
+    t.start()
+    return {
+        "run_id": run_id,
+        "stream_url": f"/runs/{run_id}/events",
+        "autonomy_mode": request.autonomy_mode,
+    }
+
+
+@app.get("/runs/{run_id}/events")
+async def stream_run_events(run_id: str) -> StreamingResponse:
+    """Server-Sent Events stream for a running or completed graph run.
+
+    Each event is a JSON object with a ``type`` field.
+    The stream ends with a ``run_complete`` or ``run_error`` event.
+    """
+    async def generate():
+        idx = 0
+        max_wait = 120  # seconds before giving up on a silent run
+        waited = 0.0
+        try:
+            while True:
+                batch = _bus.get_events(run_id, idx)
+                for ev in batch:
+                    yield f"data: {json.dumps(ev)}\n\n"
+                    idx += 1
+                    waited = 0.0
+                    # Close stream after final event
+                    if ev.get("type") in ("run_complete", "run_error"):
+                        return
+                # Check if done and no more events
+                if _bus.is_done(run_id) and not _bus.get_events(run_id, idx):
+                    yield f"data: {json.dumps({'type': 'stream_end'})}\n\n"
+                    return
+                await asyncio.sleep(0.15)
+                waited += 0.15
+                if waited > max_wait:
+                    yield f"data: {json.dumps({'type': 'stream_timeout'})}\n\n"
+                    return
+        finally:
+            # Delay cleanup so late-arriving consumers can still read history
+            await asyncio.sleep(30)
+            _bus.cleanup(run_id)
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# v0.5 endpoints – autonomy / approvals / research / social
+# ---------------------------------------------------------------------------
+
+@app.get("/runs/{run_id}/approvals")
+def get_approvals(run_id: str, status: str = "pending") -> list[dict[str, Any]]:
+    """List pending (or all) approvals for a run."""
+    from data.database import get_pending_approvals
+    try:
+        rows = get_pending_approvals(run_id, status=status)
+        for r in rows:
+            if isinstance(r.get("payload"), str):
+                import json as _json
+                try:
+                    r["payload"] = _json.loads(r["payload"])
+                except Exception:
+                    pass
+        return rows
+    except Exception as exc:
+        logger.warning("GET /runs/%s/approvals failed: %s", run_id, exc)
+        return []
+
+
+class ApprovalDecision(BaseModel):
+    decision: str  # "approved" | "rejected"
+    resolved_by: str = "user"
+
+
+@app.post("/approvals/{approval_id}/decide")
+def decide_approval(approval_id: int, body: ApprovalDecision) -> dict[str, Any]:
+    """Approve or reject a pending action."""
+    from data.database import get_approval, resolve_approval, update_social_post_status
+    import json as _json
+
+    if body.decision not in ("approved", "rejected"):
+        raise HTTPException(status_code=400, detail="decision must be 'approved' or 'rejected'")
+
+    approval = get_approval(approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail=f"Approval {approval_id} not found")
+    if approval["status"] != "pending":
+        raise HTTPException(status_code=409, detail=f"Approval {approval_id} already resolved")
+
+    resolve_approval(approval_id, body.decision, body.resolved_by)
+
+    # If approved social_publish, execute it now
+    payload = approval.get("payload", {})
+    if isinstance(payload, str):
+        try:
+            payload = _json.loads(payload)
+        except Exception:
+            payload = {}
+
+    if approval["approval_type"] == "social_publish" and body.decision == "approved":
+        from tools.social_publishers.x_publisher import publish as x_publish
+        from tools.social_publishers.instagram_publisher import publish as ig_publish
+        from data.database import update_social_post_status as _upd
+        platform = payload.get("platform", "x")
+        content = payload.get("content", "")
+        db_id = payload.get("social_post_db_id")
+        if content:
+            pub = x_publish(content) if platform == "x" else ig_publish(content)
+            if db_id:
+                _upd(db_id, pub.status, pub.post_id, pub.error_detail)
+        _bus.emit(approval["run_id"], {
+            "type": "approval_resolved",
+            "approval_id": approval_id,
+            "decision": body.decision,
+            "platform": platform,
+            "publish_status": getattr(pub, "status", "unknown") if content else "skipped",
+        })
+    else:
+        _bus.emit(approval["run_id"], {
+            "type": "approval_resolved",
+            "approval_id": approval_id,
+            "decision": body.decision,
+        })
+
+    return {"approval_id": approval_id, "decision": body.decision, "status": "resolved"}
+
+
+@app.get("/runs/{run_id}/research")
+def get_research(run_id: str) -> list[dict[str, Any]]:
+    """List research reports for a run."""
+    from data.database import get_research_reports
+    import json as _json
+    try:
+        rows = get_research_reports(run_id)
+        # Parse JSON string fields
+        for r in rows:
+            for field in ("competitors", "audience", "opportunities", "risks", "experiments"):
+                if isinstance(r.get(field), str):
+                    try:
+                        r[field] = _json.loads(r[field])
+                    except Exception:
+                        pass
+        return rows
+    except Exception as exc:
+        logger.warning("GET /runs/%s/research failed: %s", run_id, exc)
+        return []
+
+
+@app.get("/runs/{run_id}/social-posts")
+def get_social_posts(run_id: str) -> list[dict[str, Any]]:
+    """List social posts (all statuses) for a run."""
+    from data.database import get_social_posts
+    try:
+        return get_social_posts(run_id)
+    except Exception as exc:
+        logger.warning("GET /runs/%s/social-posts failed: %s", run_id, exc)
+        return []
+
+
+# ---------------------------------------------------------------------------
+# v0.6 endpoints – prospects + memory
+# ---------------------------------------------------------------------------
+
+@app.get("/runs/{run_id}/quality-audit")
+def get_quality_audit(run_id: str) -> dict[str, Any]:
+    """Return the latest quality audit scorecard for a run."""
+    from data.database import get_connection
+    try:
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT content_summary, created_at FROM artifacts
+                WHERE run_id=? AND artifact_type='quality_audit'
+                ORDER BY created_at DESC LIMIT 1
+                """,
+                (run_id,),
+            ).fetchone()
+        if row:
+            return {"run_id": run_id, "summary": row["content_summary"], "created_at": row["created_at"]}
+        return {"run_id": run_id, "summary": None, "message": "No audit yet for this run."}
+    except Exception as exc:
+        return {"run_id": run_id, "error": str(exc)}
+
+
+@app.get("/runs/{run_id}/prospects")
+def get_run_prospects(run_id: str, status: str = "") -> list[dict[str, Any]]:
+    """List prospects discovered during a run."""
+    from data.database import get_prospects
+    try:
+        return get_prospects(run_id, status=status or None)
+    except Exception as exc:
+        logger.warning("GET /runs/%s/prospects failed: %s", run_id, exc)
+        return []
+
+
+class ProspectStatusUpdate(BaseModel):
+    status: str
+    notes: str = ""
+
+
+@app.patch("/prospects/{prospect_id}/status")
+def update_prospect(prospect_id: int, body: ProspectStatusUpdate) -> dict[str, Any]:
+    """Update a prospect's status (e.g. contacted, qualified, rejected)."""
+    from data.database import update_prospect_status
+    valid = {"discovered", "contacted", "qualified", "rejected", "converted"}
+    if body.status not in valid:
+        raise HTTPException(status_code=400, detail=f"status must be one of: {', '.join(valid)}")
+    update_prospect_status(prospect_id, body.status, body.notes or None)
+    return {"prospect_id": prospect_id, "status": body.status}
+
+
+@app.get("/memory")
+def get_memory(namespace: str = "default") -> dict[str, str]:
+    """Read all cross-run memory entries in a namespace."""
+    from core.memory_store import build_memory_store
+    try:
+        return build_memory_store().get_all(namespace=namespace)
+    except Exception as exc:
+        logger.warning("GET /memory failed: %s", exc)
+        return {}
+
+
+class MemoryEntry(BaseModel):
+    key: str
+    value: str
+    namespace: str = "default"
+
+
+@app.post("/memory")
+def set_memory(entry: MemoryEntry) -> dict[str, str]:
+    """Upsert a memory entry."""
+    from core.memory_store import build_memory_store
+    build_memory_store().set(entry.key, entry.value, namespace=entry.namespace)
+    return {"key": entry.key, "namespace": entry.namespace, "status": "ok"}
+
+
+@app.delete("/memory/{key}")
+def delete_memory(key: str, namespace: str = "default") -> dict[str, str]:
+    """Delete a memory entry."""
+    from core.memory_store import build_memory_store
+    build_memory_store().delete(key, namespace=namespace)
+    return {"key": key, "namespace": namespace, "status": "deleted"}
+
+
+# ---------------------------------------------------------------------------
+# Builder endpoints (v0.8) — Lovable/Base44 style, richer responses
+# ---------------------------------------------------------------------------
+
+
+@app.post("/builder/chat")
+def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
+    """Chat-first website creation with richer response (Builder v0.9).
+
+    - Accepts optional style_seed and operation for design diversification
+    - Auto-detects operation type from message if not provided
+    - Persists design system per session
+    - Saves version record after successful apply
+    - Returns fallback_used / fallback_reason in model info
+    """
+    from services.code_generation_service import generate
+    from services.file_persistence import list_project_files, read_current_file
+    from services.operation_parser import parse_operation
+    from services.workspace_editor import apply_changes
+
+    msg = request.message.strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="message is required")
+
+    session_row = get_chat_session(request.session_id)
+    existing_slug: str = (session_row or {}).get("slug", "")
+
+    db_history = get_chat_history(request.session_id, limit=40)
+    history = [{"role": m["role"], "content": m["content"]} for m in db_history]
+
+    # Load ALL existing project files (not just index.html and app.html)
+    existing_files: dict[str, str] = {}
+    if existing_slug:
+        for rel_path in list_project_files(existing_slug):
+            content = read_current_file(existing_slug, rel_path)
+            if content:
+                existing_files[rel_path] = content
+
+    slug = existing_slug
+    if not slug:
+        intent = parse_intent(msg)
+        product_name_raw = intent.get("product_name") or "my-app"
+        slug = re.sub(r"[^a-z0-9]+", "-", product_name_raw.lower()).strip("-") or "my-app"
+
+    style_seed_dict: dict | None = None
+    if request.style_seed:
+        style_seed_dict = {
+            k: v for k, v in {
+                "archetype": request.style_seed.archetype,
+                "palette": request.style_seed.palette,
+                "density": request.style_seed.density,
+                "motion": request.style_seed.motion,
+            }.items() if v
+        } or None
+
+    # Detect or use provided operation
+    operation = request.operation or parse_operation(msg)
+
+    # Load persisted design system; generate one if first request
+    design_system_dict = get_design_system(request.session_id)
+    if design_system_dict is None:
+        from services.design_system_service import DesignSystem
+        ds = DesignSystem.generate(style_seed=style_seed_dict)
+        design_system_dict = ds.to_dict()
+        upsert_design_system(request.session_id, design_system_dict)
+
+    gen = generate(
+        slug=slug,
+        user_message=msg,
+        history=history,
+        existing_files=existing_files or None,
+        mock_mode=request.mock_mode,
+        style_seed=style_seed_dict,
+        design_system=design_system_dict,
+        operation=operation,
+    )
+
+    # If operation is add_endpoint, scaffold a data.json endpoints file
+    if operation.get("type") == "add_endpoint":
+        from services.code_generation_service import FileChange
+        methods = operation.get("metadata", {}).get("http_methods", ["GET", "POST"])
+        endpoint_scaffold = {
+            "endpoints": [
+                {"method": m, "path": f"/api/{slug}", "description": f"{m} endpoint"}
+                for m in methods
+            ]
+        }
+        import json as _json
+        gen.changes.append(FileChange(
+            path=f"data/websites/{slug}/data.json",
+            action="create",
+            content=_json.dumps(endpoint_scaffold, indent=2),
+            summary="Scaffolded endpoint spec",
+        ))
+
+    apply_result = apply_changes(slug=slug, changes=gen.changes)
+    product_name = slug.replace("-", " ").title()
+
+    upsert_chat_session(
+        request.session_id,
+        slug=slug,
+        product_name=product_name,
+        version_id=apply_result.version_id,
+    )
+    append_chat_message(request.session_id, "user", msg)
+    msg_id = append_chat_message(request.session_id, "assistant", gen.assistant_message)
+
+    # Save version record if files were applied
+    if apply_result.version_id and apply_result.applied:
+        # Build files snapshot from applied files
+        files_snapshot: dict[str, str] = {}
+        for rel_path in apply_result.applied:
+            content = read_current_file(slug, rel_path)
+            if content is not None:
+                files_snapshot[rel_path] = content
+        if files_snapshot:
+            save_session_version(
+                session_id=request.session_id,
+                version_id=apply_result.version_id,
+                files=files_snapshot,
+                message_id=msg_id,
+            )
+
+    changes_summary = [
+        {
+            "path": r.path,
+            "action": r.action,
+            "status": r.status,
+            "summary": r.summary,
+            "error": r.error,
+        }
+        for r in apply_result.results
+    ]
+
+    return {
+        "session_id": request.session_id,
+        "assistant_message": gen.assistant_message,
+        "product_name": product_name,
+        "slug": slug,
+        "landing_url": f"/websites/{slug}/index",
+        "app_url": f"/websites/{slug}/app",
+        "model": {
+            "provider": gen.provider,
+            "model_mode": gen.model_mode,
+            "fallback_used": gen.fallback_used,
+            "fallback_reason": gen.fallback_reason,
+        },
+        "version_id": apply_result.version_id,
+        "changes": changes_summary,
+        "files_applied": apply_result.applied,
+        "files_skipped": apply_result.skipped,
+        "warnings": apply_result.warnings + gen.warnings,
+        "operation": operation,
+        "design_system": design_system_dict,
+    }
+
+
+@app.get("/builder/sessions")
+def builder_list_sessions(limit: int = 20) -> list[dict[str, Any]]:
+    """List recent builder chat sessions (newest first)."""
+    return list_chat_sessions(limit=min(limit, 100))
+
+
+@app.get("/builder/sessions/{session_id}")
+def builder_get_session(session_id: str) -> dict[str, Any]:
+    """Get session metadata."""
+    session = get_chat_session(session_id)
+    if not session:
+        return {"status": "empty", "session_id": session_id}
+    slug = session.get("slug", "")
+    return {
+        "status": "ok",
+        "session_id": session_id,
+        "slug": slug,
+        "product_name": session.get("product_name", ""),
+        "landing_url": f"/websites/{slug}/index" if slug else "",
+        "app_url": f"/websites/{slug}/app" if slug else "",
+        "version_id": session.get("version_id"),
+        "created_at": session.get("created_at"),
+        "updated_at": session.get("updated_at"),
+    }
+
+
+@app.get("/builder/sessions/{session_id}/messages")
+def builder_get_session_messages(session_id: str, limit: int = 100) -> dict[str, Any]:
+    """Return full chat history + session metadata for session restore."""
+    session = get_chat_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session {session_id!r} not found")
+    messages = get_chat_history(session_id, limit=limit)
+    slug = session.get("slug", "")
+    return {
+        "session_id": session_id,
+        "slug": slug,
+        "product_name": session.get("product_name", ""),
+        "version_id": session.get("version_id"),
+        "created_at": session.get("created_at"),
+        "updated_at": session.get("updated_at"),
+        "messages": messages,
+        "landing_url": f"/websites/{slug}/index" if slug else "",
+        "app_url": f"/websites/{slug}/app" if slug else "",
+    }
+
+
+@app.get("/builder/provider/status")
+def builder_provider_status() -> dict[str, Any]:
+    """Check health of configured LLM providers."""
+    from services.llm_router_service import check_provider_health
+    return check_provider_health()
+
+
+# ---------------------------------------------------------------------------
+# Version graph endpoints (v0.9)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/builder/sessions/{session_id}/versions")
+def list_versions(session_id: str, limit: int = 20) -> list[dict[str, Any]]:
+    """List version records for a session, newest first."""
+    return list_session_versions(session_id, limit=min(limit, 100))
+
+
+@app.get("/builder/sessions/{session_id}/versions/{version_id}")
+def get_version(session_id: str, version_id: str) -> dict[str, Any]:
+    """Return version metadata + file list (not full content by default)."""
+    record = get_session_version(session_id, version_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Version {version_id!r} not found")
+    # Return without full file content (just metadata + file list)
+    return {
+        "id": record.get("id"),
+        "session_id": record.get("session_id"),
+        "version_id": record.get("version_id"),
+        "message_id": record.get("message_id"),
+        "file_list": record.get("file_list", []),
+        "created_at": record.get("created_at"),
+    }
+
+
+@app.post("/builder/sessions/{session_id}/versions/{version_id}/restore")
+def restore_version(session_id: str, version_id: str) -> dict[str, Any]:
+    """Restore a previous version: re-apply its files to disk, upsert session."""
+    from services.file_persistence import save_website_files
+
+    record = get_session_version(session_id, version_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Version {version_id!r} not found")
+
+    files = record.get("files", {})
+    if not files:
+        raise HTTPException(status_code=400, detail="Version has no file content to restore")
+
+    session = get_chat_session(session_id)
+    slug = (session or {}).get("slug", "")
+    if not slug:
+        raise HTTPException(status_code=400, detail="Session has no slug — cannot restore")
+
+    # Write files back to disk
+    save_result = save_website_files(slug, files)
+    new_version_id = save_result.get("version_id", "")
+
+    upsert_chat_session(session_id, slug=slug, version_id=new_version_id)
+
+    return {
+        "session_id": session_id,
+        "restored_from": version_id,
+        "version_id": new_version_id,
+        "files_applied": list(files.keys()),
+        "slug": slug,
+    }
+
+
+@app.get("/builder/sessions/{session_id}/versions/{version_id}/files/{file_path:path}")
+def get_version_file(session_id: str, version_id: str, file_path: str) -> dict[str, Any]:
+    """Return content of a specific file at a given version."""
+    if ".." in file_path:
+        raise HTTPException(status_code=400, detail="path traversal not allowed")
+
+    record = get_session_version(session_id, version_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Version {version_id!r} not found")
+
+    files = record.get("files", {})
+    if file_path not in files:
+        raise HTTPException(status_code=404, detail=f"File {file_path!r} not in this version")
+
+    return {
+        "session_id": session_id,
+        "version_id": version_id,
+        "file_path": file_path,
+        "content": files[file_path],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Builder pipeline endpoints (v1.0) — async 8-stage orchestrated generation
+# ---------------------------------------------------------------------------
+
+def _run_pipeline_bg(
+    job_id: str,
+    session_id: str,
+    message: str,
+    slug: str,
+    history: list[dict],
+    existing_files: dict,
+    mock_mode: bool,
+    style_seed: dict | None,
+    design_system: dict | None,
+    operation: dict | None,
+) -> None:
+    """Background thread: run the generation pipeline and emit events to bus."""
+    run_id = f"pipeline_bg_{job_id[:8]}"
+
+    def emit(event: dict) -> None:
+        _bus.emit(job_id, event)
+
+    try:
+        from services.generation_pipeline import run_pipeline
+        ctx = run_pipeline(
+            session_id=session_id,
+            slug=slug,
+            message=message,
+            history=history,
+            existing_files=existing_files or None,
+            mock_mode=mock_mode,
+            style_seed=style_seed,
+            design_system=design_system,
+            operation=operation,
+            emit=emit,
+        )
+
+        gen = ctx.get("gen")
+        apply_result = ctx.get("apply")
+        if not gen or not apply_result:
+            raise RuntimeError("Pipeline produced no output")
+
+        product_name = slug.replace("-", " ").title()
+
+        # Persist to DB (same as builder_chat)
+        upsert_chat_session(
+            session_id,
+            slug=slug,
+            product_name=product_name,
+            version_id=apply_result.version_id,
+        )
+        append_chat_message(session_id, "user", message)
+        msg_id = append_chat_message(session_id, "assistant", gen.assistant_message)
+
+        # Save version record if files were applied
+        if apply_result.version_id and apply_result.applied:
+            from services.file_persistence import read_current_file
+            files_snapshot: dict[str, str] = {}
+            for rel_path in apply_result.applied:
+                content = read_current_file(slug, rel_path)
+                if content is not None:
+                    files_snapshot[rel_path] = content
+            if files_snapshot:
+                save_session_version(
+                    session_id=session_id,
+                    version_id=apply_result.version_id,
+                    files=files_snapshot,
+                    message_id=msg_id,
+                )
+
+        changes_summary = [
+            {"path": r.path, "action": r.action, "status": r.status,
+             "summary": r.summary, "error": r.error}
+            for r in apply_result.results
+        ]
+
+        response: dict[str, Any] = {
+            "session_id": session_id,
+            "assistant_message": gen.assistant_message,
+            "product_name": product_name,
+            "slug": slug,
+            "landing_url": f"/websites/{slug}/index",
+            "app_url": f"/websites/{slug}/app",
+            "model": {
+                "provider": gen.provider,
+                "model_mode": gen.model_mode,
+                "fallback_used": gen.fallback_used,
+                "fallback_reason": gen.fallback_reason,
+            },
+            "version_id": apply_result.version_id,
+            "changes": changes_summary,
+            "files_applied": apply_result.applied,
+            "files_skipped": apply_result.skipped,
+            "warnings": apply_result.warnings + gen.warnings,
+            "operation": operation or {},
+            "design_system": design_system,
+        }
+
+        _bus.emit(job_id, {"type": "pipeline_complete", "result": response})
+        _debug_log(
+            run_id,
+            "H5",
+            "api/server.py:_run_pipeline_bg",
+            "pipeline_complete emitted",
+            {"jobId": job_id, "versionId": response.get("version_id", ""), "changes": len(changes_summary)},
+        )
+
+    except Exception as exc:
+        logger.exception("Pipeline job %s failed: %s", job_id[:8], exc)
+        _bus.emit(job_id, {"type": "pipeline_error", "error": str(exc)})
+        _debug_log(
+            run_id,
+            "H5",
+            "api/server.py:_run_pipeline_bg",
+            "pipeline_error emitted",
+            {"jobId": job_id, "error": str(exc)[:180]},
+        )
+
+    finally:
+        _bus.mark_done(job_id)
+
+
+@app.post("/builder/generate")
+def builder_generate_start(request: BuilderChatRequest) -> dict[str, Any]:
+    """Start an async pipeline generation job.  Returns job_id for SSE streaming.
+
+    The client opens GET /builder/generate/{job_id}/events to receive live
+    stage_update events, then a pipeline_complete or pipeline_error final event.
+    """
+    from services.file_persistence import list_project_files, read_current_file
+    from services.operation_parser import parse_operation
+
+    msg = request.message.strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="message is required")
+
+    session_row = get_chat_session(request.session_id)
+    existing_slug: str = (session_row or {}).get("slug", "")
+
+    db_history = get_chat_history(request.session_id, limit=40)
+    history = [{"role": m["role"], "content": m["content"]} for m in db_history]
+
+    existing_files: dict[str, str] = {}
+    if existing_slug:
+        for rel_path in list_project_files(existing_slug):
+            content = read_current_file(existing_slug, rel_path)
+            if content:
+                existing_files[rel_path] = content
+
+    slug = existing_slug
+    if not slug:
+        intent = parse_intent(msg)
+        product_name_raw = intent.get("product_name") or "my-app"
+        slug = re.sub(r"[^a-z0-9]+", "-", product_name_raw.lower()).strip("-") or "my-app"
+
+    style_seed_dict: dict | None = None
+    if request.style_seed:
+        style_seed_dict = {
+            k: v for k, v in {
+                "archetype": request.style_seed.archetype,
+                "palette": request.style_seed.palette,
+                "density": request.style_seed.density,
+                "motion": request.style_seed.motion,
+            }.items() if v
+        } or None
+
+    operation = request.operation or parse_operation(msg)
+
+    design_system_dict = get_design_system(request.session_id)
+    if design_system_dict is None:
+        from services.design_system_service import DesignSystem
+        ds = DesignSystem.generate(style_seed=style_seed_dict)
+        design_system_dict = ds.to_dict()
+        upsert_design_system(request.session_id, design_system_dict)
+
+    job_id = str(uuid.uuid4())
+    _debug_log(
+        f"pipeline_http_{job_id[:8]}",
+        "H3",
+        "api/server.py:builder_generate_start",
+        "builder generate start accepted",
+        {"jobId": job_id, "sessionId": request.session_id, "messageLen": len(msg), "mockMode": request.mock_mode},
+    )
+    t = threading.Thread(
+        target=_run_pipeline_bg,
+        args=(
+            job_id, request.session_id, msg, slug,
+            history, existing_files, request.mock_mode,
+            style_seed_dict, design_system_dict, operation,
+        ),
+        daemon=True,
+    )
+    t.start()
+
+    return {"job_id": job_id, "slug": slug, "session_id": request.session_id}
+
+
+@app.get("/builder/generate/{job_id}/events")
+async def builder_generate_events(job_id: str) -> StreamingResponse:
+    """SSE stream for a pipeline generation job.
+
+    Emits stage_update events as each stage completes, followed by a single
+    pipeline_complete or pipeline_error terminal event.
+    """
+    async def generate():
+        idx = 0
+        max_wait = 180  # seconds
+        waited = 0.0
+        try:
+            while True:
+                batch = _bus.get_events(job_id, idx)
+                for ev in batch:
+                    _debug_log(
+                        f"pipeline_sse_{job_id[:8]}",
+                        "H1",
+                        "api/server.py:builder_generate_events",
+                        "sse event emitted",
+                        {"jobId": job_id, "eventType": ev.get("type", ""), "idx": idx},
+                    )
+                    yield f"data: {json.dumps(ev)}\n\n"
+                    idx += 1
+                    waited = 0.0
+                    if ev.get("type") in ("pipeline_complete", "pipeline_error"):
+                        return
+                if _bus.is_done(job_id) and not _bus.get_events(job_id, idx):
+                    yield f"data: {json.dumps({'type': 'pipeline_error', 'error': 'stream_ended_without_completion'})}\n\n"
+                    return
+                await asyncio.sleep(0.1)
+                waited += 0.1
+                if waited > max_wait:
+                    yield f"data: {json.dumps({'type': 'pipeline_error', 'error': 'timeout'})}\n\n"
+                    return
+        finally:
+            await asyncio.sleep(30)
+            _bus.cleanup(job_id)
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Frontend serving (v0.5 → v0.9: React build support)
+# ---------------------------------------------------------------------------
+
+_FRONTEND_DIST = _PROJECT_ROOT / "frontend" / "dist" / "index.html"
+_FRONTEND_LEGACY = _PROJECT_ROOT / "frontend" / "legacy.html"
+_FRONTEND_OLD = _PROJECT_ROOT / "frontend" / "index.html"
+
+# Mount static assets from React build if available
+_ASSETS_DIR = _PROJECT_ROOT / "frontend" / "dist" / "assets"
+if _ASSETS_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=str(_ASSETS_DIR)), name="assets")
+
+
+@app.get("/app")
+@app.get("/")
+def serve_frontend() -> FileResponse:
+    """Serve the React build or fall back to legacy HTML UI."""
+    if _FRONTEND_DIST.exists():
+        return FileResponse(_FRONTEND_DIST, media_type="text/html")
+    if _FRONTEND_LEGACY.exists():
+        return FileResponse(_FRONTEND_LEGACY, media_type="text/html")
+    if _FRONTEND_OLD.exists():
+        return FileResponse(_FRONTEND_OLD, media_type="text/html")
+    raise HTTPException(status_code=404, detail="Frontend not built. Run: cd frontend && npm run build")

@@ -1,0 +1,11 @@
+{
+  "product": "Start Mock App",
+  "endpoints": [
+    "/api/health",
+    "/api/auth/signup",
+    "/api/auth/login",
+    "/api/user/profile",
+    "/api/data",
+    "/api/settings"
+  ]
+}

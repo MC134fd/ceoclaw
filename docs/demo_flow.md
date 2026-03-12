@@ -115,7 +115,7 @@ Includes: run metadata, KPI timeline, artifacts, risk events, node stats, confid
 | 0:50 | Demo the domain rotation: stagnation forces the planner away from the stuck domain |
 | 1:10 | Open `data/exports/*_summary.md` in a browser/editor — highlight KPI timeline and confidence note |
 | 1:30 | Show `curl http://localhost:8000/summary/latest` in a second terminal |
-| 1:50 | Mention: 62 passing tests, SQLite audit trail, circuit breaker, mock + live model modes |
+| 1:50 | Mention: 132 passing tests, SQLite audit trail, circuit breaker, model_mode transparency, mock + live + fallback modes |
 
 ---
 

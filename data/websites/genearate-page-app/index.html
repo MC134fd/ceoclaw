@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Blog</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+        :root {
+            --primary: #94a3b8;
+            --secondary: #cbd5e1;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --muted: #64748b;
+            --border-radius: 12px;
+            --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+        }
+        body {
+            margin: 0;
+            font-family: 'Source Sans 3', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        header {
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(16px);
+            background: rgba(15, 23, 42, 0.7);
+            padding: 1rem;
+            z-index: 10;
+        }
+        nav a {
+            color: var(--text);
+            margin: 0 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        nav a:hover {
+            color: var(--primary);
+        }
+        .hero {
+            padding: 5rem 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 3rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .cta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .cta button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .cta .primary {
+            background-color: var(--primary);
+            color: var(--text);
+        }
+        .cta .secondary {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        .features {
+            padding: 5rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        .testimonials {
+            padding: 5rem 0;
+            text-align: center;
+        }
+        .testimonial {
+            margin: 1rem;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+        }
+        footer {
+            padding: 2rem;
+            text-align: center;
+            background: var(--surface);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Blog</a>
+            <a href="#">Contact</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Delicious Recipes & Culinary Adventures</h1>
+            <p>Join us on a flavorful journey through the world of food.</p>
+            <div class="cta">
+                <button class="primary">Get Started</button>
+                <button class="secondary">Read More</button>
+            </div>
+        </section>
+        <section class="features">
+            <div class="feature">
+                <h2>Explore Recipes</h2>
+                <p>Discover a variety of recipes from around the world.</p>
+            </div>
+            <div class="feature">
+                <h2>Cooking Tips</h2>
+                <p>Learn tips and tricks to enhance your cooking skills.</p>
+            </div>
+            <div class="feature">
+                <h2>Food Photography</h2>
+                <p>Capture stunning images of your culinary creations.</p>
+            </div>
+        </section>
+        <section class="testimonials">
+            <h2>What Our Readers Say</h2>
+            <div class="testimonial">
+                <p>“This blog has transformed my cooking!” - A. Chef</p>
+            </div>
+            <div class="testimonial">
+                <p>“I love the variety of recipes available!” - B. Foodie</p>
+            </div>
+            <div class="testimonial">
+                <p>“A must-read for any cooking enthusiast!” - C. Gourmet</p>
+            </div>
+        </section>
+        <section class="cta">
+            <h2>Ready to Cook?</h2>
+            <p>Join our community and start your culinary journey today!</p>
+            <button class="primary">Join Now</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 Food Blog. All rights reserved.</p>
+        <nav>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </nav>
+    </footer>
+</body>
+</html>

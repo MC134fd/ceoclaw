@@ -15,6 +15,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 
 from agents import CEOClawState
+from core.memory_store import build_memory_store
 from core.prompts import (
     PlannerOutput,
     build_planner_prompt,
@@ -36,22 +37,32 @@ def planner_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
     cfg = config.get("configurable", {})
     mock_mode: bool = cfg.get("mock_mode", False)
     stagnation_threshold: int = cfg.get("stagnation_threshold", 3)
+    autonomy_mode: str = cfg.get("autonomy_mode", state.get("autonomy_mode", "A_AUTONOMOUS"))
     cycle_count: int = state.get("cycle_count", 0)
     stagnant_cycles: int = state.get("stagnant_cycles", 0)
+
+    # Load cross-run memory context
+    memory_context: dict[str, str] = {}
+    try:
+        memory_context = build_memory_store().get_all(namespace=state.get("run_id", "global"))
+    except Exception:  # noqa: BLE001
+        pass
 
     exec_id = log_node_start(
         run_id=state["run_id"],
         cycle_count=cycle_count,
         node_name="planner",
-        input_summary=f"cycle={cycle_count} stagnant={stagnant_cycles} mock={mock_mode}",
+        input_summary=f"cycle={cycle_count} stagnant={stagnant_cycles} mock={mock_mode} mem_keys={len(memory_context)}",
     )
 
     try:
-        result = _run_planner(state, mock_mode, cycle_count, stagnant_cycles, stagnation_threshold)
+        result = _run_planner(state, mock_mode, cycle_count, stagnant_cycles, stagnation_threshold, memory_context)
         budget = result.pop("_budget", {})
         log_node_finish(exec_id, output_summary=str(result.get("selected_action")))
         return {
             **result,
+            "autonomy_mode": autonomy_mode,
+            "memory_context": memory_context,
             "model_mode": budget.get("model_mode", "unknown"),
             "tokens_used": state.get("tokens_used", 0) + budget.get("tokens_delta", 0),
             "external_calls": state.get("external_calls", 0) + budget.get("external_calls_delta", 0),
@@ -84,6 +95,7 @@ def _run_planner(
     cycle_count: int,
     stagnant_cycles: int,
     stagnation_threshold: int,
+    memory_context: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     model = get_model(mock_mode=mock_mode, cycle_index=cycle_count)
 
@@ -96,6 +108,11 @@ def _run_planner(
         stagnation_threshold=stagnation_threshold,
         weighted_score=state.get("weighted_score", 0.0),
     )
+
+    # Inject memory context as an extra system note
+    if memory_context:
+        mem_lines = "\n".join(f"  {k}: {v}" for k, v in list(memory_context.items())[:10])
+        prompt += f"\n\n## Cross-run memory\n{mem_lines}"
 
     messages = [
         SystemMessage(content=prompt),

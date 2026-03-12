@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make A App — App</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background: var(--color-bg);
+      color: var(--color-text);
+    }
+    nav {
+      width: 220px;
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-muted);
+      padding: 1.5rem 1rem;
+      flex-shrink: 0;
+    }
+    nav .logo { font-weight: 800; font-size: 1rem; margin-bottom: 2rem; display: block; }
+    nav ul { list-style: none; }
+    nav ul li a {
+      display: block;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--color-primary);
+      font-size: 0.9rem;
+    }
+    nav ul li a:hover { background: rgba(99,102,241,0.1); }
+    main {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-muted);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .placeholder {
+      height: 120px;
+      background: rgba(99,102,241,0.05);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      font-size: 0.875rem;
+    }
+    @media (max-width: 640px) {
+      body { flex-direction: column; }
+      nav { width: 100%; border-right: none; border-bottom: 1px solid var(--color-muted); }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="logo">Make A App</span>
+    <ul>
+        <li><a href="#feat-0">core functionality</a></li>
+        <li><a href="#feat-1">user dashboard</a></li>
+        <li><a href="#feat-2">data export</a></li>
+      <li><a href="/">← Back to landing</a></li>
+    </ul>
+  </nav>
+  <main>
+    <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:1.5rem;">Make A App Dashboard</h1>
+    <div class="card">
+      <h2>Overview</h2>
+      <div class="placeholder">Your data will appear here once you connect your account.</div>
+    </div>
+    <div class="card">
+      <h2>Quick Actions</h2>
+      <div class="placeholder">Actions panel — coming soon.</div>
+    </div>
+  </main>
+</body>
+</html>

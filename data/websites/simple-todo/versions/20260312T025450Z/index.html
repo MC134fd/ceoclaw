@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow - Simple Task Manager</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg-color: #f8f9fa;
+      --text-color: #212529;
+      --primary-color: #4a90e2;
+      --completed-color: #28a745;
+      --delete-color: #dc3545;
+      --border-color: #dee2e6;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .input-section {
+      display: flex;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    #todo-input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px 0 0 6px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    #add-button {
+      padding: 0.75rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+    }
+
+    #add-button:hover {
+      background-color: #3a7bc8;
+    }
+
+    .todo-list {
+      list-style-type: none;
+      padding: 1rem;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.2s;
+    }
+
+    .todo-item:hover {
+      background-color: #f1f3f5;
+    }
+
+    .todo-item.completed {
+      opacity: 0.6;
+      text-decoration: line-through;
+      color: #6c757d;
+    }
+
+    .todo-text {
+      flex: 1;
+      margin-right: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .todo-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .complete-btn {
+      background-color: var(--completed-color);
+      color: white;
+    }
+
+    .complete-btn:hover {
+      background-color: #218838;
+    }
+
+    .delete-btn {
+      background-color: var(--delete-color);
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #6c757d;
+      font-style: italic;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem;
+      }
+
+      .container {
+        border-radius: 8px;
+      }
+
+      header {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .input-section {
+        padding: 0.75rem;
+      }
+
+      #todo-input {
+        padding: 0.6rem;
+      }
+
+      #add-button {
+        padding: 0.6rem 0.8rem;
+      }
+
+      .todo-item {
+        padding: 0.6rem;
+      }
+
+      .todo-text {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>TaskFlow</h1>
+    </header>
+
+    <div class="input-section">
+      <input type="text" id="todo-input" placeholder="Add a new task...">
+      <button id="add-button">Add</button>
+    </div>
+
+    <ul class="todo-list" id="todo-list">
+      <!-- Todo items will be added here -->
+    </ul>
+
+    <div class="empty-state" id="empty-state">
+      No tasks yet. Add one above!
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const todoInput = document.getElementById('todo-input');
+      const addButton = document.getElementById('add-button');
+      const todoList = document.getElementById('todo-list');
+      const emptyState = document.getElementById('empty-state');
+
+      // Load todos from localStorage
+      let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+      // Render todos on load
+      renderTodos();
+
+      // Add new todo
+      addButton.addEventListener('click', addTodo);
+      todoInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          addTodo();
+        }
+      });
+
+      function addTodo() {
+        const text = todoInput.value.trim();
+        if (text === '') return;
+
+        const newTodo = {
+          id: Date.now(),
+          text: text,
+          completed: false
+        };
+
+        todos.push(newTodo);
+        saveTodos();
+        renderTodos();
+        todoInput.value = '';
+      }
+
+      function toggleComplete(id) {
+        todos = todos.map(todo => 
+          todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        );
+        saveTodos();
+        renderTodos();
+      }
+
+      function deleteTodo(id) {
+        todos = todos.filter(todo => todo.id !== id);
+        saveTodos();
+        renderTodos();
+      }
+
+      function saveTodos() {
+        localStorage.setItem('todos', JSON.stringify(todos));
+      }
+
+      function renderTodos() {
+        todoList.innerHTML = '';
+
+        if (todos.length === 0) {
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        emptyState.style.display = 'none';
+
+        todos.forEach(todo => {
+          const li = document.createElement('li');
+          li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+          li.innerHTML = `
+            <span class="todo-text">${todo.text}</span>
+            <div class="todo-actions">
+              <button class="btn complete-btn" data-id="${todo.id}">${todo.completed ? 'Undo' : 'Complete'}</button>
+              <button class="btn delete-btn" data-id="${todo.id}">Delete</button>
+            </div>
+          `;
+          todoList.appendChild(li);
+
+          // Add event listeners
+          li.querySelector('.complete-btn').addEventListener('click', () => toggleComplete(todo.id));
+          li.querySelector('.delete-btn').addEventListener('click', () => deleteTodo(todo.id));
+        });
+      }
+    });
+  </script>
+</body>
+</html>

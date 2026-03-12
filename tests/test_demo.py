@@ -26,9 +26,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 @pytest.fixture(autouse=True)
 def _tmp_db(tmp_path, monkeypatch):
-    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "test_demo.db"))
+    tmp_db = str(tmp_path / "test_demo.db")
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", tmp_db)
     import config.settings as cs
     cs.settings = cs.Settings()
+    cs.settings.database_path = tmp_db  # prevent load_dotenv(override=True) clobber
     from data.database import init_db
     init_db()
     yield
@@ -51,9 +53,11 @@ def test_demo_subcommand_completes_and_shows_run_id(capsys):
 def test_demo_subcommand_generates_export_file(tmp_path, monkeypatch):
     """demo mode must create a Markdown export file."""
     # Point exports dir to tmp_path via db path
-    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "demo.db"))
+    tmp_db = str(tmp_path / "demo.db")
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", tmp_db)
     import config.settings as cs
     cs.settings = cs.Settings()
+    cs.settings.database_path = tmp_db  # prevent load_dotenv(override=True) clobber
     from data.database import init_db
     init_db()
 
@@ -87,9 +91,11 @@ def test_demo_export_failure_does_not_crash(capsys):
 
 def test_export_subcommand_most_recent_run(tmp_path, monkeypatch, capsys):
     """export (no --run-id) writes Markdown for the most recent run."""
-    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "export.db"))
+    tmp_db = str(tmp_path / "export.db")
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", tmp_db)
     import config.settings as cs
     cs.settings = cs.Settings()
+    cs.settings.database_path = tmp_db
     from data.database import init_db
     init_db()
 
@@ -106,9 +112,11 @@ def test_export_subcommand_most_recent_run(tmp_path, monkeypatch, capsys):
 
 def test_export_subcommand_specific_run_id(tmp_path, monkeypatch, capsys):
     """export --run-id <uuid> writes Markdown for that specific run."""
-    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "export2.db"))
+    tmp_db = str(tmp_path / "export2.db")
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", tmp_db)
     import config.settings as cs
     cs.settings = cs.Settings()
+    cs.settings.database_path = tmp_db
     from data.database import init_db
     init_db()
 

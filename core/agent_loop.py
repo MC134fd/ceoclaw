@@ -18,6 +18,8 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+from core import event_bus as _bus
+
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
@@ -28,6 +30,7 @@ from agents.ceo_agent import planner_node
 from agents.marketing_agent import marketing_executor_node
 from agents.ops_agent import ops_executor_node
 from agents.product_agent import product_executor_node
+from agents.quality_agent import quality_auditor_node
 from agents.sales_agent import sales_executor_node
 from core.prompts import (
     EvaluatorOutput,
@@ -55,28 +58,74 @@ _CB_THRESHOLD = 3
 # Stagnation threshold: cycles with no MRR growth before forced domain switch
 _STAGNATION_THRESHOLD = 3
 
+# Chronological workflow step sequence
+_CHRONO_STEPS = [
+    "product_build",
+    "marketing_launch",
+    "sales_outreach",
+    "ops_metrics",
+    "quality_audit",
+    "iterate",
+]
+
+# Map workflow step → SSE event type
+_STEP_TO_EVENT: dict[str, str] = {
+    "product_build": "product_spec_ready",
+    "marketing_launch": "marketing_executed",
+    "sales_outreach": "sales_executed",
+    "ops_metrics": "ops_evaluated",
+    "quality_audit": "quality_audited",
+    "iterate": "iteration_planned",
+}
+
+# Map workflow step → executor name
+_STEP_TO_EXECUTOR: dict[str, str] = {
+    "product_build": "product_executor",
+    "marketing_launch": "marketing_executor",
+    "sales_outreach": "sales_executor",
+    "ops_metrics": "ops_executor",
+    "quality_audit": "quality_auditor",
+    "iterate": "product_executor",   # iteration re-runs product with audit feedback
+}
+
 
 # ---------------------------------------------------------------------------
-# RouterNode  (circuit breaker)
+# RouterNode  (circuit breaker + chronological mode)
 # ---------------------------------------------------------------------------
 
 def router_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
-    """RouterNode: validate domain and enforce circuit breaker.
-
-    If any executor has failed ``_CB_THRESHOLD`` consecutive times, override
-    the domain to ``ops`` for a recovery cycle.
-    """
+    """RouterNode: validate domain, enforce circuit breaker, support chronological mode."""
     cycle_count = state.get("cycle_count", 0)
     domain = state.get("selected_domain", "product")
     consecutive_failures: dict[str, int] = state.get("consecutive_failures", {})
+    workflow_mode = state.get("workflow_mode", "adaptive")
 
     exec_id = log_node_start(
         run_id=state["run_id"],
         cycle_count=cycle_count,
         node_name="router",
-        input_summary=f"domain={domain}",
+        input_summary=f"domain={domain} mode={workflow_mode}",
     )
 
+    # ── Chronological mode: advance through the fixed sequence ──────────────
+    if workflow_mode == "chronological":
+        current_step = state.get("workflow_step", "")
+        try:
+            step_idx = _CHRONO_STEPS.index(current_step) if current_step in _CHRONO_STEPS else -1
+            next_step = _CHRONO_STEPS[(step_idx + 1) % len(_CHRONO_STEPS)]
+        except (ValueError, IndexError):
+            next_step = _CHRONO_STEPS[0]
+        executor = _STEP_TO_EXECUTOR[next_step]
+        # Derive domain from step for state consistency
+        step_domain = _executor_to_domain(executor)
+        log_node_finish(exec_id, output_summary=f"chrono→{next_step}→{executor}")
+        return {
+            "selected_domain": step_domain,
+            "workflow_step": next_step,
+            "circuit_breaker_active": False,
+        }
+
+    # ── Adaptive mode: standard domain routing ───────────────────────────────
     valid = {"product", "marketing", "sales", "ops"}
     if domain not in valid:
         domain = "product"
@@ -85,19 +134,35 @@ def router_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
     executor_key = f"{domain}_executor"
     cb_active = consecutive_failures.get(executor_key, 0) >= _CB_THRESHOLD
     if cb_active:
-        domain = "ops"
         log_node_finish(exec_id, output_summary="circuit_breaker→ops_recovery")
         return {
             "selected_domain": "ops",
             "selected_action": "circuit_breaker_recovery",
             "circuit_breaker_active": True,
+            "workflow_step": "ops_metrics",
         }
 
     log_node_finish(exec_id, output_summary=f"routed_to={domain}_executor")
     return {"selected_domain": domain, "circuit_breaker_active": False}
 
 
+def _executor_to_domain(executor: str) -> str:
+    mapping = {
+        "product_executor": "product",
+        "marketing_executor": "marketing",
+        "sales_executor": "sales",
+        "ops_executor": "ops",
+        "quality_auditor": "ops",
+    }
+    return mapping.get(executor, "product")
+
+
 def _route_from_router(state: CEOClawState) -> str:
+    """Return the correct executor node name."""
+    workflow_mode = state.get("workflow_mode", "adaptive")
+    if workflow_mode == "chronological":
+        step = state.get("workflow_step", "product_build")
+        return _STEP_TO_EXECUTOR.get(step, "product_executor")
     return f"{state.get('selected_domain', 'product')}_executor"
 
 
@@ -386,6 +451,7 @@ def build_graph() -> Any:
     workflow.add_node("marketing_executor", marketing_executor_node)
     workflow.add_node("sales_executor", sales_executor_node)
     workflow.add_node("ops_executor", ops_executor_node)
+    workflow.add_node("quality_auditor", quality_auditor_node)
     workflow.add_node("evaluator", evaluator_node)
     workflow.add_node("stop_check", stop_check_node)
 
@@ -400,11 +466,13 @@ def build_graph() -> Any:
             "marketing_executor": "marketing_executor",
             "sales_executor": "sales_executor",
             "ops_executor": "ops_executor",
+            "quality_auditor": "quality_auditor",
         },
     )
 
     for executor in [
-        "product_executor", "marketing_executor", "sales_executor", "ops_executor"
+        "product_executor", "marketing_executor", "sales_executor",
+        "ops_executor", "quality_auditor",
     ]:
         workflow.add_edge(executor, "evaluator")
 
@@ -422,11 +490,18 @@ def build_graph() -> Any:
 # Initial state
 # ---------------------------------------------------------------------------
 
-def _initial_state(run_id: str, goal_mrr: float) -> dict[str, Any]:
+def _initial_state(
+    run_id: str,
+    goal_mrr: float,
+    autonomy_mode: str = "A_AUTONOMOUS",
+    product_intent: dict[str, Any] | None = None,
+    workflow_mode: str = "adaptive",
+) -> dict[str, Any]:
     return {
         "run_id": run_id,
         "cycle_count": 0,
         "goal_mrr": goal_mrr,
+        "autonomy_mode": autonomy_mode,
         "latest_metrics": {},
         "active_product": None,
         "strategy": {},
@@ -448,6 +523,12 @@ def _initial_state(run_id: str, goal_mrr: float) -> dict[str, Any]:
         "errors": [],
         "stop_reason": None,
         "should_stop": False,
+        # v0.7 – instruction-driven workflow
+        "product_intent": product_intent or {},
+        "workflow_mode": workflow_mode,
+        "workflow_step": "",
+        "quality_audit": {},
+        "iteration_tasks": [],
     }
 
 
@@ -484,6 +565,10 @@ def run_graph(
     mock_mode: bool = False,
     max_cycles: int = 20,
     quiet: bool = False,
+    run_id: str | None = None,
+    autonomy_mode: str = "A_AUTONOMOUS",
+    product_intent: dict[str, Any] | None = None,
+    workflow_mode: str = "adaptive",
 ) -> dict[str, Any]:
     """Run the CEOClaw LangGraph.
 
@@ -500,7 +585,8 @@ def run_graph(
     """
     init_db()
 
-    run_id = str(uuid.uuid4())
+    if run_id is None:
+        run_id = str(uuid.uuid4())
     start_graph_run(run_id=run_id, goal_mrr=goal_mrr)
 
     effective_max = max_cycles if continuous else min(cycles, max_cycles)
@@ -510,6 +596,7 @@ def run_graph(
             "mock_mode": mock_mode,
             "max_cycles": effective_max,
             "stagnation_threshold": _STAGNATION_THRESHOLD,
+            "autonomy_mode": autonomy_mode,
         }
     }
 
@@ -522,12 +609,105 @@ def run_graph(
 
     final_state: dict[str, Any] = {}
     _last_printed_cycle: int = -1  # print exactly once per cycle, after evaluator runs
+
+    # Event-bus tracking variables
+    _last_planner_cycle: int = 0
+    _last_eval_cycle: int = -1
+    _last_stop: bool | None = None
+    _last_workflow_step: str = ""
+
+    _bus.emit(run_id, {
+        "type": "run_start",
+        "goal_mrr": goal_mrr,
+        "max_cycles": effective_max,
+        "mock_mode": mock_mode,
+        "autonomy_mode": autonomy_mode,
+        "workflow_mode": workflow_mode,
+    })
+
+    # Emit intent_parsed event if product_intent was provided
+    if product_intent:
+        _bus.emit(run_id, {
+            "type": "intent_parsed",
+            "product_name": product_intent.get("product_name", ""),
+            "product_type": product_intent.get("product_type", ""),
+            "target_user": product_intent.get("target_user", ""),
+            "core_features": product_intent.get("core_features", []),
+            "confidence": product_intent.get("confidence", 0.0),
+        })
+
     try:
         graph = build_graph()
         for event in graph.stream(
-            _initial_state(run_id, goal_mrr), config=config, stream_mode="values"
+            _initial_state(run_id, goal_mrr, autonomy_mode, product_intent, workflow_mode),
+            config=config,
+            stream_mode="values",
         ):
             final_state = event
+            cur_cycle: int = event.get("cycle_count", 0)
+            cur_eval_cycle: int = (event.get("evaluation") or {}).get("_eval_cycle", -1)
+            cur_should_stop: bool | None = event.get("should_stop")
+
+            # PlannerNode ran: cycle_count incremented
+            if cur_cycle > _last_planner_cycle and cur_cycle > 0:
+                _last_planner_cycle = cur_cycle
+                _bus.emit(run_id, {
+                    "type": "planner",
+                    "cycle": cur_cycle,
+                    "domain": event.get("selected_domain", ""),
+                    "action": event.get("selected_action", ""),
+                    "circuit_breaker": event.get("circuit_breaker_active", False),
+                    "stagnant_cycles": event.get("stagnant_cycles", 0),
+                    "model_mode": event.get("model_mode", "unknown"),
+                })
+
+            # Workflow step changed: emit granular step event
+            cur_step = event.get("workflow_step", "")
+            if cur_step and cur_step != _last_workflow_step:
+                _last_workflow_step = cur_step
+                _step_event_type = _STEP_TO_EVENT.get(cur_step, "step_started")
+                _bus.emit(run_id, {
+                    "type": _step_event_type,
+                    "step": cur_step,
+                    "cycle": cur_cycle,
+                    "workflow_mode": workflow_mode,
+                    "product_name": (event.get("product_intent") or {}).get("product_name", ""),
+                })
+
+            # EvaluatorNode ran: _eval_cycle sentinel changed
+            if cur_eval_cycle >= 0 and cur_eval_cycle != _last_eval_cycle:
+                _last_eval_cycle = cur_eval_cycle
+                metrics = event.get("latest_metrics") or {}
+                exec_result = event.get("executor_result") or {}
+                _bus.emit(run_id, {
+                    "type": "cycle_complete",
+                    "cycle": cur_cycle,
+                    "domain": event.get("selected_domain", ""),
+                    "action": event.get("selected_action", ""),
+                    "mrr": metrics.get("mrr", 0.0),
+                    "traffic": metrics.get("website_traffic", 0),
+                    "signups": metrics.get("signups", 0),
+                    "revenue": metrics.get("revenue", 0.0),
+                    "weighted_score": event.get("weighted_score", 0.0),
+                    "trend": event.get("trend_direction", "flat"),
+                    "stagnant_cycles": event.get("stagnant_cycles", 0),
+                    "recommendation": (event.get("evaluation") or {}).get("recommendation", ""),
+                    "risk_flags": (event.get("evaluation") or {}).get("risk_flags", []),
+                    "exec_status": exec_result.get("execution_status", "?"),
+                    "artifacts": exec_result.get("artifacts_created", []),
+                    "model_mode": event.get("model_mode", "unknown"),
+                })
+
+            # StopCheckNode ran: should_stop changed
+            if cur_should_stop is not None and cur_should_stop != _last_stop:
+                _last_stop = cur_should_stop
+                _bus.emit(run_id, {
+                    "type": "stop_check",
+                    "cycle": cur_cycle,
+                    "should_stop": cur_should_stop,
+                    "reason": event.get("stop_reason"),
+                })
+
             if not quiet:
                 cycle = final_state.get("cycle_count", 0)
                 eval_cycle = (final_state.get("evaluation") or {}).get("_eval_cycle", -1)
@@ -546,6 +726,21 @@ def run_graph(
             tokens_used=final_state.get("tokens_used", 0),
             external_calls=final_state.get("external_calls", 0),
         )
+        final_metrics = final_state.get("latest_metrics") or {}
+        _bus.emit(run_id, {
+            "type": "run_complete",
+            "run_id": run_id,
+            "cycles_run": final_state.get("cycle_count", 0),
+            "stop_reason": stop_reason,
+            "final_mrr": final_metrics.get("mrr", 0.0),
+            "final_weighted_score": final_state.get("weighted_score", 0.0),
+            "model_mode": final_state.get("model_mode", "unknown"),
+            "fallback_count": final_state.get("fallback_count", 0),
+            "tokens_used": final_state.get("tokens_used", 0),
+            "external_calls": final_state.get("external_calls", 0),
+            "error_count": len(final_state.get("errors", [])),
+        })
+        _bus.mark_done(run_id)
         if not quiet:
             print("-" * 100)
             print(
@@ -553,6 +748,8 @@ def run_graph(
                 f"errors={len(final_state.get('errors', []))}"
             )
     except Exception as exc:
+        _bus.emit(run_id, {"type": "run_error", "message": str(exc), "exc_type": type(exc).__name__})
+        _bus.mark_done(run_id)
         finish_graph_run(
             run_id=run_id,
             cycles_run=final_state.get("cycle_count", 0),

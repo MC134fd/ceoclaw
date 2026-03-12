@@ -97,6 +97,9 @@ def _dispatch(
 
 
 def _resolve_product_name(state: CEOClawState) -> str:
+    intent = state.get("product_intent") or {}
+    if intent.get("product_name"):
+        return intent["product_name"]
     if state.get("active_product"):
         return state["active_product"].get("name", "CEOClaw MVP")
     return "CEOClaw MVP"

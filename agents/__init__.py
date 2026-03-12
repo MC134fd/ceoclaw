@@ -14,6 +14,19 @@ New in v0.3 (hardening phase):
   - weighted_score        – composite KPI score (0.0–1.0)
   - trend_direction       – "up" | "down" | "flat" vs previous cycle
   - previous_weighted_score – score from previous cycle for trend computation
+  - autonomy_mode         – A_AUTONOMOUS | B_HUMAN_APPROVAL | C_ASSISTED | D_DRY_RUN
+
+New in v0.6 (full-stack AI upgrade):
+  - memory_context        – dict of key/value from persistent memory store
+  - discovered_prospects  – list of prospect dicts found this cycle
+  - research_citations    – list of citation dicts from live web search
+
+New in v0.7 (instruction-driven workflow):
+  - product_intent        – parsed intent from user chat message
+  - workflow_mode         – "chronological" | "adaptive"
+  - workflow_step         – current step in chronological mode
+  - quality_audit         – latest quality audit scorecard
+  - iteration_tasks       – improvement tasks from audit feedback
 """
 
 from operator import add
@@ -91,6 +104,35 @@ class CEOClawState(TypedDict, total=False):
     # Accumulated errors  (append reducer)
     # ------------------------------------------------------------------
     errors: Annotated[list[dict[str, Any]], add]
+
+    # ------------------------------------------------------------------
+    # Autonomy mode (v0.5)
+    # ------------------------------------------------------------------
+    autonomy_mode: str   # A_AUTONOMOUS | B_HUMAN_APPROVAL | C_ASSISTED | D_DRY_RUN
+
+    # ------------------------------------------------------------------
+    # Cross-run memory (v0.6)
+    # ------------------------------------------------------------------
+    memory_context: dict[str, str]          # key/value from persistent store
+
+    # ------------------------------------------------------------------
+    # Prospects discovered this cycle (v0.6)
+    # ------------------------------------------------------------------
+    discovered_prospects: list[dict[str, Any]]
+
+    # ------------------------------------------------------------------
+    # Live research citations (v0.6)
+    # ------------------------------------------------------------------
+    research_citations: list[dict[str, Any]]
+
+    # ------------------------------------------------------------------
+    # Instruction-driven workflow (v0.7)
+    # ------------------------------------------------------------------
+    product_intent: dict[str, Any]          # parsed from chat message
+    workflow_mode: str                      # "chronological" | "adaptive"
+    workflow_step: str                      # current step name
+    quality_audit: dict[str, Any]           # latest audit scorecard
+    iteration_tasks: list[str]              # improvement tasks from audit
 
     # ------------------------------------------------------------------
     # Stop signal

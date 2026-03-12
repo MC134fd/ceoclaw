@@ -1,0 +1,8 @@
+{
+  "product": "Build Dog App",
+  "endpoints": [
+    "/api/health",
+    "/api/data",
+    "/api/user"
+  ]
+}
