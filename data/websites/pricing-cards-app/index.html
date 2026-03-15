@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Luxury custom dog portraits by professional artists. Hand-painted & digital art for cherished pets.">
+  <title>Dog Portrait Studio — Premium Pet Art</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap');
+
+    /* ── Design tokens ─────────────────────────────────────────────────── */
+    :root {
+      /* Luxury green palette */
+      --color-primary: #1a3c2e;
+      --color-secondary: #2d5f49;
+      --color-tertiary: #4b8a6d;
+      --color-accent-gold: #d4af37;
+      --color-bg: #0a0a0a;
+      --color-surface: #121212;
+      --color-surface-2: #1a1a1a;
+      --color-border: rgba(212,175,55,0.1);
+      --color-text: #f8f5f0;
+      --color-muted: #a39e93;
+      --color-highlight: #e6d9b7;
+
+      /* Typography */
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Montserrat', system-ui, sans-serif;
+
+      /* Radii */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      /* Spacing scale */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+      --space-8: 3rem;
+
+      /* Layout */
+      --max-content-width: 1240px;
+      --space-container-x: clamp(1.25rem, 5vw, 2.5rem);
+      --space-section: clamp(4rem, 8vw, 6.75rem);
+      --space-stack-sm: var(--space-3);
+      --space-stack-md: var(--space-5);
+      --space-stack-lg: clamp(2rem, 4vw, 3rem);
+      --hero-text-width: 660px;
+      --card-pad: clamp(1.5rem, 3vw, 2rem);
+      --grid-gap: clamp(1rem, 2vw, 1.5rem);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-bg);
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────── */
+    .container {
+      max-width: var(--max-content-width);
+      margin-inline: auto;
+      padding-inline: var(--space-container-x);
+    }
+
+    /* ── Navbar ────────────────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding-block: var(--space-4);
+      background: rgba(10,10,10,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.25s ease, border-color 0.25s ease, padding 0.25s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(10,10,10,0.92);
+      border-bottom-color: rgba(212,175,55,0.12);
+      padding-block: var(--space-3);
+    }
+    .navbar-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--color-text);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: var(--space-6); list-style: none; }
+    .nav-links a {
+      color: var(--color-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--color-text); }
+    .nav-cta {
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── Hero ──────────────────────────────────────────────────────────── */
+    .hero {
+      padding-block: clamp(5rem, 10vw, 9rem) clamp(4rem, 7vw, 7rem);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(26,60,46,0.18) 0%, transparent 65%);
+      pointer-events: none;
+      transform: translateY(0);
+      transition: transform 0.35s ease;
+    }
+    .hero-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-stack-md);
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      max-width: var(--hero-text-width);
+      color: var(--color-text);
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--color-muted);
+      max-width: 520px;
+      line-height: 1.65;
+    }
+    .audience-note {
+      font-size: 0.875rem;
+      color: var(--color-secondary);
+      letter-spacing: 0.01em;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+    }
+    .btn-filled {
+      padding: 0.75rem 1.5rem;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-filled:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .btn-outline {
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      color: var(--color-accent-gold);
+      border: 1px solid var(--color-accent-gold);
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s ease;
+    }
+    .btn-outline:hover {
+      background: rgba(212,175,55,0.1);
+      transform: translateY(-2px);
+    }
+
+    /* ── Features ──────────────────────────────────────────────────────── */
+    .features {
+      padding: var(--space-section) 0;
+      text-align: center;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      margin-bottom: var(--space-5);
+    }
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--color-muted);
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: var(--grid-gap);
+    }
+
+    .feature-card {
+      background: linear-gradient(180deg, rgba(26,60,46,0.1), rgba(26,60,46,0.05));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--card-pad);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-align: left;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-3);
+      color: var(--color-accent-gold);
+    }
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: var(--space-2);
+    }
+    .feature-desc {
+      font-size: 0.9375rem;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Social Proof ──────────────────────────────────────────────────── */
+    .social-proof {
+      padding: var(--space-section) 0;
+      text-align: center;
+    }
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: var(--grid-gap);
+    }
+    .testimonial-card {
+      background: linear-gradient(180deg, rgba(26,60,46,0.1), rgba(26,60,46,0.05));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--card-pad);
+      backdrop-filter: blur(10px);
+      text-align: left;
+      position: relative;
+    }
+    .testimonial-quote {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--color-text);
+      line-height: 1.6;
+      margin-bottom: var(--space-3);
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .author-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--color-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .author-info {
+      font-size: 0.9375rem;
+    }
+    .author-name {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .author-role {
+      color: var(--color-muted);
+    }
+
+    /* ── Pre-footer CTA ────────────────────────────────────────────────── */
+    .pre-footer-cta {
+      padding: var(--space-section) 0;
+      background: var(--color-primary);
+      text-align: center;
+    }
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      margin-bottom: var(--space-3);
+    }
+    .cta-subtitle {
+      font-size: 1.1rem;
+      color: var(--color-muted);
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+    .cta-form {
+      display: flex;
+      flex-direction: column;
+      max-width: 500px;
+      margin: 0 auto;
+      gap: var(--space-3);
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .form-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+    .form-input {
+      padding: 0.75rem 1rem;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      color: var(--color-text);
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-accent-gold);
+    }
+    .submit-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--color-accent-gold);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .submit-btn:hover {
+      background: #c29d2e;
+      transform: translateY(-2px);
+    }
+
+    /* ── Pricing Cards ─────────────────────────────────────────────────── */
+    .pricing-section {
+      padding: var(--space-section) 0;
+      text-align: center;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: var(--grid-gap);
+    }
+    .pricing-card {
+      background: linear-gradient(180deg, rgba(26,60,46,0.1), rgba(26,60,46,0.05));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--card-pad);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .pricing-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+    .pricing-card.featured {
+      border-color: var(--color-accent-gold);
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+    }
+    .pricing-card.featured::before {
+      content: "Best Value";
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--color-accent-gold);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pricing-header {
+      margin-bottom: var(--space-4);
+    }
+    .pricing-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: var(--space-2);
+    }
+    .pricing-price {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--space-2);
+    }
+    .pricing-period {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+    }
+    .pricing-features {
+      list-style: none;
+      margin-bottom: var(--space-5);
+    }
+    .pricing-feature {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+      color: var(--color-text);
+      font-size: 0.9375rem;
+    }
+    .pricing-feature::before {
+      content: "✓";
+      color: var(--color-accent-gold);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .pricing-cta {
+      padding: 0.75rem 1.5rem;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .pricing-cta:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+    }
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    .footer {
+      padding: var(--space-6) 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--color-muted);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: var(--color-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: var(--color-text);
+    }
+    .copyright {
+      margin-top: var(--space-2);
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .hero h1 {
+        font-size: clamp(2.2rem, 7vw, 4rem);
+      }
+      .hero-sub {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      }
+      .section-title {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+      }
+      .pricing-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .navbar-inner {
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .hero {
+        padding-block: clamp(4rem, 12vw, 7rem);
+      }
+      .hero h1 {
+        font-size: clamp(2rem, 8vw, 3.5rem);
+      }
+      .section-title {
+        font-size: clamp(1.3rem, 6vw, 1.75rem);
+      }
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="brand">PawArt Studio</a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="pages/gallery.html">Gallery</a></li>
+        <li><a href="pages/about.html">About</a></li>
+        <li><a href="pages/contact.html">Contact</a></li>
+      </ul>
+      <a href="pages/signup.html" class="nav-cta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-gradient"></div>
+    <div class="hero-inner">
+      <h1>Timeless Dog Portraits</h1>
+      <p class="hero-sub">Hand-painted masterpieces capturing your beloved pet's unique spirit and personality.</p>
+      <p class="audience-note">For discerning pet owners who value artistry and legacy</p>
+      <div class="hero-ctas">
+        <button class="btn-filled">View Gallery</button>
+        <button class="btn-outline">Commission a Piece</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">Why Choose Our Art</h2>
+      <p class="section-subtitle">Each portrait is crafted with precision and passion, transforming your pet's essence into timeless art.</p>
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3 class="feature-title">Professional Artists</h3>
+          <p class="feature-desc">Our team consists of award-winning artists with years of experience in pet portraiture and fine art.</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon">🖼️</div>
+          <h3 class="feature-title">Custom Styles</h3>
+          <p class="feature-desc">Choose from hand-painted, digital, watercolor, or charcoal styles to match your vision.</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3 class="feature-title">Premium Materials</h3>
+          <p class="feature-desc">All prints are made on archival-quality paper with fade-resistant inks for lasting beauty.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Proof Section -->
+  <section class="social-proof">
+    <div class="container">
+      <h2 class="section-title">What Clients Say</h2>
+      <p class="section-subtitle">Trusted by hundreds of pet lovers worldwide to preserve their furry family members.</p>
+      <div class="proof-grid">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-card">
+          <p class="testimonial-quote">"I was skeptical about commissioning a portrait, but the final piece exceeded my expectations. My golden retriever looks more majestic than ever. This is not just art—it's a legacy."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">JS</div>
+            <div class="author-info">
+              <div class="author-name">Jennifer S.</div>
+              <div class="author-role">Dog Mom, New York</div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 2 -->
+        <div class="testimonial-card">
+          <p class="testimonial-quote">"After losing my beloved beagle last year, I commissioned this portrait as a tribute. The artist captured his playful spirit perfectly. It brings me comfort every time I look at it."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">MR</div>
+            <div class="author-info">
+              <div class="author-name">Mark R.</div>
+              <div class="author-role">Veterinarian, Chicago</div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 3 -->
+        <div class="testimonial-card">
+          <p class="testimonial-quote">"The quality and attention to detail are unmatched. I've seen many dog portraits, but none come close to the lifelike quality and emotional depth of these pieces. Worth every penny."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">LC</div>
+            <div class="author-info">
+              <div class="author-name">Linda C.</div>
+              <div class="author-role">Pet Photographer, Seattle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pre-footer CTA Section -->
+  <section class="pre-footer-cta">
+    <div class="container">
+      <h2 class="cta-title">Ready to Preserve Your Pet's Legacy?</h2>
+      <p class="cta-subtitle">Join thousands of satisfied customers who have transformed their cherished memories into stunning works of art.</p>
+      <form class="cta-form">
+        <div class="form-group">
+          <label for="email" class="form-label">Enter your email to get started</label>
+          <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
+        </div>
+        <button type="submit" class="submit-btn">Start Free Trial</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="pricing-section">
+    <div class="container">
+      <h2 class="section-title">Simple, Transparent Pricing</h2>
+      <p class="section-subtitle">Choose the perfect package for your pet portrait needs. All prices include shipping and framing options.</p>
+      <div class="pricing-grid">
+        <!-- Basic Plan -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="pricing-title">Basic</h3>
+            <div class="pricing-price">$199</div>
+            <div class="pricing-period">One-time</div>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Digital file only</li>
+            <li class="pricing-feature">Standard resolution (300 DPI)</li>
+            <li class="pricing-feature">Single pet portrait</li>
+            <li class="pricing-feature">Email delivery</li>
+          </ul>
+          <button class="pricing-cta">Select Plan</button>
+        </div>
+        <!-- Pro Plan -->
+        <div class="pricing-card featured">
+          <div class="pricing-header">
+            <h3 class="pricing-title">Pro</h3>
+            <div class="pricing-price">$399</div>
+            <div class="pricing-period">One-time</div>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">High-resolution digital file</li>
+            <li class="pricing-feature">Print-ready (300 DPI)</li>
+            <li class="pricing-feature">Physical print on premium paper</li>
+            <li class="pricing-feature">Framed option available</li>
+            <li class="pricing-feature">Two pets included</li>
+          </ul>
+          <button class="pricing-cta">Select Plan</button>
+        </div>
+        <!-- Premium Plan -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="pricing-title">Premium</h3>
+            <div class="pricing-price">$599</div>
+            <div class="pricing-period">One-time</div>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Ultra-high-resolution digital file</li>
+            <li class="pricing-feature">Artist-signed print</li>
+            <li class="pricing-feature">Premium framing (custom wood)</li>
+            <li class="pricing-feature">Personalized dedication card</li>
+            <li class="pricing-feature">Three pets included</li>
+            <li class="pricing-feature">Express delivery (7 days)</li>
+          </ul>
+          <button class="pricing-cta">Select Plan</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="pages/terms.html">Terms</a>
+        <a href="pages/privacy.html">Privacy</a>
+        <a href="pages/shipping.html">Shipping</a>
+        <a href="pages/faqs.html">FAQs</a>
+      </div>
+      <div class="copyright">
+        &copy; <span id="currentYear"></span> PawArt Studio. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Update current year in footer
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    // Sticky navbar
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 14) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Form validation
+    const form = document.querySelector('.cta-form');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById('email');
+      const email = emailInput.value.trim();
+      
+      // Simple email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      
+      // Simulate successful submission
+      alert('Thank you for signing up! We will contact you shortly.');
+      form.reset();
+    });
+  </script>
+</body>
+</html>

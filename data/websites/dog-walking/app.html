@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WalkPaw App — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --container-width: clamp(320px, 95vw, 1200px);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --radius: 12px;
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text)}
+    header{padding:var(--space-md);display:flex;align-items:center;justify-content:space-between}
+    .container{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+    .layout{display:grid;grid-template-columns:220px 1fr;gap:var(--space-md)}
+    .sidebar{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+    .content{padding:var(--space-md)}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+    .connect{display:flex;flex-direction:column;gap:var(--space-sm);max-width:420px}
+    input[type=password]{padding:var(--space-sm);border-radius:8px;border:1px solid rgba(20,83,45,0.08)}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);padding:10px 14px;border-radius:10px;border:0}
+
+    @media (max-width:1024px){.layout{grid-template-columns:1fr}} 
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div style="display:flex;gap:var(--space-md);align-items:center">
+      <div style="font-weight:700">WalkPaw</div>
+      <div style="color:var(--color-muted);font-size:0.95rem">Dashboard</div>
+    </div>
+    <div>
+      <a href="index.html">Home</a> • <a href="pages/pricing.html">Pricing</a> • <a href="pages/signup.html" class="btn-primary">Sign up</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="layout">
+      <aside class="sidebar">
+        <div style="font-weight:600;margin-bottom:var(--space-sm)">Your walks</div>
+        <nav style="display:flex;flex-direction:column;gap:8px">
+          <a href="#">Upcoming</a>
+          <a href="#">History</a>
+          <a href="#">Favorites</a>
+          <a href="#">Account</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <div class="card" style="margin-bottom:var(--space-md)">
+          <h2 style="font-family:'Cormorant Garamond',serif">Quick actions</h2>
+          <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-sm);flex-wrap:wrap">
+            <button class="btn-primary">Book a walk</button>
+            <button style="padding:10px;border-radius:10px;border:1px solid rgba(20,83,45,0.08)">Schedule weekly</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-family:'Cormorant Garamond',serif">Connect your account</h3>
+          <p style="color:var(--color-muted);margin-top:var(--space-sm)">Add integrations for payroll or partner perks. Provide an API token to connect third-party services.</p>
+          <div class="connect" style="margin-top:var(--space-sm)">
+            <label for="apiToken">API Token</label>
+            <input id="apiToken" type="password" placeholder="sk-..." aria-label="API token">
+            <div style="display:flex;gap:var(--space-sm);align-items:center">
+              <button id="connectBtn" class="btn-primary">Connect your account</button>
+              <div style="color:var(--color-muted);font-size:0.9rem">Your token is stored securely.</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // basic connect handler
+    document.getElementById('connectBtn').addEventListener('click',()=>{
+      const token = document.getElementById('apiToken').value.trim();
+      if(!token){alert('Please enter an API token (e.g. sk-...)');return}
+      // In a real app we'd POST securely. Here we simulate success.
+      alert('API token connected');
+    });
+  </script>
+</body>
+</html>

@@ -22,7 +22,7 @@ from services.file_persistence import save_website_files
 
 logger = logging.getLogger(__name__)
 
-_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt"}
+_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg"}
 _ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts"}
 
 

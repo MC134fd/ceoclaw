@@ -280,6 +280,56 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_session
 """
 
 
+# ---------------------------------------------------------------------------
+# Schema – accounts / credits (v1.0)
+# ---------------------------------------------------------------------------
+
+_SCHEMA_ACCOUNTS = """
+CREATE TABLE IF NOT EXISTS users (
+    id           TEXT PRIMARY KEY,          -- Supabase user id (sub)
+    email        TEXT UNIQUE NOT NULL,
+    display_name TEXT,
+    avatar_url   TEXT,
+    provider     TEXT NOT NULL DEFAULT 'google',
+    created_at   TEXT NOT NULL,
+    updated_at   TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id      TEXT NOT NULL,
+    tier         TEXT NOT NULL DEFAULT 'free',   -- free / pro / business
+    status       TEXT NOT NULL DEFAULT 'active', -- active / inactive
+    period_start TEXT,
+    period_end   TEXT,
+    created_at   TEXT NOT NULL,
+    updated_at   TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_credits (
+    user_id              TEXT PRIMARY KEY,
+    balance              INTEGER NOT NULL DEFAULT 0,
+    monthly_allocation   INTEGER NOT NULL DEFAULT 0,
+    updated_at           TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS credit_ledger (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         TEXT NOT NULL,
+    delta           INTEGER NOT NULL,      -- negative for usage, positive for grants
+    reason          TEXT NOT NULL,         -- generate_request / initial_grant / monthly_reset
+    ref_session_id  TEXT,
+    created_at      TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user ON user_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_ledger_user      ON credit_ledger(user_id, created_at DESC);
+"""
+
+
 _SCHEMA_V08 = """
 CREATE TABLE IF NOT EXISTS session_versions (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -335,9 +385,11 @@ def init_db() -> list[str]:
         conn.executescript(_SCHEMA_V06)
         conn.executescript(_SCHEMA_V07)
         conn.executescript(_SCHEMA_V08)
+        conn.executescript(_SCHEMA_ACCOUNTS)
         _migrate_graph_runs_budget_cols(conn)
         _migrate_graph_runs_autonomy_col(conn)
         _migrate_chat_sessions_design_system(conn)
+        _migrate_chat_sessions_owner_user_id(conn)
 
         rows = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
@@ -757,20 +809,28 @@ def upsert_chat_session(
     slug: str = "",
     product_name: str = "",
     version_id: str = "",
+    owner_user_id: Optional[str] = None,
 ) -> None:
-    """Create or update a chat session row (idempotent)."""
+    """Create or update a chat session row (idempotent).
+
+    owner_user_id is set once on creation via COALESCE — ownership is never
+    transferred after the row exists.
+    """
     now = utc_now()
     with get_connection() as conn:
         conn.execute(
             "INSERT OR IGNORE INTO chat_sessions "
-            "(session_id, slug, product_name, version_id, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (session_id, slug, product_name, version_id, now, now),
+            "(session_id, slug, product_name, version_id, owner_user_id, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (session_id, slug, product_name, version_id, owner_user_id, now, now),
         )
+        # COALESCE preserves the original owner if one was already set
         conn.execute(
-            "UPDATE chat_sessions SET slug=?, product_name=?, version_id=?, updated_at=? "
+            "UPDATE chat_sessions "
+            "SET slug=?, product_name=?, version_id=?, updated_at=?, "
+            "    owner_user_id=COALESCE(owner_user_id, ?) "
             "WHERE session_id=?",
-            (slug or "", product_name or "", version_id or "", now, session_id),
+            (slug or "", product_name or "", version_id or "", now, owner_user_id, session_id),
         )
 
 
@@ -818,7 +878,7 @@ def get_chat_session(session_id: str) -> Optional[dict]:
 
 
 def list_chat_sessions(limit: int = 50) -> list[dict]:
-    """Return recent sessions ordered by updated_at DESC."""
+    """Return recent sessions ordered by updated_at DESC (all users — admin/anon mode)."""
     with get_connection() as conn:
         rows = conn.execute(
             "SELECT s.session_id, s.slug, s.product_name, s.version_id, "
@@ -830,6 +890,40 @@ def list_chat_sessions(limit: int = 50) -> list[dict]:
             (limit,),
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+def list_chat_sessions_for_user(user_id: str, limit: int = 50) -> list[dict]:
+    """Return sessions owned by user_id, ordered by updated_at DESC."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT s.session_id, s.slug, s.product_name, s.version_id, "
+            "       s.created_at, s.updated_at, COUNT(m.id) as message_count "
+            "FROM chat_sessions s "
+            "LEFT JOIN chat_messages m ON m.session_id = s.session_id "
+            "WHERE s.owner_user_id = ? "
+            "GROUP BY s.session_id "
+            "ORDER BY s.updated_at DESC LIMIT ?",
+            (user_id, limit),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_chat_session_owned_by(session_id: str, user_id: str) -> Optional[dict]:
+    """Return session only if it belongs to user_id, else None."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM chat_sessions WHERE session_id=? AND owner_user_id=?",
+            (session_id, user_id),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def delete_chat_session(session_id: str) -> bool:
+    """Delete a session and all its messages. Returns True if a row was deleted."""
+    with get_connection() as conn:
+        conn.execute("DELETE FROM chat_messages WHERE session_id = ?", (session_id,))
+        cur = conn.execute("DELETE FROM chat_sessions WHERE session_id = ?", (session_id,))
+        return cur.rowcount > 0
 
 
 # ---------------------------------------------------------------------------
@@ -844,6 +938,18 @@ def _migrate_chat_sessions_design_system(conn: sqlite3.Connection) -> None:
         conn.execute(
             "ALTER TABLE chat_sessions ADD COLUMN design_system_json TEXT DEFAULT NULL"
         )
+
+
+def _migrate_chat_sessions_owner_user_id(conn: sqlite3.Connection) -> None:
+    """Add owner_user_id column + index to chat_sessions (idempotent)."""
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(chat_sessions)").fetchall()}
+    if "owner_user_id" not in existing:
+        conn.execute("ALTER TABLE chat_sessions ADD COLUMN owner_user_id TEXT DEFAULT NULL")
+    # Index creation is idempotent via IF NOT EXISTS
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_chat_sessions_owner "
+        "ON chat_sessions(owner_user_id, updated_at DESC)"
+    )
 
 
 def upsert_design_system(session_id: str, design_system: dict) -> None:
@@ -958,3 +1064,157 @@ def get_session_version(session_id: str, version_id: str) -> Optional[dict[str, 
     except (json.JSONDecodeError, TypeError):
         d["file_list"] = []
     return d
+
+
+# ---------------------------------------------------------------------------
+# User / account helpers (v1.0 accounts)
+# ---------------------------------------------------------------------------
+
+# Credits granted to new free-tier users — overridden by FREE_TIER_CREDITS env var via server
+_DEFAULT_FREE_CREDITS = 10
+
+
+def upsert_user(
+    user_id: str,
+    email: str,
+    display_name: Optional[str] = None,
+    avatar_url: Optional[str] = None,
+    provider: str = "google",
+) -> dict[str, Any]:
+    """Create or update a user row from Supabase JWT claims."""
+    now = utc_now()
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO users (id, email, display_name, avatar_url, provider, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                email        = excluded.email,
+                display_name = excluded.display_name,
+                avatar_url   = excluded.avatar_url,
+                provider     = excluded.provider,
+                updated_at   = excluded.updated_at
+            """,
+            (user_id, email, display_name, avatar_url, provider, now, now),
+        )
+        row = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    return dict(row) if row else {}
+
+
+def get_user_by_id(user_id: str) -> Optional[dict[str, Any]]:
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def get_user_by_email(email: str) -> Optional[dict[str, Any]]:
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+    return dict(row) if row else None
+
+
+def ensure_default_subscription_and_credits(
+    user_id: str,
+    free_credits: int = _DEFAULT_FREE_CREDITS,
+) -> None:
+    """Create a free subscription and initial credit grant if they don't already exist."""
+    now = utc_now()
+    with get_connection() as conn:
+        # Subscription: INSERT OR IGNORE keeps existing rows untouched
+        conn.execute(
+            "INSERT OR IGNORE INTO user_subscriptions "
+            "(user_id, tier, status, created_at, updated_at) "
+            "VALUES (?, 'free', 'active', ?, ?)",
+            (user_id, now, now),
+        )
+        # Credits: only seed once
+        existing = conn.execute(
+            "SELECT user_id FROM user_credits WHERE user_id=?", (user_id,)
+        ).fetchone()
+        if not existing:
+            conn.execute(
+                "INSERT INTO user_credits (user_id, balance, monthly_allocation, updated_at) "
+                "VALUES (?, ?, ?, ?)",
+                (user_id, free_credits, free_credits, now),
+            )
+            conn.execute(
+                "INSERT INTO credit_ledger (user_id, delta, reason, created_at) "
+                "VALUES (?, ?, 'initial_grant', ?)",
+                (user_id, free_credits, now),
+            )
+
+
+def get_user_credits(user_id: str) -> dict[str, Any]:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM user_credits WHERE user_id=?", (user_id,)
+        ).fetchone()
+    if not row:
+        return {"user_id": user_id, "balance": 0, "monthly_allocation": 0, "updated_at": ""}
+    return dict(row)
+
+
+def get_user_subscription(user_id: str) -> Optional[dict[str, Any]]:
+    """Return the active subscription row, or None."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM user_subscriptions WHERE user_id=? AND status='active' "
+            "ORDER BY created_at DESC LIMIT 1",
+            (user_id,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def deduct_credits(
+    user_id: str,
+    cost: int,
+    reason: str,
+    ref_session_id: Optional[str] = None,
+) -> dict[str, Any]:
+    """Atomically deduct credits and write a ledger entry.
+
+    Uses a conditional UPDATE (WHERE balance >= cost) to prevent overdraft even
+    under concurrent requests. Returns:
+      {"ok": True,  "balance_before": N, "balance_after": N-cost}
+      {"ok": False, "balance": N, "required": cost}   — insufficient
+    """
+    now = utc_now()
+    with get_connection() as conn:
+        # Read current balance for reporting
+        row = conn.execute(
+            "SELECT balance FROM user_credits WHERE user_id=?", (user_id,)
+        ).fetchone()
+        if not row:
+            return {"ok": False, "balance": 0, "required": cost}
+
+        balance_before = row["balance"]
+        if balance_before < cost:
+            return {"ok": False, "balance": balance_before, "required": cost}
+
+        # Atomic conditional UPDATE — WHERE balance >= cost prevents overdraft
+        result = conn.execute(
+            "UPDATE user_credits SET balance = balance - ?, updated_at = ? "
+            "WHERE user_id = ? AND balance >= ?",
+            (cost, now, user_id, cost),
+        )
+        if result.rowcount == 0:
+            # Concurrent request raced us to the last credits
+            return {"ok": False, "balance": balance_before, "required": cost}
+
+        conn.execute(
+            "INSERT INTO credit_ledger (user_id, delta, reason, ref_session_id, created_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (user_id, -cost, reason, ref_session_id, now),
+        )
+
+    return {"ok": True, "balance_before": balance_before, "balance_after": balance_before - cost}
+
+
+def get_credit_ledger(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
+    """Return recent credit ledger entries for a user, newest first."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM credit_ledger WHERE user_id=? ORDER BY created_at DESC LIMIT ?",
+            (user_id, limit),
+        ).fetchall()
+    return [dict(r) for r in rows]

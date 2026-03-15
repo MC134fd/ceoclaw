@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign up — WalkPaw</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --container-width: clamp(320px, 90vw, 720px);
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+      --text-base: clamp(1rem, 1.1vw, 1.05rem);
+      --radius: 12px;
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text)}
+    .container{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md);padding-block:var(--space-2xl)}
+    .card{background:var(--color-surface);padding:var(--space-lg);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+    h1{font-family:'Cormorant Garamond',serif;letter-spacing:-0.025em}
+    form{display:flex;flex-direction:column;gap:var(--space-md);margin-top:var(--space-md)}
+    label{font-size:var(--text-base);color:var(--color-muted)}
+    input{padding:var(--space-sm);border-radius:8px;border:1px solid rgba(20,83,45,0.08);font-size:var(--text-base)}
+    .btn{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;padding:0 var(--space-md);cursor:pointer}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);border:0}
+    .info{color:var(--color-muted);font-size:var(--text-sm)}
+    .links{display:flex;gap:var(--space-sm);margin-top:var(--space-sm)}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <nav style="display:flex;justify-content:space-between;align-items:center">
+      <a href="../index.html">← Back to WalkPaw</a>
+      <div style="display:flex;gap:var(--space-sm)"><a href="../index.html">Home</a><a href="../pages/pricing.html">Pricing</a><a href="../app.html" class="btn btn-primary">App</a></div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Create your WalkPaw account</h1>
+      <p class="info">Start a free trial and book your first walk. No card required for the free tier.</p>
+
+      <form id="signupForm" novalidate>
+        <div>
+          <label for="fullname">Full name</label>
+          <input id="fullname" name="fullname" type="text" required aria-label="Full name" placeholder="Alex Johnson">
+        </div>
+
+        <div>
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" required aria-label="Email address" placeholder="you@citymail.com">
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required aria-label="Password" placeholder="Create a secure password">
+        </div>
+
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;align-items:center">
+          <button type="submit" class="btn btn-primary">Create account</button>
+          <div class="info">By signing up you agree to WalkPaw’s Terms — we value pet safety and privacy.</div>
+        </div>
+      </form>
+
+      <div class="links">Already have an account? <a href="../app.html">Sign in</a></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('signupForm');
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const email = form.email.value.trim();
+      const password = form.password.value.trim();
+      const fullname = form.fullname.value.trim();
+      // basic validation
+      if(!fullname || !email || !password){alert('Please complete all required fields.');return}
+      const emailRe = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if(!emailRe.test(email)){alert('Please enter a valid email address.');return}
+      // On success → app entry
+      // In production, we'd POST to backend. For this demo, redirect to app.
+      window.location.href = '../app.html';
+    });
+  </script>
+</body>
+</html>

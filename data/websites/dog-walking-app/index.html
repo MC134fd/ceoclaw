@@ -10,15 +10,15 @@
 
     /* ── Design tokens ─────────────────────────────────────────────────── */
     :root {
-      /* Colors — category: saas */
-      --color-primary: #6366f1;
-      --color-secondary: #a78bfa;
-      --color-tertiary: #c4b5fd;
-      --color-bg: #0a0a0f;
-      --color-surface: #12121a;
-      --color-border: rgba(255,255,255,0.06);
-      --color-text: #f0f0ff;
-      --color-muted: #6b7280;
+      /* Colors — category: saas (luxury green fade) */
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
+      --color-tertiary: #6ee7b7;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
+      --color-border: rgba(255,255,255,0.08);
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
 
       /* Typography */
       --font-display: 'Playfair Display', Georgia, serif;
@@ -26,13 +26,13 @@
 
       /* Radii */
       --radius-sm: 4px;
-      --radius-md: 10px;
-      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
 
       /* Shadows */
       --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
       --shadow-md: 0 4px 24px rgba(0,0,0,.5);
-      --shadow-lg: 0 16px 48px rgba(0,0,0,.6);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
 
       /* Spacing scale */
       --space-1: 0.25rem;   /*  4px */
@@ -79,14 +79,14 @@
       top: 0;
       z-index: 100;
       padding-block: var(--space-4);
-      background: rgba(10,10,15,0.75);
+      background: rgba(2,11,24,0.75);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--color-border);
       transition: background 0.25s ease, border-color 0.25s ease, padding 0.25s ease;
     }
     .navbar.scrolled {
-      background: rgba(10,10,15,0.92);
+      background: rgba(2,11,24,0.92);
       border-bottom-color: rgba(255,255,255,0.12);
       padding-block: var(--space-3);
     }
@@ -130,7 +130,7 @@
     .hero-gradient {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(99,102,241,0.2) 0%, transparent 65%);
+      background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(6,182,212,0.2) 0%, transparent 65%);
       pointer-events: none;
       transform: translateY(0);
       transition: transform 0.35s ease;
@@ -168,7 +168,80 @@
       flex-wrap: wrap;
       margin-top: var(--space-2);
     }
+    .btn-filled {
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 120px;
+    }
+    .btn-filled:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-outline {
+      padding: var(--space-2) var(--space-5);
+      background: transparent;
+      color: var(--color-primary);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 120px;
+    }
+    .btn-outline:hover {
+      background: rgba(6,182,212,0.1);
+      transform: translateY(-2px);
+    }
 
+    /* ── Features ──────────────────────────────────────────────────────── */
+    .features {
+      padding-block: var(--space-section);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: var(--grid-gap);
+    }
+    .feature-card {
+      background: rgba(15,25,41,0.6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--card-pad);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(34,211,238,0.2);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-secondary);
+    }
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-3);
+      color: var(--color-primary);
+    }
+    .feature-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+      color: var(--color-text);
+    }
+    .feature-desc {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Social Proof ──────────────────────────────────────────────────── */
     .proof-strip {
       padding-block: 0 var(--space-section);
     }
@@ -189,468 +262,373 @@
       font-family: var(--font-display);
       font-size: clamp(1.75rem, 4vw, 2.5rem);
       line-height: 1.1;
-      letter-spacing: -0.02em;
-      margin-bottom: var(--space-2);
-      color: var(--color-text);
+      color: var(--color-secondary);
     }
     .proof-label {
-      color: var(--color-muted);
       font-size: 0.875rem;
-      letter-spacing: 0.01em;
-    }
-
-    /* ── Buttons ───────────────────────────────────────────────────────── */
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.8125rem 2rem;
-      background: var(--color-primary);
-      color: #fff;
-      border-radius: var(--radius-md);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9375rem;
-      letter-spacing: -0.01em;
-      box-shadow: var(--shadow-md);
-      transition: opacity 0.2s, transform 0.2s;
-    }
-    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.8125rem 2rem;
-      background: transparent;
-      color: var(--color-text);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: var(--radius-md);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.9375rem;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .btn-secondary:hover { border-color: var(--color-primary); color: var(--color-primary); }
-
-    /* ── Section heading system ────────────────────────────────────────── */
-    .section-header { margin-bottom: var(--space-stack-lg); }
-    .section-label {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--color-primary);
-      margin-bottom: var(--space-stack-sm);
-    }
-    .section-title {
-      font-family: var(--font-display);
-      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      line-height: 1.15;
-    }
-    .section-intro {
-      margin-top: var(--space-stack-sm);
-      font-size: 1rem;
       color: var(--color-muted);
-      max-width: 520px;
-      line-height: 1.65;
+      margin-top: 4px;
     }
-
-    /* ── Features ──────────────────────────────────────────────────────── */
-    .features { padding-block: var(--space-section); }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-      gap: var(--grid-gap);
-    }
-    .feature-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: var(--card-pad);
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .feature-card:hover {
-      border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-      box-shadow: var(--shadow-sm);
-    }
-    .feature-icon {
-      font-size: 1.75rem;
-      line-height: 1;
-      margin-bottom: var(--space-3);
-    }
-    .feature-title {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: var(--color-text);
-      margin-bottom: var(--space-2);
-      line-height: 1.4;
-    }
-    .feature-text { color: var(--color-muted); font-size: 0.875rem; line-height: 1.65; }
-
-    /* ── Signup form ────────────────────────────────────────────────────── */
-    .signup-form { width: 100%; max-width: 480px; margin-inline: auto; }
-    .form-row {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-    .form-input {
-      flex: 1;
-      min-width: 0;
-      padding: 0.8125rem 1rem;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--color-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--color-text);
-      font-size: 0.9375rem;
-      font-family: var(--font-body);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .form-input::placeholder { color: var(--color-muted); }
-    .form-input:focus { border-color: var(--color-primary); }
-    .form-btn { flex-shrink: 0; }
-    .form-note { margin-top: var(--space-2); font-size: 0.8125rem; color: var(--color-muted); }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
     /* ── Testimonials ──────────────────────────────────────────────────── */
-    .testimonials { padding-block: var(--space-section); }
-    .testimonials-grid {
+    .testimonials {
+      padding-block: var(--space-section);
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
       gap: var(--grid-gap);
     }
     .testimonial-card {
-      background: var(--color-surface);
+      background: rgba(15,25,41,0.6);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-lg);
       padding: var(--card-pad);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(34,211,238,0.2);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
     }
-    .testimonial-quote {
-      font-size: 0.9375rem;
-      color: var(--color-muted);
-      line-height: 1.7;
-      flex: 1;
+    .testimonial-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-secondary);
     }
-    .testimonial-author { display: flex; align-items: center; gap: var(--space-3); }
-    .avatar {
-      width: 38px;
-      height: 38px;
+    .testimonial-avatar {
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       background: var(--color-primary);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 0.8125rem;
-      color: #fff;
-      flex-shrink: 0;
-      letter-spacing: 0.02em;
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin-bottom: var(--space-3);
     }
-    .author-name { font-weight: 600; font-size: 0.875rem; line-height: 1.3; }
-    .author-role { font-size: 0.75rem; color: var(--color-muted); margin-top: var(--space-1); }
-
-    /* ── CTA section ───────────────────────────────────────────────────── */
-    .cta-section { padding-block: var(--space-section); text-align: center; }
-    .cta-box {
-      background: var(--color-surface);
-      border: 1px solid rgba(99,102,241,0.22);
-      border-radius: var(--radius-lg);
-      padding: clamp(3rem, 7vw, 5rem) var(--space-container-x);
-      position: relative;
-      overflow: hidden;
+    .testimonial-name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 4px;
     }
-    .cta-box::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(99,102,241,0.09) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .cta-box h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      margin-bottom: var(--space-stack-sm);
-      position: relative;
-    }
-    .cta-box p {
+    .testimonial-role {
+      font-size: 0.75rem;
       color: var(--color-muted);
-      margin-bottom: var(--space-stack-lg);
-      position: relative;
-      font-size: 1rem;
-      max-width: 440px;
-      margin-inline: auto;
+      margin-bottom: var(--space-2);
     }
-    .cta-box .btn-primary { position: relative; }
-
-    /* ── Footer ────────────────────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--color-border);
-      padding-block: clamp(2rem, 4vw, 3rem);
+    .testimonial-quote {
       font-size: 0.875rem;
       color: var(--color-muted);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* ── Pre-footer CTA ────────────────────────────────────────────────── */
+    .pre-footer {
+      padding-block: var(--space-section);
+      text-align: center;
+      background: linear-gradient(135deg, rgba(6,182,212,0.1) 0%, rgba(34,211,238,0.1) 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(34,211,238,0.2);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-sm);
+    }
+    .pre-footer h2 {
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+      font-weight: 700;
+      margin-bottom: var(--space-3);
+      color: var(--color-text);
+    }
+    .pre-footer p {
+      font-size: 1rem;
+      color: var(--color-muted);
+      max-width: 600px;
+      margin: 0 auto var(--space-4);
+    }
+    .signup-form {
+      display: flex;
+      max-width: 500px;
+      margin: 0 auto;
+      gap: var(--space-2);
+    }
+    .signup-input {
+      flex: 1;
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text);
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .signup-input:focus {
+      border-color: var(--color-primary);
+    }
+    .signup-btn {
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .signup-btn:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+    }
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    .footer {
+      padding-block: var(--space-6);
+      border-top: 1px solid var(--color-border);
+      text-align: center;
     }
     .footer-inner {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: var(--space-4);
+      max-width: var(--max-content-width);
+      margin-inline: auto;
     }
-    .footer-links { display: flex; gap: var(--space-5); list-style: none; }
-    .footer-links a { color: var(--color-muted); text-decoration: none; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--color-text); }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(14px);
-      transition: opacity 0.45s ease, transform 0.45s ease;
-      will-change: opacity, transform;
+    .footer-brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--color-text);
+      text-decoration: none;
     }
-    .reveal.is-visible {
-      opacity: 1;
-      transform: translateY(0);
+    .footer-nav {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-5);
+      list-style: none;
+    }
+    .footer-nav a {
+      color: var(--color-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .footer-nav a:hover {
+      color: var(--color-text);
+    }
+    .footer-copyright {
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      margin-top: var(--space-2);
     }
 
     /* ── Responsive ────────────────────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .proof-grid { grid-template-columns: 1fr; }
+    @media (max-width: 1024px) {
+      .hero {
+        padding-block: clamp(4rem, 10vw, 7rem);
+      }
+      .hero h1 {
+        font-size: clamp(2.2rem, 5vw, 4rem);
+      }
+      .features,
+      .testimonials {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      }
+      .proof-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
-    @media (max-width: 480px) {
-      .hero-ctas { flex-direction: column; align-items: center; }
-      .btn-primary, .btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
-      .footer-inner { flex-direction: column; text-align: center; }
-      .footer-links { justify-content: center; }
+    
+    @media (max-width: 640px) {
+      .navbar-inner {
+        gap: var(--space-4);
+      }
+      .nav-links {
+        gap: var(--space-4);
+      }
+      .hero {
+        padding-block: clamp(3rem, 12vw, 5rem);
+      }
+      .hero h1 {
+        font-size: clamp(1.8rem, 7vw, 3.25rem);
+      }
+      .hero-sub {
+        font-size: 0.9375rem;
+      }
+      .hero-ctas {
+        flex-direction: column;
+        align-items: center;
+      }
+      .btn-filled,
+      .btn-outline {
+        min-width: 100%;
+      }
+      .features,
+      .testimonials {
+        grid-template-columns: 1fr;
+      }
+      .proof-grid {
+        grid-template-columns: 1fr;
+      }
+      .signup-form {
+        flex-direction: column;
+      }
+      .footer-nav {
+        flex-direction: column;
+        gap: var(--space-3);
+      }
     }
   </style>
 </head>
 <body>
   <header class="navbar">
-    <div class="container">
-      <div class="navbar-inner">
-        <a class="brand" href="/">Dog Walking App</a>
-        <nav aria-label="Primary">
-          <ul class="nav-links">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#testimonials">Reviews</a></li>
-            <li><a href="#signup">Get Started</a></li>
-          </ul>
-        </nav>
-        <a class="nav-cta" href="#signup">Get Started</a>
-      </div>
+    <div class="container navbar-inner">
+      <a href="/" class="brand">PawPath</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/features">Features</a></li>
+          <li><a href="/reviews">Reviews</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+      </nav>
+      <a href="/signup" class="nav-cta">Get Started</a>
     </div>
   </header>
 
-  <main>
-    <section class="hero" aria-labelledby="hero-heading">
-      <div class="hero-gradient" aria-hidden="true"></div>
-      <div class="container">
-        <div class="hero-inner">
-          <p class="section-label">Dog Walking App</p>
-          <h1 id="hero-heading">The smarter core functionality platform built for general users.</h1>
-          <p class="hero-sub">Build every core functionality — then see exactly where you stand with Dog Walking App.</p>
-          <p class="audience-note">Built for general users</p>
-          <div class="hero-ctas">
-            <a class="btn-primary" href="#signup">Get Started</a>
-            <a class="btn-secondary" href="#features">See how it works</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="proof-strip" aria-label="Performance highlights">
-      <div class="container">
-        <div class="proof-grid">
-          <article class="proof-card reveal">
-            <strong class="proof-value"><span data-count="87">0</span>%</strong>
-            <p class="proof-label">Teams report faster release cycles in the first month.</p>
-          </article>
-          <article class="proof-card reveal">
-            <strong class="proof-value"><span data-count="320">0</span>K+</strong>
-            <p class="proof-label">Automated actions executed across production workflows.</p>
-          </article>
-          <article class="proof-card reveal">
-            <strong class="proof-value"><span data-count="4">0</span>.9/5</strong>
-            <p class="proof-label">Average user satisfaction from product and growth teams.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="features" id="features" aria-labelledby="features-heading">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-label">Features</span>
-          <h2 class="section-title" id="features-heading">Everything you need to succeed</h2>
-        </div>
-        <div class="features-grid">
-      <div class="feature-card reveal" style="transition-delay:70ms">
-        <div class="feature-icon" aria-hidden="true">✦</div>
-        <h3 class="feature-title">Core functionality</h3>
-        <p class="feature-text">core functionality</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:140ms">
-        <div class="feature-icon" aria-hidden="true">📈</div>
-        <h3 class="feature-title">User dashboard</h3>
-        <p class="feature-text">user dashboard</p>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:210ms">
-        <div class="feature-icon" aria-hidden="true">📁</div>
-        <h3 class="feature-title">Data export</h3>
-        <p class="feature-text">data export</p>
-      </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="testimonials" id="testimonials" aria-labelledby="testimonials-heading">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-label">Testimonials</span>
-          <h2 class="section-title" id="testimonials-heading">Loved by teams worldwide</h2>
-        </div>
-        <div class="testimonials-grid">
-          <div class="testimonial-card reveal">
-            <p class="testimonial-quote">"This completely changed how our team operates. The ROI was immediately apparent within the first week of use."</p>
-            <div class="testimonial-author">
-              <div class="avatar" aria-hidden="true">AK</div>
-              <div><div class="author-name">Alex Kim</div><div class="author-role">Head of Product, Nexus</div></div>
-            </div>
-          </div>
-          <div class="testimonial-card reveal" style="transition-delay:80ms">
-            <p class="testimonial-quote">"We evaluated a dozen tools and nothing came close. Onboarding took minutes and the results speak for themselves."</p>
-            <div class="testimonial-author">
-              <div class="avatar" aria-hidden="true">SL</div>
-              <div><div class="author-name">Sofia Laurent</div><div class="author-role">CTO, Meridian Labs</div></div>
-            </div>
-          </div>
-          <div class="testimonial-card reveal" style="transition-delay:140ms">
-            <p class="testimonial-quote">"I was skeptical at first, but after one month our productivity increased by 40%. Genuinely impressive."</p>
-            <div class="testimonial-author">
-              <div class="avatar" aria-hidden="true">MR</div>
-              <div><div class="author-name">Marcus Reid</div><div class="author-role">Founder, Orbit</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta-section" id="signup" aria-labelledby="cta-heading">
-      <div class="container">
-        <div class="cta-box">
-          <h2 id="cta-heading">Start your free trial today</h2>
-          <p>Join thousands of people already using Dog Walking App. Set up in under 2 minutes.</p>
-          
-          <form class="signup-form" onsubmit="return handleSignup(event)">
-            <div class="form-row">
-              <label for="email" class="sr-only">Email address</label>
-              <input id="email" type="email" name="email" class="form-input"
-                placeholder="Enter your email" autocomplete="email" required
-                aria-label="Email address" />
-              <button type="submit" class="btn-primary form-btn">Get Started</button>
-            </div>
-            <p class="form-note">No credit card required. Cancel anytime.</p>
-          </form>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">
-      <div class="footer-inner">
-        <span>&copy; <span id="year">2025</span> Dog Walking App. All rights reserved.</span>
-        <ul class="footer-links">
-          <li><a href="/privacy">Privacy</a></li>
-          <li><a href="/terms">Terms</a></li>
-          <li><a href="mailto:hello@dogwalkingapp.com">Contact</a></li>
-        </ul>
+  <section class="hero">
+    <div class="hero-gradient"></div>
+    <div class="container hero-inner">
+      <h1>Experience the Future of Dog Walking</h1>
+      <p class="hero-sub">Seamlessly connect with trusted walkers, track every adventure, and give your pup the perfect daily routine.</p>
+      <p class="audience-note">For discerning pet parents who demand excellence</p>
+      <div class="hero-ctas">
+        <button class="btn-filled">Start Free Trial</button>
+        <button class="btn-outline">Watch Demo</button>
       </div>
     </div>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🐾</div>
+      <h3 class="feature-title">Smart Matching</h3>
+      <p class="feature-desc">Our AI-powered algorithm pairs you with vetted walkers based on your dog's personality, breed, and activity preferences for optimal compatibility.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <h3 class="feature-title">Real-time Tracking</h3>
+      <p class="feature-desc">Monitor your dog's walk live with GPS tracking, route visualization, and automatic check-ins that keep you informed every step of the way.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📸</div>
+      <h3 class="feature-title">Photo Journal</h3>
+      <p class="feature-desc">Receive curated photos and videos from each walk, capturing your dog's joyful moments and creating lasting memories.</p>
+    </div>
+  </section>
+
+  <section class="proof-strip">
+    <div class="container proof-grid">
+      <div class="proof-card">
+        <span class="proof-value">12K+</span>
+        <span class="proof-label">Happy Dogs Walked</span>
+      </div>
+      <div class="proof-card">
+        <span class="proof-value">98%</span>
+        <span class="proof-label">Satisfaction Rate</span>
+      </div>
+      <div class="proof-card">
+        <span class="proof-value">4.9/5</span>
+        <span class="proof-label">Customer Rating</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <div class="testimonial-card">
+      <div class="testimonial-avatar">JS</div>
+      <div class="testimonial-name">Julia Smith</div>
+      <div class="testimonial-role">Dog Parent & Yoga Instructor</div>
+      <p class="testimonial-quote">"I was skeptical about trusting strangers with my golden retriever, but PawPath exceeded my expectations. The matching system found someone who truly understands my dog's energy level, and I can now enjoy my morning yoga without worry."</p>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-avatar">MT</div>
+      <div class="testimonial-name">Marcus Thompson</div>
+      <div class="testimonial-role">Tech Entrepreneur</div>
+      <p class="testimonial-quote">"As someone who travels frequently, I needed a reliable solution for my French bulldog. PawPath's real-time tracking and photo journal have given me peace of mind while I'm away, and my dog looks happier than ever."</p>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-avatar">LC</div>
+      <div class="testimonial-name">Lena Chen</div>
+      <div class="testimonial-role">Pet Wellness Coach</div>
+      <p class="testimonial-quote">"I've recommended PawPath to all my clients. The ability to track exercise levels and monitor health through walking patterns has been invaluable in creating personalized wellness plans for their dogs."</p>
+    </div>
+  </section>
+
+  <section class="pre-footer">
+    <div class="container">
+      <h2>Ready to Give Your Dog the Perfect Daily Adventure?</h2>
+      <p>Join thousands of satisfied pet parents who trust PawPath for their dog walking needs. Start your free trial today and experience the difference.</p>
+      <form class="signup-form">
+        <input type="email" placeholder="Enter your email" class="signup-input" required aria-label="Email address">
+        <button type="submit" class="signup-btn">Start Free Trial</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <a href="/" class="footer-brand">PawPath</a>
+      <nav>
+        <ul class="footer-nav">
+          <li><a href="/features">Features</a></li>
+          <li><a href="/reviews">Reviews</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+      <p class="footer-copyright">&copy; 2025 PawPath. All rights reserved.</p>
+    </div>
   </footer>
+
   <script>
-    (() => {
-      const navbar = document.querySelector(".navbar");
-      const heroGradient = document.querySelector(".hero-gradient");
-      const revealables = document.querySelectorAll(".reveal");
-      const counters = document.querySelectorAll("[data-count]");
-      let countersStarted = false;
-
-      const setNavState = () => {
-        if (!navbar) return;
-        navbar.classList.toggle("scrolled", window.scrollY > 14);
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.2 });
-
-      revealables.forEach((el) => observer.observe(el));
-
-      const animateCounters = () => {
-        if (countersStarted) return;
-        countersStarted = true;
-        counters.forEach((node) => {
-          const target = Number(node.getAttribute("data-count") || "0");
-          let current = 0;
-          const step = Math.max(1, Math.ceil(target / 36));
-          const tick = () => {
-            current = Math.min(target, current + step);
-            node.textContent = String(current);
-            if (current < target) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        });
-      };
-
-      const counterSection = document.querySelector(".proof-strip");
-      if (counterSection) {
-        const counterObserver = new IntersectionObserver((entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            animateCounters();
-            counterObserver.disconnect();
-          }
-        }, { threshold: 0.35 });
-        counterObserver.observe(counterSection);
+    // Sticky navbar
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 14) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
       }
+    });
 
-      window.addEventListener("scroll", () => {
-        setNavState();
-        if (heroGradient) {
-          const shift = Math.min(window.scrollY * 0.12, 36);
-          heroGradient.style.transform = `translateY(${shift}px)`;
+    // Reveal on scroll
+    const revealElements = document.querySelectorAll('.feature-card, .testimonial-card, .proof-card');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal');
         }
-      }, { passive: true });
+      });
+    }, { threshold: 0.1 });
+    
+    revealElements.forEach(el => observer.observe(el));
 
-      const yearNode = document.getElementById("year");
-      if (yearNode) yearNode.textContent = String(new Date().getFullYear());
-      setNavState();
-    })();
-
-    function handleSignup(e) {
+    // Form validation
+    const signupForm = document.querySelector('.signup-form');
+    signupForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const form = e.target;
-      const email = form.querySelector('input[type="email"]');
-      if (!email || !email.value.includes('@')) {
-        email && (email.style.borderColor = '#ef4444');
-        return false;
+      const emailInput = document.querySelector('.signup-input');
+      const email = emailInput.value.trim();
+      
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address');
+        return;
       }
-      const btn = form.querySelector('button[type="submit"]');
-      if (btn) { btn.textContent = 'Check your email ✓'; btn.disabled = true; }
-      return false;
-    }
+      
+      alert('Thank you for signing up! We'll send you a confirmation email shortly.');
+      signupForm.reset();
+    });
   </script>
 </body>
 </html>

@@ -66,12 +66,6 @@ class Settings:
         self.flock_mock_mode = _bool_env("FLOCK_MOCK_MODE", False)
         self.flock_auth_strategy = os.getenv("FLOCK_AUTH_STRATEGY", "both").lower().strip()
 
-        if not self.flock_mock_mode and not self.flock_endpoint:
-            logger.warning(
-                "[Settings] FLOCK_ENDPOINT is not set and FLOCK_MOCK_MODE=false. "
-                "Live API calls will fail. Set FLOCK_ENDPOINT or FLOCK_MOCK_MODE=true."
-            )
-
         # ── Web Research ───────────────────────────────────────────────
         self.web_research_enabled = _bool_env("WEB_RESEARCH_ENABLED", True)
         self.web_research_provider_order = [
@@ -95,9 +89,19 @@ class Settings:
         # Supabase
         self.supabase_url = os.getenv("SUPABASE_URL", "").strip()
         self.supabase_service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+        self.supabase_anon_key = os.getenv("SUPABASE_ANON_KEY", "").strip()
+        self.supabase_jwt_secret = os.getenv("SUPABASE_JWT_SECRET", "").strip()
         self.supabase_schema = os.getenv("SUPABASE_SCHEMA", "public").strip()
 
-        # ── OpenAI fallback provider ───────────────────────────────────
+        # ── Auth + Credits feature flags ──────────────────────────────
+        # AUTH_REQUIRED=true → builder endpoints require a valid Supabase JWT
+        self.auth_required = _bool_env("AUTH_REQUIRED", False)
+        # CREDITS_ENFORCED=true → generation is blocked when balance < cost
+        self.credits_enforced = _bool_env("CREDITS_ENFORCED", False)
+        # Credits granted to new free-tier users on sign-up
+        self.free_tier_credits = _int_env("FREE_TIER_CREDITS", 10)
+
+        # ── OpenAI primary provider ────────────────────────────────────
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
         self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
         self.openai_endpoint = os.getenv(
@@ -105,6 +109,13 @@ class Settings:
         ).strip()
         raw_mode = os.getenv("OPENAI_API_MODE", "auto").lower().strip()
         self.openai_api_mode = raw_mode if raw_mode in ("auto", "responses", "chat") else "auto"
+
+        if self.openai_api_key:
+            logger.info(
+                "[Settings] OpenAI API key detected (model=%s, mode=%s).",
+                self.openai_model,
+                self.openai_api_mode,
+            )
 
         # ── Social publishing ──────────────────────────────────────────
         self.x_api_key = os.getenv("X_API_KEY", "").strip()
@@ -137,6 +148,10 @@ class Settings:
     @property
     def has_supabase(self) -> bool:
         return bool(self.supabase_url and self.supabase_service_role_key)
+
+    @property
+    def has_supabase_auth(self) -> bool:
+        return bool(self.supabase_url and self.supabase_jwt_secret)
 
     @property
     def live_research_available(self) -> bool:

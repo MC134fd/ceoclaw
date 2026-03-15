@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 _MAX_VERSIONS = 10
 
 # Security allowlists
-_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt"}
+_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg"}
 _ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts"}
 
 # Max file size: 1 MB

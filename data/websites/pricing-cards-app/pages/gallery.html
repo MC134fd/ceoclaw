@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dog Portrait Studio — Gallery</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap');
+
+    /* ── Design tokens ─────────────────────────────────────────────────── */
+    :root {
+      /* Luxury green palette */
+      --color-primary: #1a3c2e;
+      --color-secondary: #2d5f49;
+      --color-tertiary: #4b8a6d;
+      --color-accent-gold: #d4af37;
+      --color-bg: #0a0a0a;
+      --color-surface: #121212;
+      --color-surface-2: #1a1a1a;
+      --color-border: rgba(212,175,55,0.1);
+      --color-text: #f8f5f0;
+      --color-muted: #a39e93;
+      --color-highlight: #e6d9b7;
+
+      /* Typography */
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Montserrat', system-ui, sans-serif;
+
+      /* Radii */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      /* Spacing scale */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.5rem;
+      --space-6: 2rem;
+      --space-8: 3rem;
+
+      /* Layout */
+      --max-content-width: 1240px;
+      --space-container-x: clamp(1.25rem, 5vw, 2.5rem);
+      --space-section: clamp(4rem, 8vw, 6.75rem);
+      --space-stack-sm: var(--space-3);
+      --space-stack-md: var(--space-5);
+      --space-stack-lg: clamp(2rem, 4vw, 3rem);
+      --hero-text-width: 660px;
+      --card-pad: clamp(1.5rem, 3vw, 2rem);
+      --grid-gap: clamp(1rem, 2vw, 1.5rem);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--color-text);
+      background: var(--color-bg);
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────── */
+    .container {
+      max-width: var(--max-content-width);
+      margin-inline: auto;
+      padding-inline: var(--space-container-x);
+    }
+
+    /* ── Navbar ────────────────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding-block: var(--space-4);
+      background: rgba(10,10,10,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.25s ease, border-color 0.25s ease, padding 0.25s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(10,10,10,0.92);
+      border-bottom-color: rgba(212,175,55,0.12);
+      padding-block: var(--space-3);
+    }
+    .navbar-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--color-text);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: var(--space-6); list-style: none; }
+    .nav-links a {
+      color: var(--color-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--color-text); }
+    .nav-cta {
+      padding: var(--space-2) var(--space-5);
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── Hero ──────────────────────────────────────────────────────────── */
+    .hero {
+      padding-block: clamp(5rem, 10vw, 9rem) clamp(4rem, 7vw, 7rem);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(26,60,46,0.18) 0%, transparent 65%);
+      pointer-events: none;
+      transform: translateY(0);
+      transition: transform 0.35s ease;
+    }
+    .hero-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-stack-md);
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      max-width: var(--hero-text-width);
+      color: var(--color-text);
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--color-muted);
+      max-width: 520px;
+      line-height: 1.65;
+    }
+    .audience-note {
+      font-size: 0.875rem;
+      color: var(--color-secondary);
+      letter-spacing: 0.01em;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: var(--space-2);
+    }
+    .btn-filled {
+      padding: 0.75rem 1.5rem;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-filled:hover {
+      background: var(--color-secondary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .btn-outline {
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      color: var(--color-accent-gold);
+      border: 1px solid var(--color-accent-gold);
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s ease;
+    }
+    .btn-outline:hover {
+      background: rgba(212,175,55,0.1);
+      transform: translateY(-2px);
+    }
+
+    /* ── Gallery ───────────────────────────────────────────────────────── */
+    .gallery-header {
+      text-align: center;
+      margin-bottom: var(--space-6);
+    }
+    .gallery-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      margin-bottom: var(--space-3);
+    }
+    .gallery-description {
+      font-size: 1.1rem;
+      color: var(--color-muted);
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: var(--grid-gap);
+      margin-top: var(--space-stack-lg);
+    }
+
+    .gallery-item {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .gallery-item:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+    .gallery-item-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent, rgba(10,10,10,0.8));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .gallery-item:hover .gallery-item-overlay {
+      opacity: 1;
+    }
+    .gallery-item-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-text);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* ── Modal ────────────────────────────────────────────────────────── */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: rgba(0,0,0,0.6);
+      color: var(--color-text);
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover {
+      background: rgba(0,0,0,0.8);
+    }
+    .modal-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: var(--color-text);
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    .footer {
+      padding: var(--space-6) 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--color-muted);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: var(--color-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: var(--color-text);
+    }
+    .copyright {
+      margin-top: var(--space-2);
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .hero h1 {
+        font-size: clamp(2.2rem, 7vw, 4rem);
+      }
+      .hero-sub {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      }
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .navbar-inner {
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .hero {
+        padding-block: clamp(4rem, 12vw, 7rem);
+      }
+      .hero h1 {
+        font-size: clamp(2rem, 8vw, 3.5rem);
+      }
+      .gallery-grid {
+        grid-template-columns: 1fr;
+      }
+      .modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="brand">PawArt Studio</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="pages/gallery.html" class="active">Gallery</a></li>
+        <li><a href="pages/about.html">About</a></li>
+        <li><a href="pages/contact.html">Contact</a></li>
+      </ul>
+      <a href="pages/signup.html" class="nav-cta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-gradient"></div>
+    <div class="hero-inner">
+      <h1>Timeless Dog Portraits</h1>
+      <p class="hero-sub">Hand-painted masterpieces capturing your beloved pet's unique spirit and personality.</p>
+      <p class="audience-note">For discerning pet owners who value artistry and legacy</p>
+      <div class="hero-ctas">
+        <button class="btn-filled">View All Artwork</button>
+        <button class="btn-outline">Commission a Piece</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Header -->
+  <div class="container">
+    <div class="gallery-header">
+      <h2 class="gallery-title">Featured Works</h2>
+      <p class="gallery-description">
+        Explore our curated collection of premium dog portraits, each created with meticulous attention to detail and emotional depth.
+      </p>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="gallery-grid">
+      <!-- Gallery Item 1 -->
+      <div class="gallery-item" data-src="assets/dog-portrait-1.jpg" data-title="Bella the Golden Retriever">
+        <img src="assets/dog-portrait-1.jpg" alt="Bella the Golden Retriever portrait">
+        <div class="gallery-item-overlay">
+          <span class="gallery-item-title">Bella</span>
+        </div>
+      </div>
+
+      <!-- Gallery Item 2 -->
+      <div class="gallery-item" data-src="assets/dog-portrait-2.jpg" data-title="Max the German Shepherd">
+        <img src="assets/dog-portrait-2.jpg" alt="Max the German Shepherd portrait">
+        <div class="gallery-item-overlay">
+          <span class="gallery-item-title">Max</span>
+        </div>
+      </div>
+
+      <!-- Gallery Item 3 -->
+      <div class="gallery-item" data-src="assets/dog-portrait-3.jpg" data-title="Luna the Poodle">
+        <img src="assets/dog-portrait-3.jpg" alt="Luna the Poodle portrait">
+        <div class="gallery-item-overlay">
+          <span class="gallery-item-title">Luna</span>
+        </div>
+      </div>
+
+      <!-- Gallery Item 4 -->
+      <div class="gallery-item" data-src="assets/dog-portrait-4.jpg" data-title="Charlie the Beagle">
+        <img src="assets/dog-portrait-4.jpg" alt="Charlie the Beagle portrait">
+        <div class="gallery-item-overlay">
+          <span class="gallery-item-title">Charlie</span>
+        </div>
+      </div>
+
+      <!-- Gallery Item 5 -->
+      <div class="gallery-item" data-src="assets/dog-portrait-5.jpg" data-title="Daisy the Corgi">
+        <img src="assets/dog-portrait-5.jpg" alt="Daisy the Corgi portrait">
+        <div class="gallery-item-overlay">
+          <span class="gallery-item-title">Daisy</span>
+        </div>
+      </div>
+
+      <!-- Gallery Item 6 -->
+      <div class="gallery-item" data-src="assets/dog-portrait-6.jpg" data-title="Rocky the Bulldog">
+        <img src="assets/dog-portrait-6.jpg" alt="Rocky the Bulldog portrait">
+        <div class="gallery-item-overlay">
+          <span class="gallery-item-title">Rocky</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Image Viewer -->
+  <div class="modal" id="imageModal">
+    <div class="modal-content">
+      <img src="" alt="" class="modal-image" id="modalImage">
+      <button class="modal-close" aria-label="Close modal">×</button>
+      <div class="modal-caption" id="modalCaption"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="pages/terms.html">Terms</a>
+      <a href="pages/privacy.html">Privacy</a>
+      <a href="pages/shipping.html">Shipping</a>
+      <a href="pages/faqs.html">FAQs</a>
+    </div>
+    <div class="copyright">
+      &copy; <span id="currentYear"></span> PawArt Studio. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    // Update current year in footer
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    // Modal functionality
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const closeModal = document.querySelector('.modal-close');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    // Open modal when clicking on gallery item
+    galleryItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const src = item.getAttribute('data-src');
+        const title = item.getAttribute('data-title');
+        modalImage.src = src;
+        modalCaption.textContent = title;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    // Close modal when clicking close button or outside
+    closeModal.addEventListener('click', () => {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Handle keyboard events
+    document.addEventListener('keydown', (e) => {
+      if (modal.classList.contains('active')) {
+        if (e.key === 'Escape') {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    });
+
+    // Sticky navbar
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 14) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+  </script>
+</body>
+</html>

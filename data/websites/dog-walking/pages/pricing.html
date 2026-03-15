@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — WalkPaw</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --container-width: clamp(320px, 90vw, 1000px);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --radius: 12px;
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text)}
+    .container{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md);padding-block:var(--space-2xl)}
+    h1{font-family:'Cormorant Garamond',serif}
+    .pricing-grid{display:grid;gap:var(--space-md);grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+    .tier{border-radius:var(--radius);overflow:hidden}
+    .tier .inner{padding:var(--space-md);background:var(--color-surface);box-shadow:0 8px 20px rgba(0,0,0,0.06)}
+    .tier.pro{border:2px solid transparent;background-image:var(--accent-gradient);background-origin:border-box}
+    .tier.pro .inner{background:linear-gradient(0deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85));}
+    .price{font-size:1.4rem;font-weight:700}
+    .cta{margin-top:var(--space-md)}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);padding:10px 18px;border-radius:10px;border:0}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <nav style="display:flex;justify-content:space-between;align-items:center">
+      <a href="../index.html">← WalkPaw</a>
+      <div style="display:flex;gap:12px"><a href="../pages/signup.html">Sign up</a><a href="../app.html">App</a></div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Transparent pricing that fits city life</h1>
+    <p style="color:var(--color-muted)">Choose a plan that matches how often you need walks, with discounts for weekly routines.</p>
+
+    <section style="margin-top:var(--space-md)" class="pricing-grid">
+      <div class="tier">
+        <div class="inner">
+          <div style="font-weight:600">Free</div>
+          <div class="price">$0 / mo</div>
+          <div style="color:var(--color-muted);margin-top:8px">On-demand booking, limited scheduling, community-rated walkers</div>
+          <div class="cta"><a href="signup.html" class="btn-primary">Get started free</a></div>
+        </div>
+      </div>
+
+      <div class="tier pro">
+        <div class="inner">
+          <div style="font-weight:600">Pro</div>
+          <div class="price">$9 / mo</div>
+          <div style="color:var(--color-muted);margin-top:8px">Priority matching, weekly scheduling, premium background checks, discounted add-ons</div>
+          <div class="cta"><a href="signup.html" class="btn-primary stripe-checkout">Start free trial</a></div>
+        </div>
+      </div>
+
+      <div class="tier">
+        <div class="inner">
+          <div style="font-weight:600">Enterprise</div>
+          <div class="price">Custom</div>
+          <div style="color:var(--color-muted);margin-top:8px">For housing providers and workplace programs — custom onboarding and neighborhood vetting</div>
+          <div class="cta"><a href="signup.html" class="btn-primary">Contact sales</a></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

@@ -3,12 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BuildLog } from './components/BuildLog';
 import { ChatMessage } from './components/ChatMessage';
 import { Composer } from './components/Composer';
+import { LandingPage } from './components/LandingPage';
 import { ModelStatusBadge } from './components/ModelStatusBadge';
 import { PreviewPane } from './components/PreviewPane';
 import { SessionSidebar } from './components/SessionSidebar';
+import { TopBarUser } from './components/TopBarUser';
+import { useAuth } from './hooks/useAuth';
 import { useChat } from './hooks/useChat';
 import { useSession } from './hooks/useSession';
-import { getSessionHistory } from './services/api';
+import { isAuthEnabled } from './lib/supabase';
+import { InsufficientCreditsError, getSessionHistory } from './services/api';
 import type { Message, ModelInfo, Session } from './types';
 
 const QUICK_PROMPTS = [
@@ -19,8 +23,9 @@ const QUICK_PROMPTS = [
 
 export default function App() {
   const queryClient = useQueryClient();
+  const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
   const { sessionId, setSessionId, clearSession } = useSession();
-  const { messages, sendViaPipeline, pipelineStages, isLoading, error, chatResponse, resetMessages } =
+  const { messages, sendViaPipeline, pipelineStages, isLoading, isTyping, error, chatResponse, resetMessages } =
     useChat(sessionId);
 
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
@@ -28,8 +33,10 @@ export default function App() {
   const [appUrl, setAppUrl] = useState<string | null>(null);
   const [lastModel, setLastModel] = useState<ModelInfo | null>(null);
   const [isSessionDrawerOpen, setIsSessionDrawerOpen] = useState(false);
+  const [isOutOfCredits, setIsOutOfCredits] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, isLoading]);
@@ -49,8 +56,15 @@ export default function App() {
     pipelineStages.find((s) => s.status === 'running')?.stage_label ?? 'Generating...';
 
   const handleSend = useCallback(
-    (text: string) => {
-      void sendViaPipeline(text, false);
+    async (text: string) => {
+      setIsOutOfCredits(false);
+      try {
+        await sendViaPipeline(text, false);
+      } catch (err) {
+        if (err instanceof InsufficientCreditsError) {
+          setIsOutOfCredits(true);
+        }
+      }
     },
     [sendViaPipeline],
   );
@@ -62,9 +76,18 @@ export default function App() {
     setLandingUrl(null);
     setAppUrl(null);
     setLastModel(null);
-    // Refresh sessions list in sidebar
+    setIsOutOfCredits(false);
     void queryClient.invalidateQueries({ queryKey: ['sessions'] });
   }, [clearSession, resetMessages, queryClient]);
+
+  const handleSessionDeleted = useCallback(
+    (deletedId: string) => {
+      if (deletedId === sessionId) {
+        handleNewSession();
+      }
+    },
+    [sessionId, handleNewSession],
+  );
 
   const handleSelectSession = useCallback(
     async (session: Session) => {
@@ -108,6 +131,18 @@ export default function App() {
     return -1;
   })();
 
+  // ── Auth gate: show landing page when Supabase is configured but user is not signed in ──
+  if (isAuthEnabled && !authLoading && !user) {
+    return <LandingPage onSignIn={signInWithGoogle} />;
+  }
+  if (isAuthEnabled && authLoading) {
+    return (
+      <div className="app-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>Signing in…</span>
+      </div>
+    );
+  }
+
   return (
     <div className="app-root">
       {/* Topbar */}
@@ -129,7 +164,10 @@ export default function App() {
             CEO<span style={{ color: 'var(--accent)' }}>Claw</span>
           </div>
         </div>
-        <ModelStatusBadge model={lastModel} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <ModelStatusBadge model={lastModel} />
+          {user && <TopBarUser user={user} onSignOut={signOut} />}
+        </div>
       </header>
 
       {/* Workspace */}
@@ -138,24 +176,13 @@ export default function App() {
         <div className="app-chat-panel">
           {/* Error banner */}
           {error && (
-            <div
-              style={{
-                padding: '8px 16px',
-                background: 'rgba(239,68,68,0.08)',
-                borderBottom: '1px solid rgba(239,68,68,0.2)',
-                fontSize: 12,
-                color: 'var(--error)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
+            <div className="app-error-banner">
               <span>⚠</span>
               <span>{error}</span>
             </div>
           )}
 
-          {/* Messages */}
+          {/* Messages — scrollable region */}
           <div className="app-messages">
             {/* Welcome message */}
             {messages.length === 0 && (
@@ -184,6 +211,7 @@ export default function App() {
                 key={msg.id}
                 message={msg}
                 chatResponse={idx === lastAssistantIdx ? chatResponse : null}
+                isTyping={isTyping && idx === lastAssistantIdx}
               />
             ))}
 
@@ -191,11 +219,12 @@ export default function App() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Composer */}
+          {/* Composer — always rendered, sticky at bottom */}
           <Composer
             onSubmit={handleSend}
             disabled={isLoading}
             placeholder="Describe your product or request a change…"
+            outOfCredits={isOutOfCredits}
           />
         </div>
 
@@ -234,10 +263,10 @@ export default function App() {
             currentSessionId={sessionId}
             onSelectSession={handleSelectSession}
             onNewSession={handleNewSession}
+            onSessionDeleted={handleSessionDeleted}
           />
         </div>
       </div>
-
     </div>
   );
 }

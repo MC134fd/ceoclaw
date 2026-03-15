@@ -54,9 +54,6 @@ export function PreviewPane({
     if (wasGeneratingRef.current && !isGenerating) {
       const shouldRefresh =
         completionToken === null || completionToken !== lastCompletionTokenRef.current;
-      // #region agent log
-      fetch('http://127.0.0.1:7942/ingest/59b4fe2b-fbec-4c75-a07b-b5ac8d9b0c55',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ae58c9'},body:JSON.stringify({sessionId:'ae58c9',runId:`preview_${Date.now()}`,hypothesisId:'H4',location:'frontend/src/components/PreviewPane.tsx:57',message:'generation transition detected',data:{wasGenerating:wasGeneratingRef.current,isGenerating,completionToken,lastToken:lastCompletionTokenRef.current,shouldRefresh},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (shouldRefresh) {
         setRefreshKey((k) => k + 1);
         if (completionToken) {
@@ -150,17 +147,7 @@ export function PreviewPane({
           {sessionId && (
             <button
               onClick={handleToggleVersions}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 6,
-                border: '1px solid var(--border)',
-                background: showVersions ? 'var(--accent)' : 'var(--surface-2)',
-                color: showVersions ? '#fff' : 'var(--text-muted)',
-                fontSize: 11,
-                cursor: 'pointer',
-                fontFamily: 'var(--font)',
-                transition: 'all 0.12s',
-              }}
+              className={`preview-versions-btn${showVersions ? ' preview-versions-btn--active' : ''}`}
               data-testid="versions-button"
             >
               Versions
@@ -197,42 +184,19 @@ export function PreviewPane({
       {/* Versions panel */}
       {showVersions && (
         <div className="preview-versions-panel" data-testid="versions-panel">
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 12,
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              marginBottom: 10,
-            }}
-          >
-            Version History
-          </div>
+          <div className="preview-versions-header">Version History</div>
           {versionsLoading && (
-            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Loading...</div>
+            <div className="preview-version-date">Loading...</div>
           )}
           {!versionsLoading && versions.length === 0 && (
-            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>No versions saved yet.</div>
+            <div className="preview-version-date">No versions saved yet.</div>
           )}
           {!versionsLoading &&
             versions.map((v) => (
-              <div
-                key={v.version_id}
-                style={{
-                  padding: '8px 0',
-                  borderBottom: '1px solid var(--border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 8,
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text)' }}>
-                    {v.version_id}
-                  </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+              <div key={v.version_id} className="preview-version-item">
+                <div className="preview-version-info">
+                  <div className="preview-version-id">{v.version_id}</div>
+                  <div className="preview-version-date">
                     {v.file_list.length} file{v.file_list.length !== 1 ? 's' : ''} &middot;{' '}
                     {new Date(v.created_at).toLocaleString()}
                   </div>
@@ -240,16 +204,7 @@ export function PreviewPane({
                 <button
                   onClick={() => handleRestore(v.version_id)}
                   disabled={restoring === v.version_id}
-                  style={{
-                    padding: '3px 10px',
-                    borderRadius: 5,
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface-2)',
-                    color: 'var(--accent)',
-                    fontSize: 11,
-                    cursor: restoring === v.version_id ? 'wait' : 'pointer',
-                    flexShrink: 0,
-                  }}
+                  className="preview-restore-btn"
                   data-testid={`restore-${v.version_id}`}
                 >
                   {restoring === v.version_id ? '...' : 'Restore'}
@@ -263,20 +218,7 @@ export function PreviewPane({
       <div className="preview-pane-body">
         {!hasPreview && (
           <div className="preview-placeholder" data-testid="preview-placeholder">
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 16,
-                background: 'var(--surface-2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 28,
-              }}
-            >
-              🏗
-            </div>
+            <div className="preview-placeholder-icon">🏗</div>
             <p style={{ textAlign: 'center', maxWidth: 240, lineHeight: 1.5, margin: 0 }}>
               Your generated site will appear here after your first message.
             </p>
@@ -298,11 +240,9 @@ export function PreviewPane({
             <div className="preview-loading-shimmer" />
             <div className="preview-loading-card">
               <span className="preview-loading-spinner" />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>
-                  Updating preview...
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{generationPhase}</span>
+              <div className="preview-loading-inner">
+                <span className="preview-loading-title">Updating preview...</span>
+                <span className="preview-loading-phase">{generationPhase}</span>
               </div>
             </div>
           </div>

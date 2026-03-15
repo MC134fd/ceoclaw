@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up — FitFlow</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #16a34a; --color-secondary:#15803d; --color-accent-pink:#ec4899; --color-bg:#f0fdf4; --color-surface:#ffffff; --color-text:#14532d; --color-muted:#6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 50%, var(--color-accent-pink) 100%);
+      --space-xs: clamp(0.25rem,0.5vw,0.5rem); --space-sm: clamp(0.5rem,1vw,0.75rem); --space-md: clamp(0.75rem,1.5vw,1.25rem); --space-lg: clamp(1rem,2vw,1.75rem); --space-xl: clamp(1.5rem,3vw,2.5rem); --space-2xl: clamp(2rem,5vw,4rem);
+      --text-sm: clamp(0.85rem,1vw,0.95rem); --text-base: clamp(1rem,1.2vw,1.05rem); --text-lg: clamp(1.15rem,1.6vw,1.25rem); --container-width: clamp(320px,90vw,1200px);
+      --radius:12px; --shadow-sm:0 1px 4px rgba(0,0,0,.07);
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text);}
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+    nav{padding-block:var(--space-sm)}
+    .card{background:var(--color-surface);padding:var(--space-lg);border-radius:var(--radius);box-shadow:var(--shadow-sm);}
+    h2{font-family:'Cormorant Garamond';font-size:var(--text-2xl);margin:0 0 var(--space-md) 0}
+    form{display:flex;flex-direction:column;gap:var(--space-sm)}
+    label{font-size:var(--text-sm)}
+    input[type=email],input[type=password]{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);font-size:var(--text-base)}
+    .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 var(--space-md);border-radius:var(--radius);cursor:pointer;background:var(--accent-gradient);color:#fff;border:0}
+    .note{font-size:var(--text-sm);color:var(--color-muted)}
+    footer{margin-top:var(--space-lg);font-size:var(--text-sm);color:var(--color-muted)}
+  </style>
+</head>
+<body>
+  <nav class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <a href="../index.html" style="font-family:'Cormorant Garamond'">FitFlow</a>
+      <div style="display:flex;gap:12px"><a href="../app.html">Open app</a><a href="pricing.html">Pricing</a></div>
+    </div>
+  </nav>
+
+  <main class="wrap" style="padding-block:var(--space-2xl)">
+    <div class="card" style="max-width:520px;margin-inline:auto">
+      <h2>Create your FitFlow account</h2>
+      <p class="note">Start free — upgrade anytime. Use email and a secure password to begin tracking gym workouts instantly.</p>
+
+      <form id="signup-form" novalidate>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" aria-label="Email" required />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" aria-label="Password" minlength="8" required />
+        </div>
+        <div>
+          <label for="goal">Primary goal</label>
+          <select id="goal" name="goal" aria-label="Primary fitness goal" style="padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)">
+            <option value="strength">Build strength</option>
+            <option value="hypertrophy">Gain muscle</option>
+            <option value="conditioning">Improve conditioning</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
+          <button type="submit" class="btn">Create account</button>
+          <a href="../index.html" style="align-self:center;color:var(--color-secondary)">Back</a>
+        </div>
+      </form>
+      <p id="form-error" style="color:#b42318;font-size:var(--text-sm);margin-top:var(--space-sm);display:none"></p>
+    </div>
+
+    <footer class="wrap">
+      <p style="text-align:center;color:var(--color-muted);">By creating an account you agree to FitFlow's Terms — built for gym goers.</p>
+    </footer>
+  </main>
+
+  <script>
+    // Basic client-side validation and redirect to app.html
+    const form = document.getElementById('signup-form');
+    const err = document.getElementById('form-error');
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      err.style.display = 'none';
+      const email = form.email.value.trim();
+      const pass = form.password.value;
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(email)) { err.textContent = 'Please enter a valid email.'; err.style.display='block'; form.email.focus(); return; }
+      if (pass.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.display='block'; form.password.focus(); return; }
+      // Simulate signup and navigate to app
+      window.location.href = '../app.html';
+    });
+  </script>
+</body>
+</html>

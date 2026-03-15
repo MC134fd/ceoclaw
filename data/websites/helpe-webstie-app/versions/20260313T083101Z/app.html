@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeLayout Studio — Share and discover home layout designs</title>
+  <style>
+    /* Font import (required by design system) */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      /* Framer Aura palette (follow exactly) */
+      --color-primary: #6366f1;
+      --color-secondary: #a78bfa;
+      --color-accent-pink: #ec4899;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #ec4899 100%);
+
+      --color-bg: #0a0a0f;
+      --color-surface: #12121a;
+      --color-text: #f0f0ff;
+      --color-muted: #6b7280;
+
+      /* Radii & shadows (framer aura specs) */
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      /* Spacing scale (fluid) */
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+
+      /* Type scale */
+      --text-sm: clamp(0.8rem, 1vw + 0.2rem, 1rem);
+      --text-base: clamp(1rem, 1.25vw + 0.2rem, 1.125rem);
+      --text-lg: clamp(1.125rem, 1.5vw + 0.2rem, 1.25rem);
+      --text-xl: clamp(1.25rem, 1.75vw + 0.2rem, 1.5rem);
+      --text-2xl: clamp(1.5rem, 2vw + 0.25rem, 1.75rem);
+      --text-3xl: clamp(1.75rem, 2.25vw + 0.25rem, 2.25rem);
+      --text-4xl: clamp(2.25rem, 2.75vw + 0.25rem, 3rem);
+
+      /* Layout tokens */
+      --container-width: clamp(320px, 90vw, 1200px);
+
+      /* Motion */
+      --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Buttons */
+      --radius: var(--radius-md);
+    }
+
+    /* Global resets */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; letter-spacing: -0.025em; }
+    h1 { font-size: var(--text-4xl); }
+    h2 { font-size: var(--text-3xl); }
+    h3 { font-size: var(--text-2xl); }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* Container */
+    .site { max-width: var(--container-width); margin-inline: auto; padding-inline: var(--space-md); }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 8px; z-index: 40;
+      margin: var(--space-md) 0; backdrop-filter: none; transition: all 220ms var(--motion-ease);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+    }
+
+    nav.scrolled { backdrop-filter: blur(12px); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+    .nav-left { display:flex; gap: var(--space-md); align-items:center; }
+    .brand { font-family: 'Cormorant Garamond', serif; color: transparent; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; font-size: var(--text-2xl); }
+
+    .nav-links { display:flex; gap: var(--space-sm); align-items:center; }
+    .nav-links a { color: var(--color-text); padding: calc(var(--space-xs) ) calc(var(--space-sm)); border-radius: 8px; font-size: var(--text-sm); }
+    .nav-links a:hover { background: rgba(255,255,255,0.02); }
+
+    /* Button variants */
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white; border: none; padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius); display:inline-flex; align-items:center; gap:8px; min-height:44px; min-width:44px;
+      cursor:pointer; transition: all 220ms var(--motion-ease); font-weight:600;
+    }
+    .btn-primary:hover { transform: scale(1.02); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-primary:focus-visible { outline: 3px solid rgba(167,139,250,0.22); outline-offset: 3px; }
+
+    .btn-secondary {
+      background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-primary);
+      padding: var(--space-sm) var(--space-md); border-radius: var(--radius); transition: all 220ms var(--motion-ease);
+    }
+
+    /* Layout: sidebar + main grid */
+    .app-grid { display: grid; grid-template-columns: 300px 1fr; gap: var(--space-lg); align-items: start; }
+    @media (max-width: 1024px) { .app-grid { grid-template-columns: 1fr; } }
+
+    /* Sidebar */
+    .sidebar { position: sticky; top: 80px; align-self: start; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius: var(--radius-lg); padding: var(--space-md); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.06); box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-lg);
+    }
+
+    .connect-card label { display:block; font-size: var(--text-sm); color: var(--color-muted); margin-bottom: var(--space-xs); }
+    .connect-card input[type="password"] { width:100%; padding: var(--space-sm); border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color:var(--color-text); }
+    .connect-card .btn-row { display:flex; gap: var(--space-sm); margin-top: var(--space-sm); }
+
+    /* Metrics strip */
+    .metrics { display:flex; gap: var(--space-lg); align-items:center; justify-content:flex-start; flex-wrap:wrap; margin-bottom: var(--space-lg); }
+    .metric { color: var(--color-text); }
+    .metric .num { font-weight:700; color: var(--color-primary); font-size: var(--text-xl); }
+    .metric .label { color: var(--color-muted); font-size: var(--text-sm); }
+
+    /* Editor / Post form */
+    .editor { margin-bottom: var(--space-lg); }
+    .form-row { display:grid; gap: var(--space-sm); grid-template-columns: 1fr 160px; }
+    @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+
+    input[type="text"], textarea, select { width:100%; padding: var(--space-sm); border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color:var(--color-text); }
+    textarea { min-height:120px; resize:vertical; }
+
+    .tools { display:flex; gap: var(--space-sm); margin-top: var(--space-sm); }
+
+    /* Feed */
+    .feed-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,320px), 1fr)); gap: var(--space-lg); }
+
+    .post-card { padding: var(--space-md); border-radius: var(--radius-lg); background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); box-shadow: var(--shadow-sm); transition: all 220ms var(--motion-ease); }
+    .post-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+    .post-img { width:100%; height:160px; object-fit:cover; border-radius: 12px; display:block; }
+    .post-meta { display:flex; justify-content:space-between; align-items:center; margin-top: var(--space-sm); }
+
+    .reveal { opacity:0; transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .reveal.visible { opacity:1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .reveal, .reveal.visible { opacity:1; transform:none; transition:none; } }
+
+    /* Small helpers */
+    .muted { color: var(--color-muted); font-size: var(--text-sm); }
+    .tag { background: rgba(255,255,255,0.03); border-radius: 999px; padding: 6px 10px; font-size: 0.85rem; }
+
+    /* Accessibility & touch-targets */
+    button, a.button { min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; }
+
+    /* Responsive tweaks */
+    @media (max-width: 640px) {
+      nav { padding: 0 var(--space-sm); }
+      .brand { font-size: var(--text-xl); }
+      .app-grid { gap: var(--space-md); }
+      .sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <nav id="main-nav" class="reveal">
+      <div class="nav-left">
+        <div class="brand">HomeLayout Studio</div>
+        <div class="nav-links" aria-hidden="false">
+          <a href="index.html">Home</a>
+          <a href="index.html#features">Features</a>
+          <a href="pages/pricing.html">Pricing</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="pages/signup.html" class="btn-secondary">Sign up</a>
+          <a href="pages/signup.html" class="btn-primary">Open studio</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="app-grid" role="main">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="card connect-card reveal">
+          <h3 style="margin-bottom:8px;color:var(--color-primary);">Connect your account</h3>
+          <p class="muted" style="margin-bottom:var(--space-sm);">Securely connect an API token to sync assets or push designs to integrations.</p>
+          <form id="connect-form" onsubmit="return false;">
+            <label for="api-token">API token</label>
+            <input id="api-token" aria-label="API token" type="password" placeholder="sk-..." required />
+            <div class="btn-row">
+              <button id="save-token" class="btn-primary" style="margin-top:var(--space-sm);">Save token</button>
+              <button id="disconnect" class="btn-secondary" style="margin-top:var(--space-sm);">Disconnect</button>
+            </div>
+            <p id="token-status" class="muted" style="margin-top:var(--space-sm);display:none;">Token saved — connected</p>
+          </form>
+        </div>
+
+        <div class="card metrics reveal" aria-hidden="false">
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="1348">0</span></div>
+            <div class="label">Designs shared</div>
+          </div>
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="24600">0</span></div>
+            <div class="label">Saves</div>
+          </div>
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="3200">0</span></div>
+            <div class="label">Active creators</div>
+          </div>
+        </div>
+
+        <div class="card reveal">
+          <h4 style="color:var(--color-primary);margin-bottom:var(--space-xs);">Upgrade to Pro</h4>
+          <p class="muted" style="margin-bottom:var(--space-sm);">Unlock private projects, high-res exports, and team collaboration.</p>
+          <div style="display:flex;gap:var(--space-sm);">
+            <a href="pages/pricing.html" class="btn-secondary">See pricing</a>
+            <a href="pages/signup.html" class="btn-primary stripe-ready">Start free trial</a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <section aria-label="Studio" class="main-content">
+        <div class="editor card reveal">
+          <h2 style="margin-bottom:var(--space-sm);">Share a new layout</h2>
+          <p class="muted">Post a home layout — include images, tags, and a short description so others can try the design.</p>
+          <form id="post-form">
+            <div style="margin-top:var(--space-sm);" class="form-row">
+              <div>
+                <label for="title">Title</label>
+                <input id="title" name="title" type="text" required placeholder="Cozy 2BR loft layout" />
+              </div>
+              <div>
+                <label for="style">Style</label>
+                <select id="style" name="style">
+                  <option>Modern</option>
+                  <option>Scandinavian</option>
+                  <option>Minimal</option>
+                  <option>Boho</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:var(--space-sm);">
+              <label for="description">Short description</label>
+              <textarea id="description" name="description" required placeholder="Explain the layout, flow, and clever storage solutions."></textarea>
+            </div>
+
+            <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm);flex-wrap:wrap;align-items:center;">
+              <div style="flex:1;">
+                <label for="image">Cover image</label>
+                <input id="image" name="image" type="file" accept="image/*" />
+              </div>
+
+              <div style="min-width:160px;">
+                <label for="tags">Tags (comma)</label>
+                <input id="tags" name="tags" type="text" placeholder="kitchen,open-plan,storage" />
+              </div>
+            </div>
+
+            <div class="tools" style="margin-top:var(--space-sm);">
+              <button type="submit" class="btn-primary">Publish design</button>
+              <button type="button" id="preview-btn" class="btn-secondary">Preview</button>
+            </div>
+            <p id="post-status" class="muted" style="margin-top:var(--space-sm);display:none;">Design published</p>
+          </form>
+        </div>
+
+        <div class="card reveal" style="margin-bottom:var(--space-lg);">
+          <h3 style="color:var(--color-primary);margin-bottom:var(--space-sm);">Explore recent layouts</h3>
+          <p class="muted">Community-curated home layout designs you can filter or save.</p>
+        </div>
+
+        <div class="feed-grid" id="feed" aria-live="polite">
+          <!-- Example post cards (will be dynamically appended) -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /* Sticky nav scroll state */
+    const nav = document.getElementById('main-nav');
+    function onScroll() {
+      if (window.scrollY > 14) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    /* Reveal-on-scroll */
+    const reveals = document.querySelectorAll('.reveal');
+    const ro = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      });
+    }, { threshold: 0.15 });
+    reveals.forEach(r => ro.observe(r));
+
+    /* Animated counters */
+    const counters = document.querySelectorAll('.counter');
+    function animateCounter(el, target) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = target.toLocaleString(); return; }
+      let start = 0; const duration = 1200; const startTime = performance.now();
+      function tick(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        el.textContent = Math.floor(t * target).toLocaleString();
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+    const co = new IntersectionObserver((entries, obs) => {
+      entries.forEach(en => {
+        if (en.isIntersecting) {
+          const span = en.target;
+          const target = parseInt(span.dataset.target, 10) || 0;
+          animateCounter(span, target);
+          obs.unobserve(span);
+        }
+      });
+    }, { threshold: 0.2 });
+    counters.forEach(c => co.observe(c));
+
+    /* Simple in-memory feed and post publishing (no backend) */
+    const feedEl = document.getElementById('feed');
+    const samplePosts = [
+      {id:1,title:'Open-plan loft with hidden pantry',style:'Modern',tags:['kitchen','open-plan'],img:'assets/icon-1.svg',desc:'A compact open-plan loft with sliding pantry and zoned living areas.'},
+      {id:2,title:'Scandi two-bedroom with built-ins',style:'Scandinavian',tags:['storage','light'],img:'assets/icon-2.svg',desc:'Minimal lines with generous built-in wardrobes and bright north light.'},
+      {id:3,title:'Tiny studio optimized for remote work',style:'Minimal',tags:['studio','workspace'],img:'assets/icon-3.svg',desc:'Fold-away bed, dedicated desk nook, and modular storage.'}
+    ];
+
+    function renderPost(post) {
+      const card = document.createElement('article');
+      card.className = 'post-card reveal';
+      card.innerHTML = `
+        <img src="${post.img}" alt="${escapeHtml(post.title)} cover" class="post-img" style="height:160px;" />
+        <h4 style="margin-top:var(--space-sm);color:var(--color-primary);">${escapeHtml(post.title)}</h4>
+        <p class="muted" style="margin-top:var(--space-xs);">${escapeHtml(post.desc)}</p>
+        <div class="post-meta">
+          <div class="muted">${escapeHtml(post.style)}</div>
+          <div style="display:flex;gap:8px;">${(post.tags||[]).slice(0,3).map(t=>`<span class=\"tag\">${escapeHtml(t)}</span>`).join('')}</div>
+        </div>
+      `;
+      feedEl.appendChild(card);
+      ro.observe(card); // observe for reveal
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+    // initial render
+    samplePosts.forEach(renderPost);
+
+    // Post form handling
+    const postForm = document.getElementById('post-form');
+    const postStatus = document.getElementById('post-status');
+    postForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const desc = document.getElementById('description').value.trim();
+      const style = document.getElementById('style').value;
+      const tags = document.getElementById('tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+      if (!title || !desc) {
+        postStatus.style.display = 'block'; postStatus.textContent = 'Title and description are required'; postStatus.style.color = '#ef4444';
+        return;
+      }
+      const newPost = { id: Date.now(), title, style, tags, img: 'assets/icon-1.svg', desc };
+      renderPost(newPost);
+      postStatus.style.display = 'block'; postStatus.textContent = 'Design published'; postStatus.style.color = 'var(--color-text)';
+      postForm.reset();
+      // move view to new post
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    /* Connect token form basic client-side validation */
+    const connectForm = document.getElementById('connect-form');
+    const tokenInput = document.getElementById('api-token');
+    const tokenStatus = document.getElementById('token-status');
+    document.getElementById('save-token').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!tokenInput.value || tokenInput.value.length < 8) {
+        tokenStatus.style.display = 'block'; tokenStatus.textContent = 'Token looks invalid'; tokenStatus.style.color = '#ef4444';
+        return;
+      }
+      // pretend to save token securely (placeholder)
+      tokenStatus.style.display = 'block'; tokenStatus.textContent = 'Token saved — connected'; tokenStatus.style.color = 'var(--color-text)';
+      tokenInput.value = ''; // clear input for security
+    });
+    document.getElementById('disconnect').addEventListener('click', (e) => { e.preventDefault(); tokenStatus.style.display='none'; });
+
+    /* Accessibility: keyboard focus behavior for feed cards (focus follows active card on arrow keys) */
+    let focusedIndex = -1;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        focusedIndex = Math.min(focusedIndex + 1, feedEl.children.length - 1);
+        feedEl.children[focusedIndex] && feedEl.children[focusedIndex].focus && feedEl.children[focusedIndex].focus();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        focusedIndex = Math.max(focusedIndex - 1, 0);
+        feedEl.children[focusedIndex] && feedEl.children[focusedIndex].focus && feedEl.children[focusedIndex].focus();
+      }
+    });
+
+    // Ensure created .post-card elements are focusable for keyboard navigation
+    const observer = new MutationObserver((m) => {
+      m.forEach(mu => mu.addedNodes.forEach(n => { if (n.nodeType === 1 && n.classList.contains('post-card')) { n.tabIndex = 0; } }));
+    });
+    observer.observe(feedEl, { childList: true });
+
+  </script>
+</body>
+</html>

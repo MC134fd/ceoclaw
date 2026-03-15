@@ -4,16 +4,23 @@ interface Props {
   onSubmit: (text: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  /** When true, show an out-of-credits blocker banner instead of normal input. */
+  outOfCredits?: boolean;
 }
 
-export function Composer({ onSubmit, disabled = false, placeholder = 'Describe your product or request a change…' }: Props) {
+export function Composer({
+  onSubmit,
+  disabled = false,
+  placeholder = 'Describe your product or request a change…',
+  outOfCredits = false,
+}: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 240) + 'px';
+    el.style.height = Math.min(el.scrollHeight, 220) + 'px';
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -37,34 +44,20 @@ export function Composer({ onSubmit, disabled = false, placeholder = 'Describe y
     [handleSubmit],
   );
 
+  if (outOfCredits) {
+    return (
+      <div className="composer-wrapper">
+        <div className="composer-credits-blocker">
+          <span>⚡</span>
+          <span>You&apos;ve used all your credits. Upgrade your plan to keep building.</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{
-        padding: '10px 14px 14px',
-        borderTop: '1px solid var(--border)',
-        flexShrink: 0,
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--surface-2)',
-          border: '1px solid var(--border)',
-          borderRadius: 14,
-          overflow: 'hidden',
-          transition: 'border-color 0.15s, box-shadow 0.15s',
-        }}
-        onFocusCapture={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--accent)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow =
-            '0 0 0 3px rgba(99,102,241,0.18)';
-        }}
-        onBlurCapture={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-        }}
-      >
+    <div className="composer-wrapper">
+      <div className="composer-box">
         <textarea
           ref={textareaRef}
           onInput={autoResize}
@@ -74,56 +67,16 @@ export function Composer({ onSubmit, disabled = false, placeholder = 'Describe y
           rows={3}
           autoComplete="off"
           spellCheck
-          style={{
-            width: '100%',
-            minHeight: 80,
-            maxHeight: 240,
-            padding: '12px 14px 6px',
-            border: 'none',
-            outline: 'none',
-            resize: 'none',
-            fontFamily: 'var(--font)',
-            fontSize: 14,
-            lineHeight: 1.55,
-            color: 'var(--text)',
-            background: 'transparent',
-            opacity: disabled ? 0.5 : 1,
-          }}
+          className="composer-textarea"
         />
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '6px 10px 8px',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 11,
-              color: 'var(--text-muted)',
-            }}
-          >
-            Enter to send · Shift+Enter for newline
-          </span>
+        <div className="composer-footer">
+          <span className="composer-hint">Enter to send · Shift+Enter for newline</span>
           <button
             onClick={handleSubmit}
             disabled={disabled}
             title="Send (Enter)"
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              border: 'none',
-              background: disabled ? 'var(--border)' : 'var(--accent)',
-              color: '#fff',
-              cursor: disabled ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              transition: 'background 0.15s',
-            }}
+            className="composer-send-btn"
+            aria-label="Send message"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path

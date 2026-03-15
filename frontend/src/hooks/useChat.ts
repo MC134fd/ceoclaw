@@ -1,16 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getSessionHistory, sendMessage } from '../services/api';
+import { InsufficientCreditsError, getSessionHistory, sendMessage } from '../services/api';
+import { supabase } from '../lib/supabase';
 import type { ChatResponse, Message, PipelineStage } from '../types';
 
+
 const STAGE_DEFS = [
-  { key: 'parse_intent',  label: 'Reading your idea' },
-  { key: 'validate_idea', label: 'Validating concept' },
-  { key: 'content_plan',  label: 'Planning content' },
-  { key: 'image_assets',  label: 'Creating visual assets' },
-  { key: 'generate_code', label: 'Generating code' },
-  { key: 'apply_files',   label: 'Saving to workspace' },
-  { key: 'quality_check', label: 'Quality check' },
-  { key: 'complete',      label: 'Complete' },
+  { key: 'parse_intent',             label: 'Understanding your idea' },
+  { key: 'business_concept',         label: 'Defining business concept' },
+  { key: 'feature_architecture',     label: 'Planning feature architecture' },
+  { key: 'design_direction',         label: 'Selecting visual direction' },
+  { key: 'information_architecture', label: 'Mapping pages and user flow' },
+  { key: 'implementation_plan',      label: 'Preparing implementation plan' },
+  { key: 'generate_index',           label: 'Generating index page' },
+  { key: 'generate_pages',           label: 'Generating additional pages' },
+  { key: 'generate_assets',          label: 'Generating icons/visual assets' },
+  { key: 'wire_navigation',          label: 'Wiring buttons and navigation' },
+  { key: 'quality_check',            label: 'Validating quality and responsiveness' },
+  { key: 'complete',                 label: 'Complete' },
 ] as const;
 
 function initialStages(): PipelineStage[] {
@@ -24,11 +30,73 @@ function initialStages(): PipelineStage[] {
 export function useChat(sessionId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatResponse, setChatResponse] = useState<ChatResponse | null>(null);
   const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>(initialStages());
   const loadedSessionRef = useRef<string>('');
   const esRef = useRef<EventSource | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
+
+  const stopTypingAnimation = useCallback(() => {
+    if (typingTimerRef.current !== null) {
+      window.clearInterval(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    setIsTyping(false);
+  }, []);
+
+  const appendAssistantMessageWithTyping = useCallback(
+    (content: string) =>
+      new Promise<void>((resolve) => {
+        stopTypingAnimation();
+
+        const assistantMsgId = Date.now() + 1;
+        const createdAt = new Date().toISOString();
+        const fullText = content ?? '';
+
+        const assistantMsg: Message = {
+          id: assistantMsgId,
+          session_id: sessionId,
+          role: 'assistant',
+          content: '',
+          created_at: createdAt,
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+
+        if (!fullText) {
+          resolve();
+          return;
+        }
+
+        setIsTyping(true);
+        const tickMs = 16;
+        const charsPerTick = Math.max(1, Math.ceil(fullText.length / 140));
+        let index = 0;
+
+        typingTimerRef.current = window.setInterval(() => {
+          index = Math.min(fullText.length, index + charsPerTick);
+          const nextSlice = fullText.slice(0, index);
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMsgId
+                ? {
+                    ...msg,
+                    content: nextSlice,
+                  }
+                : msg,
+            ),
+          );
+
+          if (index >= fullText.length) {
+            stopTypingAnimation();
+            resolve();
+          }
+        }, tickMs);
+      }),
+    [sessionId, stopTypingAnimation],
+  );
 
   // Load history when sessionId changes
   useEffect(() => {
@@ -55,9 +123,10 @@ export function useChat(sessionId: string) {
   // Cleanup SSE on unmount
   useEffect(() => {
     return () => {
+      stopTypingAnimation();
       esRef.current?.close();
     };
-  }, []);
+  }, [stopTypingAnimation]);
 
   // Legacy direct send (kept for backward compat)
   const send = useCallback(
@@ -78,14 +147,7 @@ export function useChat(sessionId: string) {
       try {
         const response = await sendMessage(sessionId, text, mockMode);
         setChatResponse(response);
-        const assistantMsg: Message = {
-          id: Date.now() + 1,
-          session_id: sessionId,
-          role: 'assistant',
-          content: response.assistant_message,
-          created_at: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
+        void appendAssistantMessageWithTyping(response.assistant_message);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error';
         setError(msg);
@@ -94,21 +156,18 @@ export function useChat(sessionId: string) {
         setIsLoading(false);
       }
     },
-    [sessionId, isLoading],
+    [sessionId, isLoading, appendAssistantMessageWithTyping],
   );
 
   // Pipeline-backed send — streams 8 stage events then delivers final ChatResponse
   const sendViaPipeline = useCallback(
     async (text: string, mockMode: boolean = false) => {
       if (!text.trim() || isLoading) return;
-      const runId = `pipeline_${Date.now()}`;
-      // #region agent log
-      fetch('http://127.0.0.1:7942/ingest/59b4fe2b-fbec-4c75-a07b-b5ac8d9b0c55',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ae58c9'},body:JSON.stringify({sessionId:'ae58c9',runId,hypothesisId:'H3',location:'frontend/src/hooks/useChat.ts:105',message:'sendViaPipeline invoked',data:{sessionId,loading:isLoading,textLen:text.trim().length},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
 
       // Close any in-flight SSE
       esRef.current?.close();
       esRef.current = null;
+      stopTypingAnimation();
 
       setIsLoading(true);
       setError(null);
@@ -124,17 +183,47 @@ export function useChat(sessionId: string) {
       setMessages((prev) => [...prev, optimisticUserMsg]);
 
       try {
-        // 1. Start pipeline job
+        // 1. Start pipeline job (attach auth token when available)
+        const token = supabase
+          ? (await supabase.auth.getSession()).data.session?.access_token
+          : null;
+        const startHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) startHeaders['Authorization'] = `Bearer ${token}`;
+
         const startRes = await fetch('/builder/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: startHeaders,
           body: JSON.stringify({ session_id: sessionId, message: text, mock_mode: mockMode }),
         });
         if (!startRes.ok) {
           const body = await startRes.json().catch(() => ({}));
-          throw new Error(body.detail || `HTTP ${startRes.status}`);
+          // Surface insufficient-credits as a dedicated error type
+          if (startRes.status === 402 && body.detail?.error === 'insufficient_credits') {
+            throw new InsufficientCreditsError(
+              body.detail.message ?? 'Insufficient credits',
+              body.detail.balance ?? 0,
+              body.detail.required ?? 1,
+              body.detail.tier ?? 'free',
+            );
+          }
+          throw new Error(body.detail?.message ?? body.detail ?? `HTTP ${startRes.status}`);
         }
-        const { job_id } = (await startRes.json()) as { job_id: string };
+      type StartResponse =
+        | { job_id: string; needs_clarification?: false }
+        | { needs_clarification: true; questions: string[]; reason: string; job_id: null };
+
+      const startBody = (await startRes.json()) as StartResponse;
+
+      if (startBody.needs_clarification) {
+        const clarifyMsg = [
+          'I need a bit more detail before I can build this. Could you answer:',
+          ...startBody.questions.map((q: string, i: number) => `${i + 1}. ${q}`),
+        ].join('\n');
+        void appendAssistantMessageWithTyping(clarifyMsg);
+        return;
+      }
+
+      const { job_id } = startBody as { job_id: string };
 
         // 2. Stream events via EventSource
         await new Promise<void>((resolve, reject) => {
@@ -151,9 +240,6 @@ export function useChat(sessionId: string) {
 
             if (event.type === 'stage_update') {
               const key = event.stage_key as string;
-              // #region agent log
-              fetch('http://127.0.0.1:7942/ingest/59b4fe2b-fbec-4c75-a07b-b5ac8d9b0c55',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ae58c9'},body:JSON.stringify({sessionId:'ae58c9',runId,hypothesisId:'H2',location:'frontend/src/hooks/useChat.ts:154',message:'stage update received',data:{jobId:job_id,stageKey:key,status:event.status,artifactType:event.artifact_type},timestamp:Date.now()})}).catch(()=>{});
-              // #endregion
               setPipelineStages((prev) =>
                 prev.map((s) =>
                   s.stage_key === key
@@ -172,18 +258,8 @@ export function useChat(sessionId: string) {
               es.close();
               esRef.current = null;
               const result = event.result as ChatResponse;
-              // #region agent log
-              fetch('http://127.0.0.1:7942/ingest/59b4fe2b-fbec-4c75-a07b-b5ac8d9b0c55',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ae58c9'},body:JSON.stringify({sessionId:'ae58c9',runId,hypothesisId:'H1',location:'frontend/src/hooks/useChat.ts:174',message:'pipeline complete received',data:{jobId:job_id,hasVersion:!!result.version_id,slug:result.slug || ''},timestamp:Date.now()})}).catch(()=>{});
-              // #endregion
               setChatResponse(result);
-              const assistantMsg: Message = {
-                id: Date.now() + 1,
-                session_id: sessionId,
-                role: 'assistant',
-                content: result.assistant_message,
-                created_at: new Date().toISOString(),
-              };
-              setMessages((prev) => [...prev, assistantMsg]);
+              void appendAssistantMessageWithTyping(result.assistant_message);
               resolve();
             } else if (event.type === 'pipeline_error') {
               es.close();
@@ -193,9 +269,6 @@ export function useChat(sessionId: string) {
           };
 
           es.onerror = () => {
-            // #region agent log
-            fetch('http://127.0.0.1:7942/ingest/59b4fe2b-fbec-4c75-a07b-b5ac8d9b0c55',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ae58c9'},body:JSON.stringify({sessionId:'ae58c9',runId,hypothesisId:'H1',location:'frontend/src/hooks/useChat.ts:194',message:'eventsource onerror fired',data:{jobId:job_id,readyState:es.readyState},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             es.close();
             esRef.current = null;
             reject(new Error('Connection lost — please try again'));
@@ -209,10 +282,11 @@ export function useChat(sessionId: string) {
         setIsLoading(false);
       }
     },
-    [sessionId, isLoading],
+    [sessionId, isLoading, appendAssistantMessageWithTyping, stopTypingAnimation],
   );
 
   const resetMessages = useCallback(() => {
+    stopTypingAnimation();
     esRef.current?.close();
     esRef.current = null;
     setMessages([]);
@@ -220,7 +294,7 @@ export function useChat(sessionId: string) {
     setError(null);
     setPipelineStages(initialStages());
     loadedSessionRef.current = '';
-  }, []);
+  }, [stopTypingAnimation]);
 
   return {
     messages,
@@ -228,6 +302,7 @@ export function useChat(sessionId: string) {
     sendViaPipeline,
     pipelineStages,
     isLoading,
+    isTyping,
     error,
     chatResponse,
     resetMessages,

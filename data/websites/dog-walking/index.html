@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WalkPaw — On-demand dog walking for city pet owners</title>
+  <style>
+    /* Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      /* Colors (Framer Aura: sage palette) */
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+
+      /* Design tokens */
+      --container-width: clamp(320px, 90vw, 1200px);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+
+      /* Spacing scale */
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+
+      /* Type scale */
+      --text-sm: clamp(0.85rem, 1vw, 0.95rem);
+      --text-base: clamp(1rem, 1.1vw, 1.05rem);
+      --text-lg: clamp(1.1rem, 1.3vw, 1.25rem);
+      --text-2xl: clamp(1.4rem, 2.4vw, 1.75rem);
+      --text-3xl: clamp(1.9rem, 4vw, 2.6rem);
+      --text-4xl: clamp(2.6rem, 5.2vw, 3.8rem);
+
+      --radius: var(--radius-md);
+      --gutter: var(--space-md);
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--color-bg);color:var(--color-text);font-family:'DM Sans',system-ui,Arial;line-height:1.4;-webkit-font-smoothing:antialiased}
+    h1,h2,h3{font-family:'Cormorant Garamond',serif;margin:0;letter-spacing:-0.025em}
+    a{text-decoration:none;color:inherit}
+
+    .container{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+    header{position:sticky;top:0;z-index:40;padding-block:var(--space-sm);transition:all .22s cubic-bezier(.4,0,.2,1)}
+    nav{display:flex;align-items:center;justify-content:space-between;gap:var(--space-md)}
+    .brand{display:flex;align-items:center;gap:var(--space-sm)}
+    .logo{height:44px;width:44px;border-radius:8px;background:linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:var(--color-surface);box-shadow:var(--shadow-sm)}
+    nav.scrolled{backdrop-filter: blur(12px);box-shadow: 0 2px 8px rgba(0,0,0,0.08)}
+
+    .nav-links{display:flex;gap:var(--space-md);align-items:center}
+    .nav-links a{color:var(--color-text);font-weight:500}
+
+    .btn{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius);padding:0 var(--space-md);cursor:pointer;transition:all .15s ease}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);border:0}
+    .btn-secondary{background:transparent;border:1.5px solid var(--color-secondary);color:var(--color-secondary)}
+    .btn:focus{outline:3px solid rgba(21,128,61,0.14);outline-offset:3px}
+    .btn:hover{transform:scale(1.02)}
+    .btn:active{transform:scale(0.97)}
+
+    /* Hero */
+    .hero{padding-block:var(--space-2xl);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:var(--space-lg);align-items:center}
+    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));backdrop-filter: blur(6px);border-radius:var(--radius-lg);padding:var(--space-xl);box-shadow:var(--shadow-md)}
+    .hero h1{font-size:var(--text-4xl);margin-bottom:var(--space-sm)}
+    .hero p{color:var(--color-muted);font-size:var(--text-lg);margin-bottom:var(--space-md)}
+
+    .hero-visual{display:flex;align-items:center;justify-content:center}
+    .hero-img{max-width:100%;height:auto;border-radius:12px;box-shadow:var(--shadow-md)}
+
+    /* Feature grid */
+    section{padding-block:var(--space-2xl)}
+    .features{display:grid;gap:var(--space-lg);grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+    .card{background:rgba(255,255,255,0.6);backdrop-filter: blur(6px);padding:var(--space-md);border-radius:var(--radius);box-shadow:var(--shadow-sm);transition:all .2s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+    .feature-title{font-weight:600;margin-top:var(--space-sm)}
+    .feature-desc{color:var(--color-muted);font-size:var(--text-sm)}
+
+    /* Proof strip */
+    .metrics{display:flex;gap:var(--space-lg);align-items:center;justify-content:space-between;background:linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,0.6));padding:var(--space-md);border-radius:var(--radius-md)}
+    .metric{display:flex;flex-direction:column;align-items:flex-start}
+    .metric .num{font-size:var(--text-2xl);font-weight:700;color:var(--color-primary)}
+    .metric .label{color:var(--color-muted);font-size:var(--text-sm)}
+
+    /* Pricing */
+    .pricing-grid{display:grid;gap:var(--space-lg);grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+    .tier{position:relative;border-radius:var(--radius-md);overflow:hidden}
+    .tier .inner{padding:var(--space-md);background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);min-height:180px;border-radius:var(--radius-md)}
+    .tier.pro{border:2px solid transparent;background-image:var(--accent-gradient);background-origin:border-box}
+    .tier.pro .inner{background:linear-gradient(0deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));}
+    .price{font-size:var(--text-2xl);font-weight:700;color:var(--color-text)}
+    .tier .cta{margin-top:var(--space-md)}
+
+    /* Testimonials / Carousel */
+    .carousel{position:relative;overflow:hidden}
+    .slides{display:flex;transition:transform .36s ease;will-change:transform}
+    .slide{min-width:100%;padding:var(--space-md);box-sizing:border-box}
+    .testimonial{background:rgba(255,255,255,0.6);padding:var(--space-md);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+    .carousel-controls{display:flex;gap:var(--space-sm);align-items:center;position:absolute;right:var(--space-md);top:var(--space-md)}
+    .dots{display:flex;gap:var(--space-xs);align-items:center}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(0,0,0,0.12)}.dot.active{background:var(--color-primary)}
+
+    /* Footer */
+    footer{padding-block:var(--space-lg);color:var(--color-muted)}
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .4s ease,transform .4s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.reveal, .reveal.visible{opacity:1;transform:none;transition:none}}
+
+    /* Responsive helpers */
+    @media (max-width:1024px){.hero h1{font-size:var(--text-3xl)}}
+    @media (max-width:640px){nav{padding-inline:var(--space-sm)}.nav-links{display:none}}
+
+    /* Accessibility */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  </style>
+</head>
+<body>
+  <header class="container">
+    <nav id="mainNav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">WP</div>
+        <div>
+          <div style="font-weight:700;">WalkPaw</div>
+          <div style="font-size:var(--text-sm);color:var(--color-muted)">City dog walking, simplified</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#features">Features</a>
+        <a href="pages/pricing.html">Pricing</a>
+        <a href="pages/signup.html" class="btn btn-primary" style="padding-inline:var(--space-lg)">Sign up</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero container" aria-label="WalkPaw hero">
+      <div class="hero-card reveal">
+        <h1>WalkPaw — Reliable dog walks for busy city pet parents</h1>
+        <p>Schedule trusted, vetted walkers, get GPS-tracked walks, and real-time photo updates — all designed for urban routines and unpredictable schedules.</p>
+
+        <form id="heroSignup" action="pages/signup.html" method="get" style="display:flex;gap:var(--space-sm);margin-top:var(--space-md);flex-wrap:wrap">
+          <label for="email" class="sr-only">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@citymail.com" required aria-label="Email" style="padding:var(--space-sm);border-radius:8px;border:1px solid rgba(20,83,45,0.08);min-width:220px">
+          <button class="btn btn-primary" type="submit">Start free trial</button>
+        </form>
+
+        <div style="margin-top:var(--space-md);display:flex;gap:var(--space-md);align-items:center">
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="15342">0</span>+</div>
+            <div class="label">Walks scheduled</div>
+          </div>
+          <div class="metric">
+            <div class="num">4.9★</div>
+            <div class="label">Average walker rating</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="hero-visual reveal">
+        <img src="assets/hero.svg" alt="WalkPaw hero illustration showing a dog walker in a city" class="hero-img">
+      </div>
+    </section>
+
+    <section id="features" class="container">
+      <h2 class="reveal">What WalkPaw does for city pet owners</h2>
+      <div class="features" style="margin-top:var(--space-md)">
+        <div class="card reveal">
+          <img src="assets/icon-1.svg" alt="GPS-tracked walks icon" style="width:48px;height:48px;max-width:100%;height:auto;">
+          <div class="feature-title">Live GPS tracking</div>
+          <div class="feature-desc">See exactly where your dog walked and for how long — transparency for peace of mind.</div>
+        </div>
+
+        <div class="card reveal">
+          <img src="assets/icon-2.svg" alt="Photo updates icon" style="width:48px;height:48px;max-width:100%;height:auto;">
+          <div class="feature-title">Real-time photo updates</div>
+          <div class="feature-desc">Walkers send on-route photos and quick notes so you never miss a moment.</div>
+        </div>
+
+        <div class="card reveal">
+          <img src="assets/icon-3.svg" alt="Flexible scheduling icon" style="width:48px;height:48px;max-width:100%;height:auto;">
+          <div class="feature-title">On-demand & scheduled</div>
+          <div class="feature-desc">Book an immediate walk or lock in a weekly routine — fits hectic city calendars.</div>
+        </div>
+
+        <div class="card reveal">
+          <img src="assets/icon-4.svg" alt="Neighborhood-vetting icon" style="width:48px;height:48px;max-width:100%;height:auto;">
+          <div class="feature-title">Neighborhood-vetted walkers</div>
+          <div class="feature-desc">Walkers are background-checked and rated by neighbors in your borough.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container reveal">
+      <div class="metrics">
+        <div class="metric">
+          <div class="num"><span class="counter" data-target="8421">0</span></div>
+          <div class="label">Active city pups</div>
+        </div>
+        <div class="metric">
+          <div class="num"><span class="counter" data-target="15342">0</span>+</div>
+          <div class="label">Walks scheduled</div>
+        </div>
+        <div class="metric">
+          <div class="num">4.9/5</div>
+          <div class="label">Average rating</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container">
+      <h2 class="reveal">What pet parents say</h2>
+      <div class="carousel reveal" role="region" aria-label="Testimonials">
+        <div class="slides" id="slides">
+          <div class="slide">
+            <div class="testimonial">
+              <strong>Marissa, Brooklyn</strong>
+              <p>"WalkPaw solved last-minute walk emergencies during my overtime shifts — I get a photo and GPS proof every time. My terrier Milo is calmer and happier."</p>
+            </div>
+          </div>
+
+          <div class="slide">
+            <div class="testimonial">
+              <strong>Daniel, Queens</strong>
+              <p>"I rely on neighborhood walkers who know our streets. The vetting and rating system made choosing a walker easy and trustworthy."</p>
+            </div>
+          </div>
+
+          <div class="slide">
+            <div class="testimonial">
+              <strong>Priya, Manhattan</strong>
+              <p>"Scheduling recurring walks for my pug was seamless. The app’s reminders and payment flow fit right into my routine."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-controls">
+          <div class="dots" id="dots" aria-hidden="false"></div>
+        </div>
+        <div style="position:absolute;left:var(--space-md);top:var(--space-md);display:flex;gap:var(--space-sm)">
+          <button id="prev" aria-label="Previous testimonial" class="btn btn-secondary">‹</button>
+          <button id="next" aria-label="Next testimonial" class="btn btn-secondary">›</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" aria-labelledby="pricing-heading">
+      <h2 id="pricing-heading" class="reveal">Pricing for every city routine</h2>
+      <div class="pricing-grid" style="margin-top:var(--space-md)">
+        <div class="tier card reveal">
+          <div class="inner">
+            <div style="font-weight:600">Free</div>
+            <div class="price">$0 / mo</div>
+            <div style="color:var(--color-muted);margin-top:var(--space-sm)">Basic on-demand walks, limited scheduling, community-rated walkers</div>
+            <div class="cta"><a href="pages/signup.html" class="btn btn-secondary">Get started free</a></div>
+          </div>
+        </div>
+
+        <div class="tier pro reveal">
+          <div class="inner">
+            <div style="font-weight:600">Pro</div>
+            <div class="price">$9 / mo</div>
+            <div style="color:var(--color-muted);margin-top:var(--space-sm)">Priority match, weekly scheduling, premium walker background checks, discounted add-ons</div>
+            <div class="cta"><a href="pages/signup.html" class="btn btn-primary stripe-checkout">Start free trial</a></div>
+          </div>
+        </div>
+
+        <div class="tier card reveal">
+          <div class="inner">
+            <div style="font-weight:600">Enterprise</div>
+            <div class="price">Custom</div>
+            <div style="color:var(--color-muted);margin-top:var(--space-sm)">Large-scale housing or corporate pet programs. Neighborhood onboarding included.</div>
+            <div class="cta"><a href="pages/signup.html" class="btn btn-secondary">Contact us</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-md);flex-wrap:wrap">
+      <div>
+        <strong>WalkPaw</strong>
+        <div style="color:var(--color-muted);font-size:var(--text-sm)">Reliable dog walks for urban pet owners</div>
+      </div>
+      <div style="display:flex;gap:var(--space-sm);align-items:center">
+        <a href="pages/pricing.html">Pricing</a>
+        <a href="pages/signup.html" class="btn btn-primary">Sign up</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Sticky nav
+    const nav = document.getElementById('mainNav');
+    function onScroll(){
+      if(window.scrollY>14){nav.classList.add('scrolled')}else{nav.classList.remove('scrolled')}
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const ro = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); if(e.target.classList.contains('counter')){} }});
+    },{threshold:0.15});
+    reveals.forEach(r=>ro.observe(r));
+
+    // Animated counters
+    function animateCounter(el, target){
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent = target;return}
+      let start=0;const duration=1200;const startTime=performance.now();
+      function step(now){
+        const progress=Math.min((now-startTime)/duration,1);
+        el.textContent = Math.floor(progress*target);
+        if(progress<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    const counters = document.querySelectorAll('.counter');
+    const counterObs = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(ent=>{
+        if(ent.isIntersecting){
+          const el=ent.target; const t = parseInt(el.getAttribute('data-target'),10)||0;
+          animateCounter(el,t); obs.unobserve(el);
+        }
+      })
+    },{threshold:0.3});
+    counters.forEach(c=>counterObs.observe(c));
+
+    // Testimonial carousel (no autoplay)
+    const slides = document.getElementById('slides');
+    const total = slides.children.length; let idx=0;
+    const dots = document.getElementById('dots');
+    function renderDots(){
+      dots.innerHTML='';
+      for(let i=0;i<total;i++){const d=document.createElement('button');d.className='dot'+(i===idx?' active':'');d.setAttribute('aria-label','Go to testimonial '+(i+1));d.addEventListener('click',()=>{goTo(i)});dots.appendChild(d)}
+    }
+    function goTo(i){idx = (i+total)%total; slides.style.transform = `translateX(${-idx*100}%)`; updateDots();}
+    function updateDots(){Array.from(dots.children).forEach((d,i)=>d.classList.toggle('active', i===idx))}
+    document.getElementById('prev').addEventListener('click', ()=>goTo(idx-1));
+    document.getElementById('next').addEventListener('click', ()=>goTo(idx+1));
+    document.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){goTo(idx-1)} if(e.key==='ArrowRight'){goTo(idx+1)} });
+    renderDots();
+
+    // Hero quick signup client side (redirect to signup page - keeps query)
+    document.getElementById('heroSignup').addEventListener('submit',(e)=>{
+      // let browser handle required validation; allow normal GET to signup which meets form flow
+    });
+  </script>
+</body>
+</html>

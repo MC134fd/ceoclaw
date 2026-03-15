@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitFlow — App Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{--color-primary:#16a34a;--color-secondary:#15803d;--color-accent-pink:#ec4899;--color-bg:#f0fdf4;--color-surface:#ffffff;--color-text:#14532d;--accent-gradient:linear-gradient(135deg,var(--color-primary),var(--color-secondary),var(--color-accent-pink));--space-md:clamp(0.75rem,1.5vw,1.25rem);--space-lg:clamp(1rem,2vw,1.75rem);--container-width:clamp(320px,90vw,1200px);--radius:12px;--shadow-sm:0 1px 4px rgba(0,0,0,.07)}
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text)}
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+    nav{padding-block:var(--space-sm);display:flex;justify-content:space-between;align-items:center}
+    .layout{display:grid;grid-template-columns:260px 1fr;gap:var(--space-lg);min-height:calc(100vh - 80px);}
+    .sidebar{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+    .content{padding:var(--space-md)}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:var(--space-md)}
+    h2{font-family:'Cormorant Garamond'}
+    .connect{display:flex;flex-direction:column;gap:8px}
+    input[type=password]{padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+    .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 16px;border-radius:10px;background:var(--accent-gradient);color:#fff;border:0}
+    @media (max-width:1024px){.layout{grid-template-columns:1fr}} 
+  </style>
+</head>
+<body>
+  <nav class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+      <a href="index.html" style="font-family:'Cormorant Garamond'">FitFlow</a>
+      <div style="display:flex;gap:12px"><a href="pages/pricing.html">Pricing</a><a href="pages/signup.html">Sign up</a></div>
+    </div>
+  </nav>
+
+  <main class="wrap" style="padding-block:var(--space-lg)">
+    <div class="layout">
+      <aside class="sidebar">
+        <div style="font-weight:600;margin-bottom:8px">Dashboard</div>
+        <nav style="display:flex;flex-direction:column;gap:8px">
+          <a href="#overview">Overview</a>
+          <a href="#workouts">Workouts</a>
+          <a href="#metrics">Metrics</a>
+          <a href="#settings">Settings</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <div class="card">
+          <h2 id="overview">Overview</h2>
+          <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;margin-top:var(--space-sm)">
+            <div style="flex:1;min-width:160px" class="glass card">
+              <div style="font-size:12px;color:var(--color-muted)">This week</div>
+              <div style="font-weight:700;font-size:20px">4 workouts</div>
+            </div>
+            <div style="flex:1;min-width:160px" class="glass card">
+              <div style="font-size:12px;color:var(--color-muted)">Volume</div>
+              <div style="font-weight:700;font-size:20px">12,400 reps</div>
+            </div>
+            <div style="flex:1;min-width:160px" class="glass card">
+              <div style="font-size:12px;color:var(--color-muted)">Best lift</div>
+              <div style="font-weight:700;font-size:20px">Bench 185 lb</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Recent workouts</h3>
+          <ul style="list-style:none;padding:0;margin:var(--space-sm) 0 0 0">
+            <li style="padding:10px 0;border-bottom:1px dashed rgba(0,0,0,0.04)">Mon — Upper strength — 6 sets, 42 reps</li>
+            <li style="padding:10px 0;border-bottom:1px dashed rgba(0,0,0,0.04)">Wed — Squat session — 8 sets, 36 reps</li>
+            <li style="padding:10px 0">Fri — Deadlift singles — 5 sets, 10 reps</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Connect integrations</h3>
+          <div class="connect">
+            <label for="api-token">Connect your account (API token)</label>
+            <input id="api-token" type="password" placeholder="sk-..." aria-label="API token" />
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="connect-btn">Save token</button>
+              <button class="btn" id="upgrade-btn" style="background:var(--color-secondary);">Upgrade to Pro</button>
+            </div>
+            <div style="font-size:12px;color:var(--color-muted)">Used for wearable sync & third-party nutrient data.</div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <script>
+    // Basic interactions: save token to localStorage (demo)
+    document.getElementById('connect-btn').addEventListener('click', ()=>{
+      const val = document.getElementById('api-token').value.trim();
+      if (!val){ alert('Enter your API token (sk-...) to connect.'); return; }
+      localStorage.setItem('fitflow_api_token', val);
+      alert('Token saved — wearable sync enabled.');
+    });
+    document.getElementById('upgrade-btn').addEventListener('click', ()=>{ window.location.href='pages/pricing.html'; });
+  </script>
+</body>
+</html>

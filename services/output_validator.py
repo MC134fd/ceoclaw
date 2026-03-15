@@ -5,18 +5,20 @@ Enforces:
   - Allowlisted file extensions (not just index.html / app.html)
   - Path traversal prevention
   - HTML-specific: basic structure check, external script removal, javascript: href sanitization
+  - SVG-specific: XML parse + strict tag/attr allowlist to prevent XSS
   - 1 MB size limit per file
 """
 
 import logging
 import re
+import xml.etree.ElementTree as ET
 from pathlib import PurePosixPath
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 _MAX_SIZE = 1_000_000  # 1 MB
-_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt"}
+_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg"}
 _ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts"}
 
 # Remove <script src="https?://...">...</script>  (external scripts)
@@ -66,7 +68,7 @@ def validate_files(files: dict[str, str]) -> tuple[dict[str, str], list[str]]:
             warnings.append(f"Truncated {safe_name} — exceeded 1 MB limit")
             content = content[:_MAX_SIZE]
 
-        # HTML-specific validation and sanitization
+        # Extension-specific validation and sanitization
         if ext == ".html":
             if not _looks_like_html(content):
                 warnings.append(f"Skipped {safe_name} — content does not look like HTML")
@@ -79,6 +81,14 @@ def validate_files(files: dict[str, str]) -> tuple[dict[str, str], list[str]]:
                 )
                 continue
             content = _sanitize_html(content, safe_name, warnings)
+            # Link quality check — warnings only, never rejects
+            link_warnings = check_html_links(content, safe_name, set(files.keys()))
+            warnings.extend(link_warnings)
+        elif ext == ".svg":
+            sanitized = _sanitize_svg(content, safe_name, warnings)
+            if sanitized is None:
+                continue  # malformed or empty after sanitization — already warned
+            content = sanitized
 
         clean[raw_path] = content
 
@@ -127,6 +137,226 @@ def _sanitize_html(html: str, filename: str, warnings: list[str]) -> str:
         warnings.append(f"{filename}: sanitized {n} javascript: href(s)")
 
     return cleaned
+
+
+# Regex to extract href="..." and src="..." attribute values
+_HREF_SRC_RE = re.compile(
+    r"""(?:href|src)=["']([^"']+)["']""",
+    re.IGNORECASE,
+)
+
+# Schemes / prefixes that indicate an external or non-file reference
+_EXTERNAL_PREFIXES = ("http://", "https://", "//", "#", "mailto:", "tel:", "data:")
+
+
+def check_html_links(
+    html: str,
+    filename: str,
+    available_files: set[str],
+) -> list[str]:
+    """Return warning strings for broken internal links and missing asset refs.
+
+    Scans all href and src attribute values in *html*.  For each value that is
+    not external (does not start with http/https/// /#/mailto:/tel:/data:) it
+    checks whether the referenced path exists in *available_files*.  Missing
+    references produce a warning string.
+
+    Never raises; never rejects files — warnings only.
+    """
+    warnings: list[str] = []
+    for m in _HREF_SRC_RE.finditer(html):
+        ref = m.group(1).strip()
+        if not ref:
+            continue
+        # Skip external, anchor-only, and protocol-based references
+        if any(ref.startswith(prefix) for prefix in _EXTERNAL_PREFIXES):
+            continue
+        # Normalise leading ./ or / for comparison
+        normalised = ref.lstrip("./")
+        if normalised in available_files or ref in available_files:
+            continue
+        warnings.append(
+            f"{filename}: broken link to {ref!r} (not in available files)"
+        )
+    return warnings
+
+
+def validate_route_graph(
+    route_graph: dict | None,
+    available_files: set[str],
+) -> list[str]:
+    """Return warnings for route_graph edges where a node is not in available_files.
+
+    Nodes that start with '/' are treated as routes (strip leading slash for lookup).
+    Never raises; never rejects — warnings only.
+    """
+    warnings: list[str] = []
+    if not route_graph:
+        return warnings
+    nodes = set(route_graph.get("nodes") or [])
+    edges = route_graph.get("edges") or []
+
+    for node in nodes:
+        normalised = node.lstrip("/")
+        if normalised and normalised not in available_files:
+            warnings.append(f"route_graph: node {node!r} not found in generated files")
+
+    for edge in edges:
+        for end in ("from", "to"):
+            target = edge.get(end, "")
+            norm = target.lstrip("/")
+            if norm and norm not in nodes and norm not in available_files:
+                warnings.append(
+                    f"route_graph: edge {end}={target!r} references unknown node"
+                )
+    return warnings
+
+
+# ---------------------------------------------------------------------------
+# SVG sanitizer
+# ---------------------------------------------------------------------------
+
+# Tags safe for generated icon/hero SVGs
+_SVG_ALLOWED_TAGS = {
+    "svg", "g", "defs", "symbol", "use",
+    "linearGradient", "radialGradient", "stop",
+    "rect", "circle", "ellipse", "path", "line", "polyline", "polygon",
+    "text", "tspan", "title", "desc",
+}
+
+# Tags that must always be removed regardless of namespace
+_SVG_FORBIDDEN_TAGS = {
+    "script", "foreignobject", "iframe", "object", "embed",
+    "audio", "video", "animate", "set", "animatetransform",
+}
+
+# Attribute prefixes/names that are dangerous
+_SVG_FORBIDDEN_ATTR_PREFIXES = ("on",)  # all event handlers
+_SVG_FORBIDDEN_HREF_SCHEMES = ("javascript:", "data:", "http://", "https://", "//")
+
+
+def _svg_localname(tag: str) -> str:
+    """Strip XML namespace prefix: {ns}tag → tag (lower-cased)."""
+    if tag.startswith("{"):
+        tag = tag.split("}", 1)[1]
+    return tag.lower()
+
+
+def _sanitize_svg_element(el: ET.Element, warnings: list[str], filename: str) -> bool:
+    """Recursively strip dangerous children and attributes in-place.
+
+    Returns False if the root element itself is forbidden (caller should reject).
+    """
+    local = _svg_localname(el.tag)
+
+    if local in _SVG_FORBIDDEN_TAGS:
+        return False
+
+    # Strip forbidden attributes
+    for attr in list(el.attrib):
+        attr_local = _svg_localname(attr) if attr.startswith("{") else attr.lower()
+        # Event handlers
+        if any(attr_local.startswith(p) for p in _SVG_FORBIDDEN_ATTR_PREFIXES):
+            del el.attrib[attr]
+            warnings.append(f"{filename}: removed event handler attr {attr!r}")
+            continue
+        # Dangerous href / xlink:href
+        if attr_local in ("href", "xlink:href", "{http://www.w3.org/1999/xlink}href"):
+            val = el.attrib.get(attr, "").strip().lower()
+            if any(val.startswith(s) for s in _SVG_FORBIDDEN_HREF_SCHEMES):
+                del el.attrib[attr]
+                warnings.append(f"{filename}: removed dangerous href {val[:40]!r}")
+
+    # Recurse — remove forbidden children
+    for child in list(el):
+        child_local = _svg_localname(child.tag)
+        if child_local in _SVG_FORBIDDEN_TAGS or child_local not in _SVG_ALLOWED_TAGS:
+            el.remove(child)
+            warnings.append(f"{filename}: removed disallowed SVG element <{child_local}>")
+        else:
+            _sanitize_svg_element(child, warnings, filename)
+
+    return True
+
+
+def _sanitize_svg(svg: str, filename: str, warnings: list[str]) -> Optional[str]:
+    """Parse, sanitize, and re-serialize an SVG string.
+
+    Returns the sanitized SVG string, or None if the input is malformed/empty.
+    """
+    text = svg.strip()
+    if not text:
+        warnings.append(f"Skipped {filename} — empty SVG")
+        return None
+
+    # Register namespaces so ET doesn't emit ns0: prefixes on re-serialization
+    ET.register_namespace("", "http://www.w3.org/2000/svg")
+    ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
+
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError as exc:
+        warnings.append(f"Skipped {filename} — malformed SVG XML: {exc}")
+        return None
+
+    if _svg_localname(root.tag) != "svg":
+        warnings.append(f"Skipped {filename} — SVG root element must be <svg>")
+        return None
+
+    allowed = _sanitize_svg_element(root, warnings, filename)
+    if not allowed:
+        warnings.append(f"Skipped {filename} — SVG root is a forbidden element")
+        return None
+
+    # Re-serialize — ET strips the XML declaration which is fine for inline/img use
+    return ET.tostring(root, encoding="unicode", xml_declaration=False)
+
+
+def check_spacing_contract(html: str, filename: str) -> list[str]:
+    """Check that generated HTML follows the spacing/gutter contract.
+
+    Verifies presence of:
+    - Content container max-width (centering guard)
+    - margin-inline: auto or margin: 0 auto (centering)
+    - clamp() spacing tokens (fluid spacing)
+    - Some form of padding (section rhythm)
+    - Touch target sizing (min 44px)
+
+    Returns a list of warning strings. Never raises.
+    """
+    warnings: list[str] = []
+    lower = html.lower()
+
+    # Content container: max-width
+    if "max-width:" not in lower and "max-width :" not in lower:
+        warnings.append(f"{filename}: no content container max-width detected")
+
+    # Centering: margin-inline auto OR margin: 0 auto
+    has_center = (
+        "margin-inline: auto" in lower
+        or "margin-inline:auto" in lower
+        or "margin: 0 auto" in lower
+        or "margin:0 auto" in lower
+        or "margin: auto" in lower
+        or "margin:auto" in lower
+    )
+    if not has_center:
+        warnings.append(f"{filename}: no margin-inline auto / margin: 0 auto for centering")
+
+    # Fluid spacing tokens via clamp()
+    if "clamp(" not in lower:
+        warnings.append(f"{filename}: no clamp() spacing tokens detected")
+
+    # Padding presence (section rhythm)
+    if "padding" not in lower:
+        warnings.append(f"{filename}: no section padding detected")
+
+    # Touch targets: 44px or min-height
+    has_touch = "44px" in lower or "2.75rem" in lower or "min-height" in lower
+    if not has_touch:
+        warnings.append(f"{filename}: no touch target sizing detected (min 44px recommended)")
+
+    return warnings
 
 
 def _responsive_html_warnings(html: str, filename: str) -> tuple[list[str], bool]:

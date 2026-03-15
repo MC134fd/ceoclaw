@@ -28,20 +28,20 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-_DEBUG_LOG_PATH = Path("/Users/marcuschien/code/MC134fd/ceoclaw/.cursor/debug-ae58c9.log")
+_DEBUG_LOG_PATH = Path("/Users/marcuschien/code/MC134fd/ceoclaw/.cursor/debug-9d4649.log")
 
 
 def _debug_log(run_id: str, hypothesis_id: str, location: str, message: str, data: dict[str, Any]) -> None:
     # #region agent log
     try:
         payload = {
-            "sessionId": "ae58c9",
+            "sessionId": "9d4649",
             "runId": run_id,
             "hypothesisId": hypothesis_id,
             "location": location,
@@ -60,18 +60,28 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
+from api.auth import ANONYMOUS_USER, get_current_user
+import config.settings as _settings_mod  # runtime lookup avoids stale binding in tests
 from config.settings import settings
 from core import event_bus as _bus
 from core.intent_parser import parse_intent
 from core.state_manager import StateManager
 from data.database import (
     append_chat_message,
+    deduct_credits,
+    delete_chat_session,
     get_chat_history,
     get_chat_session,
+    get_chat_session_owned_by,
+    get_credit_ledger,
     get_design_system,
     get_session_version,
+    get_user_by_id,
+    get_user_credits,
+    get_user_subscription,
     init_db,
     list_chat_sessions,
+    list_chat_sessions_for_user,
     list_session_versions,
     save_session_version,
     upsert_chat_session,
@@ -79,6 +89,12 @@ from data.database import (
 )
 from integrations.flock_client import get_model
 from tools.website_builder import website_builder_tool
+
+# ---------------------------------------------------------------------------
+# Credits constants
+# ---------------------------------------------------------------------------
+
+GENERATION_COST = 1  # credits per generation request
 
 
 @asynccontextmanager
@@ -574,6 +590,7 @@ _EXTENSION_MEDIA_TYPES: dict[str, str] = {
     ".json": "application/json",
     ".md": "text/plain",
     ".txt": "text/plain",
+    ".svg": "image/svg+xml",
 }
 _ALLOWED_SERVING_EXTENSIONS = set(_EXTENSION_MEDIA_TYPES.keys())
 
@@ -894,8 +911,127 @@ def delete_memory(key: str, namespace: str = "default") -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Auth + credits helpers (used by builder endpoints)
+# ---------------------------------------------------------------------------
+
+
+def _require_session_access(session_id: str, user: dict) -> dict:
+    """Return the session dict, enforcing ownership when AUTH_REQUIRED=true.
+
+    Policy: 404 if session doesn't exist; 403 if session is owned by someone else.
+    When auth is disabled (or user is anonymous), ownership is not checked.
+    """
+    user_id = user.get("id", "anonymous")
+    if _settings_mod.settings.auth_required and user_id != "anonymous":
+        session = get_chat_session_owned_by(session_id, user_id)
+        if session is None:
+            # Distinguish "not found" from "owned by someone else"
+            full = get_chat_session(session_id)
+            if full is None:
+                raise HTTPException(status_code=404, detail=f"Session {session_id!r} not found")
+            raise HTTPException(status_code=403, detail="Access denied: session not owned by you")
+        return session
+    # Auth disabled or anonymous — plain lookup
+    session = get_chat_session(session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail=f"Session {session_id!r} not found")
+    return session
+
+
+def _gate_credits(user: dict, session_id: str) -> dict:
+    """Check and (conditionally) deduct credits before a generation request.
+
+    Returns a metadata dict:
+      {"credits_before": N, "credits_after": N-cost, "cost": N, "tier": str}
+
+    Behaviour:
+    - Anonymous / AUTH_REQUIRED=false → returns null values, never blocks.
+    - CREDITS_ENFORCED=false          → deducts if possible, returns preview, never blocks.
+    - CREDITS_ENFORCED=true           → raises HTTP 402 if balance < cost.
+    """
+    user_id = user.get("id", "anonymous")
+
+    # Anonymous mode — no credit tracking
+    if not _settings_mod.settings.auth_required or user_id == "anonymous":
+        return {"credits_before": None, "credits_after": None,
+                "cost": GENERATION_COST, "tier": "anonymous"}
+
+    credits_row = get_user_credits(user_id)
+    balance = credits_row.get("balance", 0)
+    sub_row = get_user_subscription(user_id)
+    tier = (sub_row or {}).get("tier", "free")
+
+    if _settings_mod.settings.credits_enforced and balance < GENERATION_COST:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "insufficient_credits",
+                "message": (
+                    f"You need {GENERATION_COST} credit(s) to generate. "
+                    f"Current balance: {balance}."
+                ),
+                "balance": balance,
+                "required": GENERATION_COST,
+                "tier": tier,
+            },
+        )
+
+    # Deduct when credits are available (even when enforcement is off — tracks usage)
+    if balance >= GENERATION_COST:
+        result = deduct_credits(user_id, GENERATION_COST, "generate_request", session_id)
+        credits_after = result.get("balance_after", balance - GENERATION_COST)
+    else:
+        # Not enforced + zero balance: preview-only, no deduction
+        credits_after = balance
+
+    return {
+        "credits_before": balance,
+        "credits_after": credits_after,
+        "cost": GENERATION_COST,
+        "tier": tier,
+    }
+
+
+def _maybe_add_endpoint_scaffold(gen: Any, slug: str, intent: dict) -> None:
+    """Append data.json FileChange if intent has api_endpoints. Idempotent.
+
+    Called after generate() returns in both builder_chat and _run_pipeline_bg
+    so the endpoint scaffold is always produced regardless of which code path
+    handled the generation.
+    """
+    from services.code_generation_service import FileChange
+    import json as _json
+
+    operation = intent  # intent here is the operation dict
+    if operation.get("type") != "add_endpoint":
+        return
+
+    # Avoid double-appending if already present
+    for change in gen.changes:
+        if change.path.endswith("/data.json") or change.path.endswith("data.json"):
+            return
+
+    methods = operation.get("metadata", {}).get("http_methods", ["GET", "POST"])
+    endpoint_scaffold = {
+        "endpoints": [
+            {"method": m, "path": f"/api/{slug}", "description": f"{m} endpoint"}
+            for m in methods
+        ]
+    }
+    gen.changes.append(FileChange(
+        path=f"data/websites/{slug}/data.json",
+        action="create",
+        content=_json.dumps(endpoint_scaffold, indent=2),
+        summary="Scaffolded endpoint spec",
+    ))
+
+
 @app.post("/builder/chat")
-def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
+def builder_chat(
+    request: BuilderChatRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     """Chat-first website creation with richer response (Builder v0.9).
 
     - Accepts optional style_seed and operation for design diversification
@@ -903,6 +1039,7 @@ def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
     - Persists design system per session
     - Saves version record after successful apply
     - Returns fallback_used / fallback_reason in model info
+    - Requires auth when AUTH_REQUIRED=true; enforces credits when CREDITS_ENFORCED=true
     """
     from services.code_generation_service import generate
     from services.file_persistence import list_project_files, read_current_file
@@ -913,7 +1050,16 @@ def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
     if not msg:
         raise HTTPException(status_code=400, detail="message is required")
 
+    # ── Ownership check: existing session must belong to this user ──────────
     session_row = get_chat_session(request.session_id)
+    if session_row and _settings_mod.settings.auth_required and current_user["id"] != "anonymous":
+        existing_owner = session_row.get("owner_user_id")
+        if existing_owner and existing_owner != current_user["id"]:
+            raise HTTPException(status_code=403, detail="Access denied: session not owned by you")
+
+    # ── Credits gate ────────────────────────────────────────────────────────
+    credit_meta = _gate_credits(current_user, request.session_id)
+
     existing_slug: str = (session_row or {}).get("slug", "")
 
     db_history = get_chat_history(request.session_id, limit=40)
@@ -951,8 +1097,15 @@ def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
     design_system_dict = get_design_system(request.session_id)
     if design_system_dict is None:
         from services.design_system_service import DesignSystem
-        ds = DesignSystem.generate(style_seed=style_seed_dict)
+        ds = DesignSystem.generate_unique(
+            archetype=(style_seed_dict or {}).get("archetype", "saas"),
+            style_seed=style_seed_dict,
+        )
         design_system_dict = ds.to_dict()
+        upsert_design_system(request.session_id, design_system_dict)
+    elif not design_system_dict.get("design_family"):
+        # Backfill missing design_family on legacy sessions
+        design_system_dict["design_family"] = "framer_aura"
         upsert_design_system(request.session_id, design_system_dict)
 
     gen = generate(
@@ -966,23 +1119,8 @@ def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
         operation=operation,
     )
 
-    # If operation is add_endpoint, scaffold a data.json endpoints file
-    if operation.get("type") == "add_endpoint":
-        from services.code_generation_service import FileChange
-        methods = operation.get("metadata", {}).get("http_methods", ["GET", "POST"])
-        endpoint_scaffold = {
-            "endpoints": [
-                {"method": m, "path": f"/api/{slug}", "description": f"{m} endpoint"}
-                for m in methods
-            ]
-        }
-        import json as _json
-        gen.changes.append(FileChange(
-            path=f"data/websites/{slug}/data.json",
-            action="create",
-            content=_json.dumps(endpoint_scaffold, indent=2),
-            summary="Scaffolded endpoint spec",
-        ))
+    # Append data.json scaffold if this is an add_endpoint operation
+    _maybe_add_endpoint_scaffold(gen, slug, operation)
 
     apply_result = apply_changes(slug=slug, changes=gen.changes)
     product_name = slug.replace("-", " ").title()
@@ -992,6 +1130,7 @@ def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
         slug=slug,
         product_name=product_name,
         version_id=apply_result.version_id,
+        owner_user_id=current_user.get("id") if _settings_mod.settings.auth_required else None,
     )
     append_chat_message(request.session_id, "user", msg)
     msg_id = append_chat_message(request.session_id, "assistant", gen.assistant_message)
@@ -1043,21 +1182,44 @@ def builder_chat(request: BuilderChatRequest) -> dict[str, Any]:
         "warnings": apply_result.warnings + gen.warnings,
         "operation": operation,
         "design_system": design_system_dict,
+        "blueprint": getattr(gen, "blueprint", {}),
+        "layout_plan": gen.layout_plan,
+        "consistency_profile_id": gen.consistency_profile_id or design_system_dict.get("consistency_profile_id", ""),
+        "credits": credit_meta,
     }
 
 
 @app.get("/builder/sessions")
-def builder_list_sessions(limit: int = 20) -> list[dict[str, Any]]:
-    """List recent builder chat sessions (newest first)."""
-    return list_chat_sessions(limit=min(limit, 100))
+def builder_list_sessions(
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user),
+) -> list[dict[str, Any]]:
+    """List builder chat sessions (newest first).
+
+    When AUTH_REQUIRED=true, returns only sessions owned by the requesting user.
+    """
+    capped = min(limit, 100)
+    user_id = current_user.get("id", "anonymous")
+    if _settings_mod.settings.auth_required and user_id != "anonymous":
+        return list_chat_sessions_for_user(user_id, limit=capped)
+    return list_chat_sessions(limit=capped)
 
 
 @app.get("/builder/sessions/{session_id}")
-def builder_get_session(session_id: str) -> dict[str, Any]:
-    """Get session metadata."""
+def builder_get_session(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Get session metadata (ownership-checked when AUTH_REQUIRED=true)."""
     session = get_chat_session(session_id)
     if not session:
         return {"status": "empty", "session_id": session_id}
+    # Ownership check
+    user_id = current_user.get("id", "anonymous")
+    if _settings_mod.settings.auth_required and user_id != "anonymous":
+        owner = session.get("owner_user_id")
+        if owner and owner != user_id:
+            raise HTTPException(status_code=403, detail="Access denied: session not owned by you")
     slug = session.get("slug", "")
     return {
         "status": "ok",
@@ -1072,12 +1234,27 @@ def builder_get_session(session_id: str) -> dict[str, Any]:
     }
 
 
+@app.delete("/builder/sessions/{session_id}")
+def builder_delete_session(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Delete a session and all its messages (ownership-checked when AUTH_REQUIRED=true)."""
+    _require_session_access(session_id, current_user)
+    deleted = delete_chat_session(session_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {"status": "deleted", "session_id": session_id}
+
+
 @app.get("/builder/sessions/{session_id}/messages")
-def builder_get_session_messages(session_id: str, limit: int = 100) -> dict[str, Any]:
+def builder_get_session_messages(
+    session_id: str,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     """Return full chat history + session metadata for session restore."""
-    session = get_chat_session(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail=f"Session {session_id!r} not found")
+    session = _require_session_access(session_id, current_user)
     messages = get_chat_history(session_id, limit=limit)
     slug = session.get("slug", "")
     return {
@@ -1106,18 +1283,29 @@ def builder_provider_status() -> dict[str, Any]:
 
 
 @app.get("/builder/sessions/{session_id}/versions")
-def list_versions(session_id: str, limit: int = 20) -> list[dict[str, Any]]:
+def list_versions(
+    session_id: str,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user),
+) -> list[dict[str, Any]]:
     """List version records for a session, newest first."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
     return list_session_versions(session_id, limit=min(limit, 100))
 
 
 @app.get("/builder/sessions/{session_id}/versions/{version_id}")
-def get_version(session_id: str, version_id: str) -> dict[str, Any]:
+def get_version(
+    session_id: str,
+    version_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     """Return version metadata + file list (not full content by default)."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
     record = get_session_version(session_id, version_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Version {version_id!r} not found")
-    # Return without full file content (just metadata + file list)
     return {
         "id": record.get("id"),
         "session_id": record.get("session_id"),
@@ -1129,11 +1317,89 @@ def get_version(session_id: str, version_id: str) -> dict[str, Any]:
 
 
 @app.post("/builder/sessions/{session_id}/versions/{version_id}/restore")
-def restore_version(session_id: str, version_id: str) -> dict[str, Any]:
+def restore_version(
+    session_id: str,
+    version_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     """Restore a previous version: re-apply its files to disk, upsert session."""
     from services.file_persistence import save_website_files
 
+    run_id = f"restore:{session_id}:{version_id}"
+    # #region agent log
+    _debug_log(
+        run_id,
+        "H1_H2_H3",
+        "api/server.py:restore_version:entry",
+        "restore_version called",
+        {
+            "session_id": session_id,
+            "version_id": version_id,
+            "auth_required": _settings_mod.settings.auth_required,
+            "current_user_id": current_user.get("id", "anonymous"),
+        },
+    )
+    # #endregion
+
+    # Ownership check (only when auth is required and user is not anonymous)
+    if _settings_mod.settings.auth_required:
+        try:
+            session = _require_session_access(session_id, current_user)
+            # #region agent log
+            _debug_log(
+                run_id,
+                "H1_H2",
+                "api/server.py:restore_version:after_require_session_access",
+                "session access granted",
+                {
+                    "session_found": True,
+                    "session_slug": session.get("slug"),
+                    "owner_user_id": session.get("owner_user_id"),
+                },
+            )
+            # #endregion
+        except HTTPException as exc:
+            # #region agent log
+            _debug_log(
+                run_id,
+                "H1_H2",
+                "api/server.py:restore_version:require_session_access_error",
+                "session access rejected",
+                {
+                    "status_code": exc.status_code,
+                    "detail": exc.detail,
+                },
+            )
+            # #endregion
+            raise
+    else:
+        session = get_chat_session(session_id) or {}
+        # #region agent log
+        _debug_log(
+            run_id,
+            "H1",
+            "api/server.py:restore_version:auth_disabled_lookup",
+            "auth disabled session lookup result",
+            {
+                "session_found": bool(session),
+                "session_slug": session.get("slug"),
+            },
+        )
+        # #endregion
+
     record = get_session_version(session_id, version_id)
+    # #region agent log
+    _debug_log(
+        run_id,
+        "H4",
+        "api/server.py:restore_version:after_get_session_version",
+        "version lookup completed",
+        {
+            "version_found": bool(record),
+            "record_has_files": bool(record and record.get("files")),
+        },
+    )
+    # #endregion
     if not record:
         raise HTTPException(status_code=404, detail=f"Version {version_id!r} not found")
 
@@ -1141,12 +1407,22 @@ def restore_version(session_id: str, version_id: str) -> dict[str, Any]:
     if not files:
         raise HTTPException(status_code=400, detail="Version has no file content to restore")
 
-    session = get_chat_session(session_id)
-    slug = (session or {}).get("slug", "")
+    slug = session.get("slug", "")
+    # #region agent log
+    _debug_log(
+        run_id,
+        "H5",
+        "api/server.py:restore_version:before_slug_check",
+        "checking session slug",
+        {
+            "slug": slug,
+            "slug_present": bool(slug),
+        },
+    )
+    # #endregion
     if not slug:
         raise HTTPException(status_code=400, detail="Session has no slug — cannot restore")
 
-    # Write files back to disk
     save_result = save_website_files(slug, files)
     new_version_id = save_result.get("version_id", "")
 
@@ -1162,11 +1438,18 @@ def restore_version(session_id: str, version_id: str) -> dict[str, Any]:
 
 
 @app.get("/builder/sessions/{session_id}/versions/{version_id}/files/{file_path:path}")
-def get_version_file(session_id: str, version_id: str, file_path: str) -> dict[str, Any]:
+def get_version_file(
+    session_id: str,
+    version_id: str,
+    file_path: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     """Return content of a specific file at a given version."""
     if ".." in file_path:
         raise HTTPException(status_code=400, detail="path traversal not allowed")
 
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
     record = get_session_version(session_id, version_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Version {version_id!r} not found")
@@ -1198,6 +1481,7 @@ def _run_pipeline_bg(
     style_seed: dict | None,
     design_system: dict | None,
     operation: dict | None,
+    owner_user_id: str | None = None,
 ) -> None:
     """Background thread: run the generation pipeline and emit events to bus."""
     run_id = f"pipeline_bg_{job_id[:8]}"
@@ -1225,6 +1509,11 @@ def _run_pipeline_bg(
         if not gen or not apply_result:
             raise RuntimeError("Pipeline produced no output")
 
+        # Append data.json scaffold if this is an add_endpoint operation
+        # (pipeline runs generate_code before apply_files; we patch gen.changes
+        #  here so the result is reflected in files_applied / changes_summary)
+        _maybe_add_endpoint_scaffold(gen, slug, operation or {})
+
         product_name = slug.replace("-", " ").title()
 
         # Persist to DB (same as builder_chat)
@@ -1233,6 +1522,7 @@ def _run_pipeline_bg(
             slug=slug,
             product_name=product_name,
             version_id=apply_result.version_id,
+            owner_user_id=owner_user_id,
         )
         append_chat_message(session_id, "user", message)
         msg_id = append_chat_message(session_id, "assistant", gen.assistant_message)
@@ -1259,6 +1549,7 @@ def _run_pipeline_bg(
             for r in apply_result.results
         ]
 
+        blueprint = ctx.get("blueprint", {}) or getattr(gen, "blueprint", {})
         response: dict[str, Any] = {
             "session_id": session_id,
             "assistant_message": gen.assistant_message,
@@ -1279,6 +1570,9 @@ def _run_pipeline_bg(
             "warnings": apply_result.warnings + gen.warnings,
             "operation": operation or {},
             "design_system": design_system,
+            "blueprint": blueprint,
+            "layout_plan": getattr(gen, "layout_plan", {}),
+            "consistency_profile_id": getattr(gen, "consistency_profile_id", "") or (design_system or {}).get("consistency_profile_id", ""),
         }
 
         _bus.emit(job_id, {"type": "pipeline_complete", "result": response})
@@ -1306,11 +1600,16 @@ def _run_pipeline_bg(
 
 
 @app.post("/builder/generate")
-def builder_generate_start(request: BuilderChatRequest) -> dict[str, Any]:
+def builder_generate_start(
+    request: BuilderChatRequest,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
     """Start an async pipeline generation job.  Returns job_id for SSE streaming.
 
     The client opens GET /builder/generate/{job_id}/events to receive live
     stage_update events, then a pipeline_complete or pipeline_error final event.
+
+    Requires auth when AUTH_REQUIRED=true; enforces credits when CREDITS_ENFORCED=true.
     """
     from services.file_persistence import list_project_files, read_current_file
     from services.operation_parser import parse_operation
@@ -1319,7 +1618,16 @@ def builder_generate_start(request: BuilderChatRequest) -> dict[str, Any]:
     if not msg:
         raise HTTPException(status_code=400, detail="message is required")
 
+    # ── Ownership check for existing session ────────────────────────────────
     session_row = get_chat_session(request.session_id)
+    if session_row and _settings_mod.settings.auth_required and current_user["id"] != "anonymous":
+        existing_owner = session_row.get("owner_user_id")
+        if existing_owner and existing_owner != current_user["id"]:
+            raise HTTPException(status_code=403, detail="Access denied: session not owned by you")
+
+    # ── Credits gate (must deduct before kicking off background work) ────────
+    credit_meta = _gate_credits(current_user, request.session_id)
+
     existing_slug: str = (session_row or {}).get("slug", "")
 
     db_history = get_chat_history(request.session_id, limit=40)
@@ -1354,9 +1662,23 @@ def builder_generate_start(request: BuilderChatRequest) -> dict[str, Any]:
     design_system_dict = get_design_system(request.session_id)
     if design_system_dict is None:
         from services.design_system_service import DesignSystem
-        ds = DesignSystem.generate(style_seed=style_seed_dict)
+        ds = DesignSystem.generate_unique(
+            archetype=(style_seed_dict or {}).get("archetype", "saas"),
+            style_seed=style_seed_dict,
+        )
         design_system_dict = ds.to_dict()
         upsert_design_system(request.session_id, design_system_dict)
+
+    # Clarification check — return early if intent is too vague
+    from services.generation_pipeline import check_clarification_needed
+    clarification = check_clarification_needed(msg, history, style_seed_dict)
+    if clarification:
+        return {
+            "needs_clarification": True,
+            "questions": clarification["questions"],
+            "reason": clarification["reason"],
+            "job_id": None,
+        }
 
     job_id = str(uuid.uuid4())
     _debug_log(
@@ -1366,18 +1688,25 @@ def builder_generate_start(request: BuilderChatRequest) -> dict[str, Any]:
         "builder generate start accepted",
         {"jobId": job_id, "sessionId": request.session_id, "messageLen": len(msg), "mockMode": request.mock_mode},
     )
+    owner_user_id = current_user.get("id") if _settings_mod.settings.auth_required else None
     t = threading.Thread(
         target=_run_pipeline_bg,
         args=(
             job_id, request.session_id, msg, slug,
             history, existing_files, request.mock_mode,
             style_seed_dict, design_system_dict, operation,
+            owner_user_id,
         ),
         daemon=True,
     )
     t.start()
 
-    return {"job_id": job_id, "slug": slug, "session_id": request.session_id}
+    return {
+        "job_id": job_id,
+        "slug": slug,
+        "session_id": request.session_id,
+        "credits": credit_meta,
+    }
 
 
 @app.get("/builder/generate/{job_id}/events")
@@ -1389,8 +1718,10 @@ async def builder_generate_events(job_id: str) -> StreamingResponse:
     """
     async def generate():
         idx = 0
-        max_wait = 180  # seconds
+        max_wait = 660  # seconds — must exceed LLM timeout (600s) + buffer
         waited = 0.0
+        heartbeat_interval = 15.0  # emit keepalive every 15s during long LLM calls
+        since_heartbeat = 0.0
         try:
             while True:
                 batch = _bus.get_events(job_id, idx)
@@ -1405,6 +1736,7 @@ async def builder_generate_events(job_id: str) -> StreamingResponse:
                     yield f"data: {json.dumps(ev)}\n\n"
                     idx += 1
                     waited = 0.0
+                    since_heartbeat = 0.0
                     if ev.get("type") in ("pipeline_complete", "pipeline_error"):
                         return
                 if _bus.is_done(job_id) and not _bus.get_events(job_id, idx):
@@ -1412,6 +1744,11 @@ async def builder_generate_events(job_id: str) -> StreamingResponse:
                     return
                 await asyncio.sleep(0.1)
                 waited += 0.1
+                since_heartbeat += 0.1
+                # Emit SSE comment heartbeat so client connection stays alive
+                if since_heartbeat >= heartbeat_interval:
+                    yield ": heartbeat\n\n"
+                    since_heartbeat = 0.0
                 if waited > max_wait:
                     yield f"data: {json.dumps({'type': 'pipeline_error', 'error': 'timeout'})}\n\n"
                     return
@@ -1428,6 +1765,75 @@ async def builder_generate_events(job_id: str) -> StreamingResponse:
             "Connection": "keep-alive",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Account endpoints (v1.0 — requires auth)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/account/me")
+def account_me(current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    """Return the authenticated user's profile.
+
+    When AUTH_REQUIRED=false, returns the anonymous user placeholder.
+    """
+    if current_user.get("id") == "anonymous":
+        return {**ANONYMOUS_USER, "tier": "anonymous", "auth_required": False}
+
+    user = get_user_by_id(current_user["id"])
+    if not user:
+        # Freshly minted token before the DB row was committed — return claims
+        return {**current_user, "tier": "free", "auth_required": True}
+
+    sub = get_user_subscription(current_user["id"])
+    return {
+        "id": user["id"],
+        "email": user["email"],
+        "display_name": user.get("display_name"),
+        "avatar_url": user.get("avatar_url"),
+        "provider": user.get("provider"),
+        "created_at": user.get("created_at"),
+        "tier": (sub or {}).get("tier", "free"),
+        "auth_required": _settings_mod.settings.auth_required,
+    }
+
+
+@app.get("/account/credits")
+def account_credits(current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    """Return the authenticated user's credit balance and recent ledger."""
+    if current_user.get("id") == "anonymous":
+        return {
+            "user_id": "anonymous",
+            "balance": None,
+            "monthly_allocation": None,
+            "credits_enforced": False,
+            "ledger": [],
+        }
+
+    credits = get_user_credits(current_user["id"])
+    ledger = get_credit_ledger(current_user["id"], limit=20)
+    return {
+        "user_id": current_user["id"],
+        "balance": credits.get("balance", 0),
+        "monthly_allocation": credits.get("monthly_allocation", 0),
+        "updated_at": credits.get("updated_at"),
+        "credits_enforced": _settings_mod.settings.credits_enforced,
+        "cost_per_generation": GENERATION_COST,
+        "ledger": ledger,
+    }
+
+
+@app.get("/account/subscription")
+def account_subscription(current_user: dict = Depends(get_current_user)) -> dict[str, Any]:
+    """Return the authenticated user's active subscription."""
+    if current_user.get("id") == "anonymous":
+        return {"tier": "anonymous", "status": "n/a", "user_id": "anonymous"}
+
+    sub = get_user_subscription(current_user["id"])
+    if not sub:
+        return {"tier": "free", "status": "none", "user_id": current_user["id"]}
+    return sub
 
 
 # ---------------------------------------------------------------------------

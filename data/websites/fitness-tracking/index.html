@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitFlow — Smart workout tracking for serious gym goers</title>
+  <style>
+    /* Import fonts (Framer Aura system fonts) */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    /* Design tokens (colors, spacing, type) */
+    :root{
+      /* Colors (Framer Aura - sage palette + accent pink maintained) */
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-accent-pink: #ec4899;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 50%, var(--color-accent-pink) 100%);
+
+      /* Spacing scale */
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+
+      /* Typography scale */
+      --text-sm: clamp(0.85rem, 1vw, 0.95rem);
+      --text-base: clamp(1rem, 1.2vw, 1.05rem);
+      --text-lg: clamp(1.15rem, 1.6vw, 1.25rem);
+      --text-xl: clamp(1.4rem, 2.2vw, 1.6rem);
+      --text-2xl: clamp(1.75rem, 3vw, 2.25rem);
+      --text-3xl: clamp(2.4rem, 4.5vw, 3rem);
+      --text-4xl: clamp(3rem, 6vw, 4rem);
+
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+
+      --container-width: clamp(320px, 90vw, 1200px);
+
+      --radius: var(--radius-md);
+
+      /* motion timing */
+      --motion: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Focus color */
+      --focus-accent: var(--color-secondary);
+    }
+
+    /* Base styles */
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      -webkit-text-size-adjust:100%;
+    }
+
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
+
+    /* Container helper */
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+
+    /* Nav */
+    nav{
+      position:sticky;top:0;z-index:60;padding-block:var(--space-sm);backdrop-filter: none;transition:var(--motion);}
+    nav.scrolled{backdrop-filter: blur(12px);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:var(--space-md)}
+    .brand{display:flex;align-items:center;gap:var(--space-sm)}
+    .brand h1{font-family:'Cormorant Garamond', serif;font-weight:600;font-size:var(--text-2xl);margin:0;letter-spacing:-0.02em}
+
+    .nav-links{display:flex;gap:var(--space-md);align-items:center}
+    .nav-links a{font-size:var(--text-sm);color:var(--color-text);padding:6px 8px;border-radius:8px}
+    .cta{display:inline-flex;gap:var(--space-sm)}
+
+    /* Buttons */
+    .btn{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 var(--space-md);border-radius:var(--radius);cursor:pointer;transition:var(--motion);}
+    .btn:active{transform:scale(0.97)}
+    .btn:focus-visible{outline:3px solid rgba(21,128,61,0.18);outline-offset:3px}
+    .btn-primary{background:var(--accent-gradient);color:#fff;border:0}
+    .btn-primary:hover{filter:brightness(0.92);transform:scale(1.02)}
+    .btn-secondary{background:transparent;border:1.5px solid var(--color-secondary);color:var(--color-secondary)}
+
+    /* Hero */
+    .hero{padding-block:var(--space-2xl);display:grid;grid-template-columns:1fr min(480px,45%);align-items:center;gap:var(--space-xl)}
+    .hero h2{font-family:'Cormorant Garamond', serif;font-size:var(--text-4xl);margin:0 0 var(--space-sm) 0;letter-spacing:-0.03em;background:var(--accent-gradient);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero p{margin:0 0 var(--space-lg) 0;font-size:var(--text-lg);color:var(--color-text)}
+    .hero-visual{display:flex;justify-content:center;align-items:center}
+    .hero-visual img{border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);}
+
+    /* Glass cards */
+    .glass{background: rgba(255,255,255,0.6);backdrop-filter: blur(8px);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:var(--space-md)}
+
+    /* Proof strip */
+    .proof{display:flex;gap:var(--space-lg);align-items:center;justify-content:space-between;padding:block:var(--space-sm);margin-top:var(--space-lg)}
+    .metric{display:flex;flex-direction:column;align-items:flex-start}
+    .metric .num{font-weight:700;font-size:var(--text-2xl);color:var(--color-primary)}
+    .metric .label{font-size:var(--text-sm);color:var(--color-muted)}
+
+    /* Features grid */
+    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--space-lg);margin-top:var(--space-xl)}
+    .feature-card{padding:var(--space-md);border-radius:var(--radius);background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.4));backdrop-filter: blur(6px);box-shadow:var(--shadow-sm);transition:var(--motion)}
+    .feature-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+    .feature-card h3{margin:var(--space-sm) 0 0 0;font-size:var(--text-lg)}
+    .feature-card p{margin:var(--space-xs) 0 0 0;color:var(--color-muted);font-size:var(--text-sm)}
+
+    /* Testimonials (carousel) */
+    .carousel{position:relative;overflow:hidden;padding:var(--space-md);border-radius:var(--radius);background:var(--color-surface);box-shadow:var(--shadow-md)}
+    .carousel-track{display:flex;transition:transform 400ms ease;gap:var(--space-md)}
+    .testimonial{min-width:100%;box-sizing:border-box;padding:var(--space-md)}
+    .testimonial p{font-size:var(--text-base);margin:0 0 var(--space-sm) 0}
+    .testimonial cite{display:block;font-size:var(--text-sm);color:var(--color-muted)}
+    .carousel-controls{position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;display:flex;justify-content:space-between;padding:0 var(--space-md);pointer-events:none}
+    .carousel-controls button{pointer-events:auto;background:rgba(255,255,255,0.85);border:0;padding:8px;border-radius:10px;box-shadow:var(--shadow-sm)}
+    .dots{display:flex;gap:8px;margin-top:var(--space-sm);justify-content:center}
+    .dot{width:10px;height:10px;border-radius:50%;background:#E6F8EB}
+    .dot.active{background:var(--color-primary)}
+
+    /* Pricing */
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:var(--space-lg);margin-top:var(--space-lg)}
+    .tier{border-radius:var(--radius);padding:calc(var(--space-md));background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85));box-shadow:var(--shadow-sm)}
+    .tier.pro{background:var(--accent-gradient);padding:2px;border-radius:calc(var(--radius) + 2px)}
+    .tier .card{background:var(--color-surface);border-radius:var(--radius);padding:var(--space-md)}
+    .price{font-weight:700;font-size:var(--text-2xl);margin:var(--space-sm) 0}
+    .features-list{list-style:none;padding:0;margin:var(--space-sm) 0 0 0;display:flex;flex-direction:column;gap:var(--space-xs)}
+
+    footer{padding-block:var(--space-md);border-top:1px solid rgba(0,0,0,0.04);margin-top:var(--space-2xl)}
+
+    /* Reveal animation */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity 0.4s ease, transform 0.4s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.reveal,.reveal.visible{opacity:1;transform:none;transition:none}}
+
+    /* Responsive */
+    @media (max-width:1024px){
+      .hero{grid-template-columns:1fr;gap:var(--space-lg)}
+      .nav-inner{flex-direction:row}
+    }
+    @media (max-width:640px){
+      .brand h1{font-size:var(--text-xl)}
+      .hero h2{font-size:var(--text-3xl)}
+    }
+  </style>
+</head>
+<body>
+  <nav id="site-nav">
+    <div class="wrap nav-inner">
+      <div class="brand">
+        <h1>FitFlow</h1>
+        <span style="font-size:var(--text-sm);color:var(--color-muted)">Smart tracking for gym goers</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--space-md)">
+        <div class="nav-links" role="navigation" aria-label="Primary">
+          <a href="#features">Features</a>
+          <a href="pages/pricing.html">Pricing</a>
+          <a href="#testimonials">Testimonials</a>
+        </div>
+        <div class="cta">
+          <a class="btn btn-secondary" href="pages/pricing.html">Pricing</a>
+          <a class="btn btn-primary" href="pages/signup.html" aria-label="Sign up for FitFlow">Sign up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero wrap">
+      <section>
+        <h2 class="reveal">FitFlow — log every set, beat every plateau</h2>
+        <p class="reveal">Record workouts in seconds, auto-track reps with sensors, compare strength progress across weeks, and sync nutrition — all tailored for gym-focused lifters and athletes.</p>
+
+        <div style="display:flex;gap:var(--space-md);align-items:center;flex-wrap:wrap" class="reveal">
+          <a class="btn btn-primary" href="pages/signup.html" id="hero-primary-cta">Start a free plan</a>
+          <a class="btn btn-secondary" href="pages/pricing.html">Compare plans</a>
+        </div>
+
+        <div class="proof reveal" style="margin-top:var(--space-lg)">
+          <div class="metric"><div class="num"><span class="counter" data-target="24000">0</span>+</div><div class="label">Workouts logged / month</div></div>
+          <div class="metric"><div class="num"><span class="counter" data-target="1800000">0</span>+</div><div class="label">Reps tracked total</div></div>
+          <div class="metric"><div class="num"><span class="counter" data-target="12400">0</span>+</div><div class="label">PRs recorded</div></div>
+        </div>
+      </section>
+
+      <aside class="hero-visual reveal">
+        <!-- If assets/hero.svg exists it will be used -->
+        <img src="assets/hero.svg" alt="FitFlow hero illustration" class="hero-img" style="max-width:100%;height:auto;"/>
+      </aside>
+    </header>
+
+    <section id="features" class="wrap" style="padding-block:var(--space-2xl)">
+      <h3 class="reveal" style="font-family:'Cormorant Garamond';font-size:var(--text-2xl);margin:0 0 var(--space-md) 0;letter-spacing:-0.02em">Features built for gym progress</h3>
+      <div class="features">
+        <article class="feature-card reveal">
+          <img src="assets/icon-1.svg" alt="Workout Builder icon" style="width:48px;height:48px;" />
+          <h3>Workout Builder</h3>
+          <p>Design superset-friendly programs, save routines, and auto-apply progressive overload templates.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <img src="assets/icon-2.svg" alt="Auto Rep Tracker icon" style="width:48px;height:48px;" />
+          <h3>Auto Rep Tracker</h3>
+          <p>Use phone sensors or synced wearables to auto-count reps and rest times—no manual entry after the first set.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <img src="assets/icon-3.svg" alt="Progress Metrics icon" style="width:48px;height:48px;" />
+          <h3>Progress Metrics</h3>
+          <p>Track 1RM estimates, volume by muscle group, and week-over-week strength curves visualized for coaches and gym goers.</p>
+        </article>
+
+        <article class="feature-card reveal">
+          <img src="assets/icon-4.svg" alt="Nutrition Sync icon" style="width:48px;height:48px;" />
+          <h3>Nutrition Sync</h3>
+          <p>Link macro targets to workouts so FitFlow suggests carb/protein timing for optimal recovery and performance.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="testimonials" class="wrap" style="padding-block:var(--space-2xl)">
+      <h3 style="font-family:'Cormorant Garamond';font-size:var(--text-2xl);margin:0 0 var(--space-md) 0">What gym goers say</h3>
+      <div class="carousel reveal" role="region" aria-label="Testimonials">
+        <div class="carousel-track" id="carousel-track">
+          <div class="testimonial" data-index="0">
+            <p>"I used to forget sets or miscount reps — FitFlow auto-tracking cut logging time in half and my weekly volume is actually consistent now."</p>
+            <cite>- Mara, competitive powerlifter</cite>
+          </div>
+          <div class="testimonial" data-index="1">
+            <p>"Plateaus are obvious now — the Progress Metrics showed weak volume patterns I could fix within two weeks."</p>
+            <cite>- Jonas, gym coach</cite>
+          </div>
+          <div class="testimonial" data-index="2">
+            <p>"Syncing meals with training days helped my recovery. My lifts went up while my bodyweight stayed steady."</p>
+            <cite>- Alia, fitness enthusiast</cite>
+          </div>
+        </div>
+        <div class="carousel-controls">
+          <button id="prev-testimonial" aria-label="Previous testimonial">◀</button>
+          <button id="next-testimonial" aria-label="Next testimonial">▶</button>
+        </div>
+        <div class="dots" role="tablist" aria-label="Testimonial navigation">
+          <button class="dot active" data-to="0" aria-label="Go to testimonial 1"></button>
+          <button class="dot" data-to="1" aria-label="Go to testimonial 2"></button>
+          <button class="dot" data-to="2" aria-label="Go to testimonial 3"></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="wrap" style="padding-block:var(--space-2xl)">
+      <h3 style="font-family:'Cormorant Garamond';font-size:var(--text-2xl);margin:0 0 var(--space-md) 0">Plans that scale with your gains</h3>
+      <div class="pricing-grid">
+        <div class="tier glass reveal">
+          <div class="card">
+            <h4>Free</h4>
+            <div class="price">$0 / mo</div>
+            <ul class="features-list">
+              <li>Basic workout logging</li>
+              <li>Manual rep & set entry</li>
+              <li>Weekly progress snapshot</li>
+            </ul>
+            <div style="margin-top:var(--space-md)"><a class="btn btn-primary" href="pages/signup.html">Get started free</a></div>
+          </div>
+        </div>
+
+        <div class="tier pro reveal">
+          <div class="card">
+            <h4>Pro</h4>
+            <div class="price">$9 / mo</div>
+            <ul class="features-list">
+              <li>Auto rep tracking + wearable sync</li>
+              <li>Full Progress Metrics & export</li>
+              <li>Nutrition sync & macro planning</li>
+            </ul>
+            <div style="margin-top:var(--space-md)"><a class="btn btn-primary stripe-ready" href="pages/signup.html">Start free trial</a></div>
+          </div>
+        </div>
+
+        <div class="tier glass reveal">
+          <div class="card">
+            <h4>Enterprise</h4>
+            <div class="price">Custom</div>
+            <ul class="features-list">
+              <li>Team management & coach dashboards</li>
+              <li>Priority support & custom integrations</li>
+              <li>On-premise data options</li>
+            </ul>
+            <div style="margin-top:var(--space-md)"><a class="btn btn-secondary" href="pages/signup.html">Contact sales</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-md);flex-wrap:wrap;">
+        <div>
+          <strong>FitFlow</strong>
+          <div style="color:var(--color-muted);font-size:var(--text-sm)">© <span id="year"></span> — Built for gym goers</div>
+        </div>
+        <div style="display:flex;gap:var(--space-sm);align-items:center">
+          <a href="pages/pricing.html">Pricing</a>
+          <a href="pages/signup.html">Sign up</a>
+          <a href="app.html">Open app</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sticky nav scroll state
+    const nav = document.getElementById('site-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 14) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    });
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, {threshold:0.15});
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Animated counters
+    const counters = document.querySelectorAll('.counter');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting){
+          const el = entry.target; const target = +el.dataset.target;
+          if (!el._counting){
+            el._counting = true; const duration = 1200; const start = performance.now();
+            function step(now){
+              const progress = Math.min((now - start)/duration,1);
+              el.textContent = Math.floor(progress * target).toLocaleString();
+              if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+          }
+        }
+      });
+    }, {threshold:0.25});
+    counters.forEach(c => counterObserver.observe(c));
+
+    // Testimonial carousel (no autoplay)
+    (function(){
+      const track = document.getElementById('carousel-track');
+      const items = Array.from(track.children);
+      const prev = document.getElementById('prev-testimonial');
+      const next = document.getElementById('next-testimonial');
+      const dots = Array.from(document.querySelectorAll('.dot'));
+      let index = 0;
+      function update(){
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach((d,i)=> d.classList.toggle('active', i===index));
+        // focus management
+        items[index].querySelector('p').focus && items[index].querySelector('p').setAttribute('tabindex','-1');
+      }
+      prev.addEventListener('click', ()=>{ index = (index -1 + items.length) % items.length; update(); });
+      next.addEventListener('click', ()=>{ index = (index +1) % items.length; update(); });
+      dots.forEach(d => d.addEventListener('click', (ev)=>{ index = +ev.currentTarget.dataset.to; update(); }));
+      // Keyboard
+      document.addEventListener('keydown', (e)=>{ if (e.key==='ArrowLeft') prev.click(); if (e.key==='ArrowRight') next.click(); });
+      // Respect reduced motion
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){ track.style.transition = 'none'; }
+      update();
+    })();
+
+  </script>
+</body>
+</html>

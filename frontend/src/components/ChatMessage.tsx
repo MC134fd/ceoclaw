@@ -6,6 +6,8 @@ interface Props {
   message: Message;
   // Optional: only provided for the last assistant message
   chatResponse?: ChatResponse | null;
+  /** True while the typewriter animation is running for this message */
+  isTyping?: boolean;
 }
 
 function formatTime(isoString: string): string {
@@ -39,9 +41,9 @@ function formatContent(text: string): React.ReactNode[] {
           style={{
             fontFamily: 'monospace',
             fontSize: '0.9em',
-            background: 'rgba(0,0,0,0.08)',
-            borderRadius: 3,
-            padding: '1px 4px',
+            background: 'rgba(0,0,0,0.07)',
+            borderRadius: 4,
+            padding: '1px 5px',
           }}
         >
           {match[3]}
@@ -66,7 +68,7 @@ function pushText(parts: React.ReactNode[], text: string, keyBase: number): void
   });
 }
 
-export function ChatMessage({ message, chatResponse }: Props) {
+export function ChatMessage({ message, chatResponse, isTyping = false }: Props) {
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
@@ -79,6 +81,7 @@ export function ChatMessage({ message, chatResponse }: Props) {
     <div className={`chat-message chat-message--${message.role}`} data-role={message.role}>
       <div className={`chat-message-bubble chat-message-bubble--${message.role}`}>
         {formatContent(message.content)}
+        {isTyping && isAssistant && <span className="typing-cursor" aria-hidden="true" />}
         {changes.length > 0 && (
           <ChangedFilesSummary changes={changes} operation={operation} />
         )}

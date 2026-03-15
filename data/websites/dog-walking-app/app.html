@@ -9,16 +9,17 @@
 
     /* ── Design tokens ─────────────────────────────────────────────────── */
     :root {
-      --color-bg: #0a0a0f;
-      --color-surface: #12121a;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
       --color-surface-2: #1a1a24;
-      --color-border: rgba(255,255,255,0.07);
-      --color-text: #f0f0ff;
-      --color-muted: #6b7280;
-      --color-primary: #6366f1;
+      --color-border: rgba(255,255,255,0.08);
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
       --font-body: 'Inter', system-ui, sans-serif;
-      --radius-sm: 6px;
-      --radius-md: 10px;
+      --radius-sm: 4px;
+      --radius-md: 12px;
       --nav-width: 224px;
       --space-container-x: clamp(1.25rem, 3vw, 2rem);
       --card-pad: clamp(1.25rem, 2.5vw, 1.75rem);
@@ -143,7 +144,7 @@
     .metric-value { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
     .metric-label { font-size: 0.75rem; color: var(--color-muted); }
     .card-desc { font-size: 0.875rem; color: var(--color-muted); margin-bottom: 1rem; }
-    .integration-card { border-color: rgba(99,102,241,0.2); }
+    .integration-card { border-color: rgba(6,182,212,0.2); }
     .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
     .form-label { font-size: 0.8125rem; font-weight: 500; color: var(--color-text); }
     .token-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -185,110 +186,141 @@
       background: var(--color-surface-2);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-sm);
-      color: var(--color-text);
-      font-family: var(--font-body);
       font-size: 0.875rem;
       font-weight: 500;
+      color: var(--color-text);
       cursor: pointer;
-      text-align: left;
-      transition: background 0.15s, border-color 0.15s;
+      transition: all 0.2s;
     }
     .action-btn:hover {
-      background: rgba(255,255,255,0.06);
-      border-color: var(--color-primary);
+      background: var(--color-surface);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
     }
 
     /* ── Responsive ────────────────────────────────────────────────────── */
-    @media (max-width: 640px) {
-      body { flex-direction: column; }
+    @media (max-width: 1024px) {
       .sidebar {
-        width: 100%;
-        flex-direction: row;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: var(--card-gap);
-        border-right: none;
-        border-bottom: 1px solid var(--color-border);
+        width: 180px;
       }
-      .nav-list { flex-direction: row; flex-wrap: wrap; gap: 2px; }
-      .nav-divider { display: none; }
+      .main-content {
+        padding: var(--space-container-x);
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .sidebar {
+        width: 160px;
+      }
+      .main-content {
+        padding: var(--space-container-x);
+      }
+      .page-title {
+        font-size: 1.25rem;
+      }
     }
   </style>
 </head>
 <body>
-  <nav class="sidebar" aria-label="App navigation">
-    <a class="sidebar-logo" href="/">Dog Walking App</a>
-    <ul class="nav-list">
-        <li><a href="#feat-0">✦ Core functionality</a></li>
-        <li><a href="#feat-1">📈 User dashboard</a></li>
-        <li><a href="#feat-2">📁 Data export</a></li>
-      <li><div class="nav-divider" aria-hidden="true"></div></li>
-      <li><a href="/">← Back to site</a></li>
-    </ul>
-  </nav>
-  <div class="main-content">
-    <div class="page-header">
-      <h1 class="page-title">Dog Walking App Dashboard</h1>
-      <p class="page-subtitle">Welcome back. Here's what's happening today.</p>
-    </div>
+  <aside class="sidebar">
+    <a href="/" class="sidebar-logo">PawPath</a>
+    <nav>
+      <ul class="nav-list">
+        <li><a href="/app/dashboard">Dashboard</a></li>
+        <li><a href="/app/walks">Walks</a></li>
+        <li><a href="/app/profile">Profile</a></li>
+        <li><a href="/app/settings">Settings</a></li>
+      </ul>
+    </nav>
+    <div class="nav-divider"></div>
+    <nav>
+      <ul class="nav-list">
+        <li><a href="/app/integrations">Integrations</a></li>
+        <li><a href="/app/support">Support</a></li>
+      </ul>
+    </nav>
+  </aside>
 
-    <!-- Overview metrics -->
-    <div class="card">
-      <h2 class="card-title">Overview</h2>
-      <div class="metrics-row">
-        <div class="metric-card">
-          <span class="metric-value">—</span>
-          <span class="metric-label">Total this week</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value">—</span>
-          <span class="metric-label">Daily average</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value">—</span>
-          <span class="metric-label">Goal progress</span>
-        </div>
+  <main class="main-content">
+    <section class="page-header">
+      <h1 class="page-title">App Dashboard</h1>
+      <p class="page-subtitle">Manage your dog walking experience with precision and care</p>
+    </section>
+
+    <section class="metrics-row">
+      <div class="metric-card">
+        <span class="metric-value">12</span>
+        <span class="metric-label">Active Walks This Week</span>
       </div>
-    </div>
+      <div class="metric-card">
+        <span class="metric-value">4.9</span>
+        <span class="metric-label">Avg. Walker Rating</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-value">2.3k</span>
+        <span class="metric-label">Photos Shared</span>
+      </div>
+    </section>
 
-    <!-- Connect account / API integration placeholder -->
-    <div class="card integration-card">
-      <h2 class="card-title">🔗 Connect your account</h2>
-      <p class="card-desc">Link your data source to start tracking automatically.</p>
+    <section class="card">
+      <h2 class="card-title">Recent Walks</h2>
+      <div class="placeholder">Walk history will appear here</div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Connect Your Account</h2>
+      <p class="card-desc">Link your preferred payment method and notification settings for seamless experience</p>
       <div class="form-group">
-        <label for="api-token" class="form-label">API Token</label>
+        <label for="payment-method" class="form-label">Payment Method</label>
+        <select id="payment-method" class="form-input-dark">
+          <option value="">Select method</option>
+          <option value="credit">Credit Card</option>
+          <option value="paypal">PayPal</option>
+          <option value="applepay">Apple Pay</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="notifications" class="form-label">Notification Preferences</label>
         <div class="token-row">
-          <input id="api-token" type="password" class="form-input-dark"
-            placeholder="sk-..." autocomplete="off"
-            aria-label="API token" />
-          <button class="btn-connect" onclick="connectAccount(this)">Connect</button>
+          <label class="form-input-dark">
+            <input type="checkbox" checked> Email
+          </label>
+          <label class="form-input-dark">
+            <input type="checkbox" checked> Push
+          </label>
+          <label class="form-input-dark">
+            <input type="checkbox"> SMS
+          </label>
         </div>
-        <p class="form-hint">Find your token in Settings → API Keys.</p>
       </div>
-    </div>
-
-    <!-- Quick actions -->
-    <div class="card">
-      <h2 class="card-title">Quick Actions</h2>
       <div class="actions-grid">
-        <button class="action-btn">+ New entry</button>
-        <button class="action-btn">📤 Export data</button>
-        <button class="action-btn">⚙️ Settings</button>
-        <button class="action-btn">📊 Full report</button>
+        <button class="action-btn">Save Settings</button>
+        <button class="action-btn">Reset Defaults</button>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <section class="card integration-card">
+      <h2 class="card-title">Third-party Integrations</h2>
+      <p class="card-desc">Connect with other services to enhance your dog walking experience</p>
+      <div class="form-group">
+        <label for="api-key" class="form-label">API Key</label>
+        <input type="password" id="api-key" placeholder="sk-..." class="form-input-dark" aria-describedby="api-hint">
+        <p id="api-hint" class="form-hint">Enter your API key from the provider dashboard</p>
+      </div>
+      <button class="btn-connect">Connect Account</button>
+    </section>
+  </main>
+
   <script>
-    function connectAccount(btn) {
-      const input = document.getElementById('api-token');
-      if (!input || !input.value.trim()) {
-        input && (input.style.borderColor = '#ef4444');
-        return;
+    // Sticky navbar logic
+    const sidebar = document.querySelector('.sidebar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 14) {
+        sidebar.style.background = 'rgba(15,25,41,0.92)';
+      } else {
+        sidebar.style.background = 'var(--color-surface)';
       }
-      btn.textContent = 'Connected ✓';
-      btn.disabled = true;
-      btn.style.background = '#10b981';
-    }
+    });
   </script>
 </body>
 </html>

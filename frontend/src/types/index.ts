@@ -37,6 +37,32 @@ export interface OperationInfo {
   metadata: Record<string, unknown>;
 }
 
+export interface Blueprint {
+  business_name: string;
+  business_positioning: string;
+  target_user: string;
+  feature_list: string[];
+  design_direction: {
+    design_family: string;
+    palette_name: string;
+    font_pair: { display: string; body: string };
+    motion_preset: string;
+    spacing_policy: string;
+    consistency_profile_id: string;
+  };
+  page_map: Array<{ path: string; purpose: string }>;
+  cta_flow: Array<{ from: string; to: string; label: string }>;
+  build_steps: string[];
+  quality_gates: string[];
+}
+
+export interface CreditMeta {
+  credits_before: number | null;
+  credits_after: number | null;
+  cost: number;
+  tier: string;
+}
+
 export interface ChatResponse {
   session_id: string;
   assistant_message: string;
@@ -52,6 +78,10 @@ export interface ChatResponse {
   warnings: string[];
   operation?: OperationInfo;
   design_system?: Record<string, unknown>;
+  blueprint?: Blueprint;
+  layout_plan?: Record<string, unknown>;
+  consistency_profile_id?: string;
+  credits?: CreditMeta;
 }
 
 export interface SessionHistory {
@@ -69,7 +99,7 @@ export interface SessionHistory {
 export interface ProviderStatus {
   flock: { configured: boolean; reachable: boolean; error: string | null };
   openai: { configured: boolean; reachable: boolean; error: string | null };
-  active_provider: 'flock' | 'openai' | 'mock';
+  active_provider: 'openai' | 'mock';  // flock removed from union
 }
 
 export type PreviewTab = 'landing' | 'app';
@@ -99,4 +129,11 @@ export interface PipelineStage {
   artifact_type?: string;
   artifact_name?: string;
   error?: string;
+}
+
+export interface ClarificationResponse {
+  needs_clarification: true;
+  questions: string[];
+  reason: string;
+  job_id: null;
 }

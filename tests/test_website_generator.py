@@ -54,26 +54,25 @@ def client(tmp_path, monkeypatch):
 
 
 class TestProviderRouter:
-    def test_flock_success_returns_flock_live(self):
+    def test_flock_never_called_from_call_llm(self):
+        """call_llm must NEVER call flock even when flock is fully configured.
+        Flock is disabled in the runtime path; mock is the fallback when no OpenAI key.
+        """
         mock_settings = MagicMock()
         mock_settings.flock_endpoint = "https://flock.example.com/v1/completions"
         mock_settings.flock_api_key = "test-key"
         mock_settings.flock_mock_mode = False
         mock_settings.flock_auth_strategy = "bearer"
         mock_settings.flock_model = "flock-default"
-
-        mock_resp = MagicMock()
-        mock_resp.raise_for_status = MagicMock()
-        mock_resp.json.return_value = {"choices": [{"message": {"content": "Flock response"}}]}
+        mock_settings.openai_api_key = ""  # no OpenAI key → should fall back to mock
 
         with patch("services.provider_router.settings", mock_settings):
-            with patch("services.provider_router.httpx.post", return_value=mock_resp):
-                from services.provider_router import call_llm
-                result = call_llm([{"role": "user", "content": "hello"}])
+            from services.provider_router import call_llm
+            result = call_llm([{"role": "user", "content": "hello"}])
 
-        assert result.provider == "flock"
-        assert result.model_mode == "flock_live"
-        assert result.content == "Flock response"
+        # Must never reach flock; falls back to mock
+        assert result.provider == "mock"
+        assert result.fallback_used is True
 
     def test_flock_fail_falls_back_to_openai(self):
         mock_settings = MagicMock()
