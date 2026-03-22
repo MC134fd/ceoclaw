@@ -16,9 +16,9 @@ The original OpenClaw interface (prompt format, domain heuristics, JSON parsers)
 OpenClaw provides an HTTP endpoint. CEOClaw wraps it as a LangChain `BaseChatModel` subclass so it is interchangeable with any LangChain-compatible LLM. Adds:
 - Configurable retry with exponential backoff (`max_retries`, sleep between attempts)
 - Three auth header strategies: `bearer`, `litellm`, `both` (max compatibility)
-- Automatic fallback to deterministic mock on retry exhaustion — **run never crashes**
+- Automatic fallback to deterministic template responses on retry exhaustion — **run never crashes**
 - Structured `response_metadata` on every `AIMessage`: `model_mode`, `fallback_used`, `fallback_reason`, `tokens_estimated`, `external_calls_delta`
-- `cycle_index` parameter so mock responses cycle through all four domains deterministically
+- `cycle_index` parameter so fallback templates cycle through all four domains deterministically
 
 **vs OpenClaw base:** The OpenClaw base used a direct `httpx.post()` call with no retry, no fallback, and no metadata. Our adapter adds 5 production-grade capabilities on top.
 
@@ -106,8 +106,8 @@ OpenClaw base: no circuit breaker.
 **Files:** `integrations/flock_client.py`, `agents/ceo_agent.py`, `core/agent_loop.py`, `data/database.py`
 
 Full budget accounting per run:
-- `model_mode`: `live` / `mock` / `fallback` / `unknown` — never ambiguous
-- `tokens_used`: heuristic word-count estimate (0 in mock mode)
+- `model_mode`: `live` / `fallback` / `unknown` — never ambiguous
+- `tokens_used`: heuristic word-count estimate
 - `external_calls`: count of live HTTP calls to FLock
 - `fallback_count`: how many model calls fell back
 

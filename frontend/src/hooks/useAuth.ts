@@ -20,6 +20,8 @@ interface AuthState {
   session: Session | null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<string | null>;
+  signUpWithEmail: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 }
 
@@ -28,6 +30,8 @@ const ANONYMOUS_STATE: AuthState = {
   session: null,
   isLoading: false,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => null,
+  signUpWithEmail: async () => null,
   signOut: async () => {},
 };
 
@@ -68,6 +72,18 @@ export function useAuth(): AuthState {
     });
   }, []);
 
+  const signInWithEmail = useCallback(async (email: string, password: string): Promise<string | null> => {
+    if (!supabase) return null;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error ? error.message : null;
+  }, []);
+
+  const signUpWithEmail = useCallback(async (email: string, password: string): Promise<string | null> => {
+    if (!supabase) return null;
+    const { error } = await supabase.auth.signUp({ email, password });
+    return error ? error.message : null;
+  }, []);
+
   const signOut = useCallback(async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -75,5 +91,5 @@ export function useAuth(): AuthState {
 
   if (!isAuthEnabled) return ANONYMOUS_STATE;
 
-  return { user, session, isLoading, signInWithGoogle, signOut };
+  return { user, session, isLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut };
 }

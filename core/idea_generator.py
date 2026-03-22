@@ -2,8 +2,8 @@
 Startup idea generator for chat-first product selection.
 
 Generates four structured product intents from a user's high-level request.
-This stays deterministic and model-free so it works in mock mode and avoids
-extra API cost before the run starts.
+This stays deterministic and model-free to avoid extra API cost before the
+run starts.
 """
 
 from __future__ import annotations

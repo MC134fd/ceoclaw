@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — App Calculator</title>
+  <style>
+    /* Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
+      --color-accent-pink: #ec4899;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #06b6d4, #22d3ee);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background:var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding:clamp(16px, calc(8px + 1.2vw), 32px);
+    }
+
+    /* Navbar (sticky) */
+    .navbar{
+      position:sticky;
+      top:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      gap:clamp(12px, calc(6px + .6vw), 20px);
+      padding:clamp(10px, calc(6px + .4vw), 14px);
+      background:transparent;
+      transition:background .22s ease, box-shadow .22s ease, border-bottom-color .22s ease;
+      border-bottom:1px solid transparent;
+    }
+    .navbar.scrolled{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      box-shadow:var(--shadow-sm);
+      border-bottom-color:rgba(226,232,240,0.06);
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      color:var(--color-text);
+      font-family:var(--font-display);
+      font-weight:600;
+      letter-spacing:0.2px;
+      font-size:clamp(18px, calc(14px + .8vw), 22px);
+    }
+    .nav-actions{
+      margin-left:auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .nav-actions a{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:14px;
+      padding:6px 10px;
+      border-radius:8px;
+      border:1px solid transparent;
+      transition:background .18s ease, color .18s ease;
+    }
+    .nav-actions a:hover{ color:var(--color-text) }
+
+    /* Centered card layout */
+    .container{
+      max-width:980px;
+      margin:clamp(18px, calc(14px + 1.2vw), 48px) auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:calc(100vh - 120px);
+    }
+    .card{
+      width:100%;
+      background:var(--color-surface);
+      border:1px solid rgba(226,232,240,0.04);
+      border-radius:var(--radius-lg);
+      padding:clamp(18px, calc(14px + 1.2vw), 32px);
+      box-shadow:var(--shadow-md);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:clamp(12px, calc(8px + .6vw), 20px);
+      align-items:start;
+      max-width:920px;
+    }
+
+    /* Bento grid: feature tiles + form region */
+    .bento{
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .intro{
+      padding:18px;
+      border-radius:var(--radius-md);
+      border:1px dashed rgba(226,232,240,0.04);
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .intro h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:clamp(20px, calc(16px + 1vw), 28px);
+      color:var(--color-text);
+      letter-spacing:0.2px;
+    }
+    .intro p{
+      margin:0;
+      color:var(--color-muted);
+      font-size:14px;
+    }
+
+    .features{
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .tile{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px;
+      border-radius:var(--radius-sm);
+      background:transparent;
+      border:1px solid rgba(226,232,240,0.04);
+    }
+    .tile svg{ flex:0 0 40px; width:40px; height:40px; color:var(--color-primary) }
+    .tile h3{
+      margin:0;
+      font-size:15px;
+      color:var(--color-text);
+      font-weight:600;
+      font-family:var(--font-display);
+    }
+    .tile p{ margin:4px 0 0 0; font-size:13px; color:var(--color-muted) }
+
+    /* Form */
+    form.signup{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:14px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(226,232,240,0.04);
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    label{
+      font-size:13px;
+      color:var(--color-text);
+      font-weight:600;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      appearance:none;
+      font-family:var(--font-body);
+      font-size:15px;
+      padding:12px;
+      background:transparent;
+      color:var(--color-text);
+      border:1px solid rgba(226,232,240,0.06);
+      border-radius:8px;
+      outline:none;
+      transition:box-shadow .14s ease, border-color .14s ease;
+      min-height:44px;
+    }
+    input:focus{
+      border-color:var(--color-primary);
+      box-shadow:0 6px 18px rgba(6,182,212,0.08);
+    }
+    .muted{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+    .form-row{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr;
+    }
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 16px;
+      min-height:44px;
+      border-radius:10px;
+      cursor:pointer;
+      border:1px solid transparent;
+      font-weight:600;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease, background .12s ease;
+      text-decoration:none;
+    }
+    .btn-primary{
+      background:var(--accent-gradient);
+      color:#042128;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .btn-primary:hover{ transform:translateY(-2px) }
+    .btn-primary:active{ transform:translateY(0) }
+    .btn-ghost{
+      background:transparent;
+      color:var(--color-primary);
+      border:1px solid rgba(6,182,212,0.12);
+    }
+
+    .help-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-top:6px;
+    }
+    .error{
+      color:var(--color-accent-pink);
+      font-size:13px;
+    }
+
+    /* Reveal animations */
+    .reveal{
+      opacity:0;
+      transform:translateY(10px) scale(.995);
+      transition:opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
+      will-change:opacity,transform;
+    }
+    .reveal.is-visible{
+      opacity:1;
+      transform:none;
+    }
+
+    /* Responsive tweaks */
+    @media (min-width:1024px){
+      .card{ grid-template-columns: 1fr 420px; gap:24px; padding:28px }
+      .intro{ padding:20px }
+    }
+    @media (max-width:640px){
+      .card{ padding:16px }
+      .nav-actions{ display:none }
+    }
+
+    /* Small utilities */
+    .small{ font-size:13px; color:var(--color-muted) }
+    a.inline{
+      color:var(--color-secondary);
+      text-decoration:none;
+      font-weight:600;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar" id="navbar">
+    <a href="../index.html" class="brand" aria-label="App Calculator home">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="20" height="18" rx="3" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M7 8h10M7 12h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      App Calculator
+    </a>
+
+    <nav class="nav-actions" aria-label="Primary">
+      <a href="../app.html">Open app</a>
+      <a href="signup.html">Sign up</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card reveal" id="signup-card" aria-labelledby="signup-title">
+      <!-- Left / Intro + feature tiles -->
+      <div class="bento">
+        <div class="intro">
+          <h1 id="signup-title">Create an account for App Calculator</h1>
+          <p>Access the calculation engine, save configurations to your user dashboard, and export results for analysis. App Calculator delivers precise cost and performance projections with data export to CSV.</p>
+          <div class="small muted">Secure sign-up. Passwords are stored with modern hashing. By creating an account you can save and share calculation sets and export them through the platform's data export feature.</div>
+        </div>
+
+        <div class="features" aria-hidden="false">
+          <div class="tile reveal">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 9h10M7 13h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <div>
+              <h3>Core functionality</h3>
+              <p>Run deterministic calculations for app sizing, cost projections, and configuration comparison using the core functionality engine.</p>
+            </div>
+          </div>
+
+          <div class="tile reveal">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 8h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div>
+              <h3>User dashboard</h3>
+              <p>Store scenarios, revisit prior runs, and manage projects from a concise user dashboard tailored for rapid iteration and review.</p>
+            </div>
+          </div>
+
+          <div class="tile reveal">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div>
+              <h3>Data export</h3>
+              <p>Export result sets and configuration metadata in CSV format for integration into reporting workflows or further analysis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right / Signup form -->
+      <form class="signup reveal" id="signup-form" action="../app.html" method="get" novalidate>
+        <div>
+          <label for="fullname">Full name</label>
+          <div class="field">
+            <input id="fullname" name="fullname" type="text" aria-label="Full name" placeholder="First Last" required />
+            <span class="error" id="err-name" role="alert" aria-live="polite" style="display:none;"></span>
+          </div>
+        </div>
+
+        <div>
+          <label for="email">Email address</label>
+          <div class="field">
+            <input id="email" name="email" type="email" aria-label="Email address" placeholder="you@example.com" required />
+            <span class="error" id="err-email" role="alert" aria-live="polite" style="display:none;"></span>
+          </div>
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <div class="field">
+            <input id="password" name="password" type="password" aria-label="Password" placeholder="At least 8 characters" minlength="8" required />
+            <span class="error" id="err-password" role="alert" aria-live="polite" style="display:none;"></span>
+          </div>
+        </div>
+
+        <div class="help-row">
+          <div class="muted">By signing up you can save calculations to your user dashboard and export results via the data export utility.</div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:6px;">
+          <button type="submit" class="btn btn-primary" id="submitBtn">Get Started</button>
+          <a href="../index.html" class="inline small">Already have an account? Sign in</a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    // Sticky navbar: add .scrolled when scroll > 14px
+    (function(){
+      const navbar = document.getElementById('navbar');
+      function onScroll(){
+        if (window.scrollY > 14) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
+      }
+      onScroll();
+      window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+
+    // Reveal on scroll: IntersectionObserver to add is-visible to .reveal
+    (function(){
+      const revealElements = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        revealElements.forEach(el => el.classList.add('is-visible'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, {threshold: 0.08});
+      revealElements.forEach(el => io.observe(el));
+    })();
+
+    // Client-side validation: required fields, email format, password min length
+    (function(){
+      const form = document.getElementById('signup-form');
+      const nameEl = document.getElementById('fullname');
+      const emailEl = document.getElementById('email');
+      const passEl = document.getElementById('password');
+
+      const errName = document.getElementById('err-name');
+      const errEmail = document.getElementById('err-email');
+      const errPass = document.getElementById('err-password');
+
+      function clearErrors(){
+        [errName, errEmail, errPass].forEach(e => { e.style.display = 'none'; e.textContent = ''; });
+      }
+
+      function validateEmail(email){
+        // RFC-like simple validation
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+        return re.test(String(email).toLowerCase());
+      }
+
+      form.addEventListener('submit', function(ev){
+        clearErrors();
+        let valid = true;
+
+        // Full name: at least two non-empty tokens
+        const nameVal = nameEl.value.trim();
+        if (!nameVal){
+          errName.textContent = 'Full name is required.';
+          errName.style.display = 'block';
+          valid = false;
+        } else {
+          const parts = nameVal.split(/\s+/).filter(Boolean);
+          if (parts.length < 2){
+            errName.textContent = 'Please include both first and last name.';
+            errName.style.display = 'block';
+            valid = false;
+          }
+        }
+
+        // Email
+        const emailVal = emailEl.value.trim();
+        if (!emailVal){
+          errEmail.textContent = 'Email address is required.';
+          errEmail.style.display = 'block';
+          valid = false;
+        } else if (!validateEmail(emailVal)){
+          errEmail.textContent = 'Enter a valid email address (example: you@example.com).';
+          errEmail.style.display = 'block';
+          valid = false;
+        }
+
+        // Password
+        const passVal = passEl.value || '';
+        if (!passVal){
+          errPass.textContent = 'Password is required.';
+          errPass.style.display = 'block';
+          valid = false;
+        } else if (passVal.length < 8){
+          errPass.textContent = 'Password must be at least 8 characters long.';
+          errPass.style.display = 'block';
+          valid = false;
+        }
+
+        if (!valid){
+          ev.preventDefault();
+          // focus first invalid field
+          const firstError = document.querySelector('.error[style*="block"]');
+          if (firstError){
+            const field = firstError.previousElementSibling || firstError;
+            if (field && field.focus) field.focus();
+          }
+        } else {
+          // Allow normal form submission to ../app.html for post-signup flow.
+          // But provide a slight disabled state to the submit button to avoid double submissions.
+          const submitBtn = document.getElementById('submitBtn');
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.8';
+        }
+      }, false);
+    })();
+  </script>
+</body>
+</html>

@@ -22,8 +22,9 @@ from services.file_persistence import save_website_files
 
 logger = logging.getLogger(__name__)
 
-_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg"}
-_ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts"}
+_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".jsx", ".ts", ".tsx", ".json", ".md", ".txt", ".svg", ".png", ".webp", ".jpg", ".jpeg"}
+_BINARY_EXTENSIONS = {".png", ".webp", ".jpg", ".jpeg", ".gif"}
+_ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts", "styles", "src"}
 
 
 @dataclass
@@ -46,17 +47,17 @@ class ApplyResult:
     warnings: list[str] = field(default_factory=list)
 
 
-def apply_changes(
+def partition_changes_for_write(
     slug: str,
-    changes: list,  # list[FileChange] from code_generation_service
-) -> ApplyResult:
-    """Apply a list of FileChange objects to disk under data/websites/<slug>/.
+    changes: list,
+) -> tuple[dict[str, str | bytes], list[ChangeResult]]:
+    """Resolve FileChange list to a pending write map and one ChangeResult per input change.
 
-    Returns ApplyResult describing what was written, skipped, or rejected.
+    Stops before ``output_validator.validate_files`` — same gating logic as ``apply_changes``.
     """
     safe_slug = _safe_slug(slug)
     results: list[ChangeResult] = []
-    files_to_write: dict[str, str] = {}   # relative_path → content
+    files_to_write: dict[str, str | bytes] = {}
 
     for change in changes:
         path = (change.path or "").strip()
@@ -64,7 +65,6 @@ def apply_changes(
         content = change.content or ""
         summary = change.summary or ""
 
-        # Extract relative path under the slug directory
         rel_path = _extract_relative_path(path, safe_slug)
         if rel_path is None:
             results.append(ChangeResult(
@@ -81,14 +81,37 @@ def apply_changes(
             ))
             continue
 
-        if not content.strip():
-            results.append(ChangeResult(
-                path=path, action=action, status="skipped", error="empty content", summary=summary,
-            ))
-            continue
+        is_binary = isinstance(content, bytes)
+        if is_binary:
+            if len(content) == 0:
+                results.append(ChangeResult(
+                    path=path, action=action, status="skipped", error="empty content", summary=summary,
+                ))
+                continue
+        else:
+            if not content.strip():
+                results.append(ChangeResult(
+                    path=path, action=action, status="skipped", error="empty content", summary=summary,
+                ))
+                continue
 
         files_to_write[rel_path] = content
         results.append(ChangeResult(path=path, action=action, status="applied", summary=summary))
+
+    return files_to_write, results
+
+
+def apply_changes(
+    slug: str,
+    changes: list,  # list[FileChange] from code_generation_service
+) -> ApplyResult:
+    """Apply a list of FileChange objects to disk under data/websites/<slug>/.
+
+    Returns ApplyResult describing what was written, skipped, or rejected.
+    Content may be str (text files) or bytes (binary images).
+    """
+    safe_slug = _safe_slug(slug)
+    files_to_write, results = partition_changes_for_write(slug, changes)
 
     if not files_to_write:
         return ApplyResult(slug=safe_slug, version_id="", results=results)

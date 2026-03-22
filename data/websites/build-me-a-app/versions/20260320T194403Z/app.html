@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Build Me A App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      /* Simple elegant neutral palette (charcoal + warm taupe) */
+      --color-primary: #2b2b2b;
+      --color-secondary: #8b7765;
+      --color-bg: #fbfaf8;
+      --color-surface: #ffffff;
+      --color-text: #111827;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+      --text-sm: clamp(0.85rem, 1vw, 0.95rem);
+      --text-md: clamp(1rem, 1.2vw, 1.05rem);
+      --container-width: clamp(320px, 90vw, 1200px);
+      --radius-md:12px;--radius-lg:20px;
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text);min-height:100vh}
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+
+    /* Top nav */
+    nav{display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0}
+    .brand{font-family:'Cormorant Garamond',serif}
+    .btn{padding:0.45rem 0.75rem;border-radius:10px;border:none;cursor:pointer}
+    .btn.primary{background:var(--accent-gradient);color:var(--color-surface)}
+
+    /* Layout */
+    .layout{display:grid;grid-template-columns:250px 1fr;gap:var(--space-lg);align-items:start;padding-block:var(--space-md)}
+    .sidebar{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+    .content{min-height:400px}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,.06);margin-bottom:var(--space-md)}
+
+    /* Metrics row */
+    .metrics{display:flex;gap:var(--space-md);flex-wrap:wrap}
+    .metric{flex:1 1 160px;padding:var(--space-sm);border-radius:var(--radius-md);background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.95));box-shadow:0 1px 4px rgba(0,0,0,.06);text-align:center}
+    .metric .num{font-weight:700;color:var(--color-primary)}
+
+    /* Table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:0.6rem;border-bottom:1px solid rgba(0,0,0,0.04);text-align:left}
+
+    /* Connect card */
+    .connect input[type="password"]{width:100%;padding:0.5rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+
+    @media (max-width:1024px){.layout{grid-template-columns:220px 1fr}}
+    @media (max-width:640px){.layout{grid-template-columns:1fr;padding-inline:var(--space-sm)} .sidebar{order:2}}
+  </style>
+</head>
+<body>
+  <nav class="wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:var(--container-width);margin-inline:auto">
+      <div class="brand">Build Me A App</div>
+      <div style="display:flex;gap:var(--space-sm);align-items:center">
+        <a href="index.html">Home</a>
+        <a href="pages/signup.html">Sign up</a>
+        <button class="btn primary">New post</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <div class="layout">
+      <aside class="sidebar">
+        <div style="font-weight:700;margin-bottom:var(--space-sm)">Dashboard</div>
+        <nav style="display:flex;flex-direction:column;gap:var(--space-xs)">
+          <a href="#">All posts</a>
+          <a href="#">Drafts</a>
+          <a href="#">Schedule</a>
+          <a href="#">Exports</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0;font-family:'Cormorant Garamond',serif">Your editor & workflow</h2>
+              <div style="color:var(--color-muted);font-size:var(--text-sm)">Create posts, set publish times, and manage comments from a single place using our core functionality and user dashboard.</div>
+            </div>
+            <div style="display:flex;gap:var(--space-sm)">
+              <button class="btn">Import</button>
+              <a class="btn primary" href="#connect">Connect account</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card metrics">
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="120">0</span></div>
+            <div class="label">Published this month</div>
+          </div>
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="47">0</span></div>
+            <div class="label">Scheduled posts</div>
+          </div>
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="3">0</span>GB</div>
+            <div class="label">Exported data</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Recent posts</h3>
+          <table>
+            <thead>
+              <tr><th>Title</th><th>Status</th><th>Published</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Puppy Socialization Tips</td><td>Published</td><td>Mar 3</td></tr>
+              <tr><td>Adoption Story: Ruby</td><td>Draft</td><td>-</td></tr>
+              <tr><td>Breed Spotlight: Beagle</td><td>Scheduled</td><td>Mar 21</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="connect" class="card connect">
+          <h3 style="margin-top:0">Connect your account</h3>
+          <p style="color:var(--color-muted);font-size:var(--text-sm)">Provide an API token to enable direct publishing and secure data exports.</p>
+          <label for="api-token">API token</label>
+          <input id="api-token" type="password" placeholder="sk-..." aria-label="API token for direct publishing">
+          <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm)">
+            <button class="btn primary">Save token</button>
+            <button class="btn">Test connection</button>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Sticky nav scroll state (adds .scrolled when >14px)
+    const nav = document.querySelector('nav');
+    function onScroll(){
+      if(window.scrollY > 14) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, {threshold:0.15});
+    reveals.forEach(r=>obs.observe(r));
+
+    // Animated counters
+    const counters = document.querySelectorAll('.counter');
+    function animateCounter(el, target){
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = target; return; }
+      let start=0; const dur=1200; const startTime=performance.now();
+      function step(now){
+        const t = Math.min(1, (now-startTime)/dur);
+        el.textContent = Math.floor(t * target);
+        if(t < 1) requestAnimationFrame(step); else el.textContent = target;
+      }
+      requestAnimationFrame(step);
+    }
+    const counterObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){ const el = entry.target; animateCounter(el, parseInt(el.dataset.target,10)); counterObserver.unobserve(el); }
+      });
+    }, {threshold:0.3});
+    counters.forEach(c=>counterObserver.observe(c));
+  </script>
+</body>
+</html>

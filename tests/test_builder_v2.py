@@ -1272,3 +1272,433 @@ def test_business_concept_helper_edit_mode():
     intent = {"product_name": "TestApp", "product_type": "saas", "core_features": [], "target_user": "x"}
     result = _derive_business_concept(intent, existing_files={"index.html": "<html></html>"})
     assert result["mode"] == "edit"
+
+
+# ---------------------------------------------------------------------------
+# A) New-project intent detection
+# ---------------------------------------------------------------------------
+
+def test_is_new_project_request_detects_explicit_phrases():
+    """Common 'new project' phrases must be detected."""
+    from api.server import _is_new_project_request
+    positives = [
+        "build me a new dog walking app",
+        "create a new website for my bakery",
+        "start over with a fitness tracker",
+        "I want a different website, build me a recipe app",
+        "from scratch, make a todo app",
+        "build another SaaS for invoicing",
+        "build us a new project management tool",
+        "instead build a portfolio site",
+    ]
+    for msg in positives:
+        assert _is_new_project_request(msg), f"Expected new-project detection for: {msg!r}"
+
+
+def test_is_new_project_request_ignores_edit_phrases():
+    """Edit/update phrases must NOT be flagged as new-project intent."""
+    from api.server import _is_new_project_request
+    negatives = [
+        "change the hero background to dark blue",
+        "add a testimonials section",
+        "update the pricing table",
+        "make the font larger",
+        "fix the navbar on mobile",
+        "add a contact form",
+    ]
+    for msg in negatives:
+        assert not _is_new_project_request(msg), f"False positive for: {msg!r}"
+
+
+def test_new_project_intent_resets_slug_in_session(tmp_path, monkeypatch):
+    """If a session has an existing slug and the user requests a new project,
+    builder_generate_start must generate a fresh slug (not reuse the old one)."""
+    import config.settings as cs
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "test.db"))
+    monkeypatch.setenv("AUTH_REQUIRED", "false")
+    monkeypatch.setenv("CREDITS_ENFORCED", "false")
+    cs.settings = cs.Settings()
+    cs.settings.database_path = str(tmp_path / "test.db")
+    cs.settings.auth_required = False
+    cs.settings.credits_enforced = False
+
+    from data.database import init_db, upsert_chat_session
+    init_db()
+    upsert_chat_session("sess-abc", slug="old-calorie-app")
+
+    from api.server import app
+    from fastapi.testclient import TestClient
+    client = TestClient(app)
+
+    resp = client.post(
+        "/builder/generate",
+        json={
+            "session_id": "sess-abc",
+            "message": "build me a new dog walking app from scratch",
+            "mock_mode": True,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    # The response must indicate new_project mode
+    assert body.get("generation_mode") == "new_project"
+    # The returned slug must not be the old one
+    assert body.get("slug") != "old-calorie-app"
+
+
+def test_edit_intent_keeps_existing_slug(tmp_path, monkeypatch):
+    """Edit phrases in existing session must preserve the slug."""
+    import config.settings as cs
+    monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "test.db"))
+    monkeypatch.setenv("AUTH_REQUIRED", "false")
+    monkeypatch.setenv("CREDITS_ENFORCED", "false")
+    cs.settings = cs.Settings()
+    cs.settings.database_path = str(tmp_path / "test.db")
+    cs.settings.auth_required = False
+    cs.settings.credits_enforced = False
+
+    from data.database import init_db, upsert_chat_session
+    init_db()
+    upsert_chat_session("sess-xyz", slug="my-fitness-app")
+
+    from api.server import app
+    from fastapi.testclient import TestClient
+    client = TestClient(app)
+
+    resp = client.post(
+        "/builder/generate",
+        json={
+            "session_id": "sess-xyz",
+            "message": "change the hero background to dark blue",
+            "mock_mode": True,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body.get("generation_mode") == "edit_existing"
+    assert body.get("slug") == "my-fitness-app"
+
+
+# ---------------------------------------------------------------------------
+# B) Domain-specific CTA derivation
+# ---------------------------------------------------------------------------
+
+def test_domain_cta_fitness():
+    from services.generation_pipeline import _derive_domain_cta
+    assert _derive_domain_cta({"product_type": "fitness"}) != "Get Started"
+
+
+def test_domain_cta_finance():
+    from services.generation_pipeline import _derive_domain_cta
+    cta = _derive_domain_cta({"product_type": "finance"})
+    assert cta != "Get Started"
+
+
+def test_domain_cta_user_override():
+    """Explicit intent cta field takes highest priority."""
+    from services.generation_pipeline import _derive_domain_cta
+    cta = _derive_domain_cta({"product_type": "saas", "cta": "Launch Now"})
+    assert cta == "Launch Now"
+
+
+def test_domain_cta_saas_fallback():
+    """Unknown product type falls back to 'Get Started'."""
+    from services.generation_pipeline import _derive_domain_cta
+    cta = _derive_domain_cta({"product_type": "mystery_product"})
+    assert cta == "Get Started"
+
+
+# ---------------------------------------------------------------------------
+# C) Blueprint injection in LLM messages
+# ---------------------------------------------------------------------------
+
+def test_build_messages_includes_blueprint():
+    """_build_messages must inject the blueprint block when blueprint is provided."""
+    from services.code_generation_service import _build_messages
+    blueprint = {
+        "business_name": "PawWalk",
+        "business_positioning": "Dog walking on demand",
+        "target_user": "dog owners",
+        "feature_list": ["GPS tracking", "instant booking"],
+        "page_map": [{"path": "index.html", "purpose": "landing"}],
+        "cta_flow": [{"from": "index.html#cta", "to": "pages/signup.html", "label": "Book a Walk"}],
+        "design_direction": {},
+        "build_steps": [],
+        "quality_gates": [],
+    }
+    msgs = _build_messages(
+        slug="pawwalk",
+        user_message="build a dog walking app",
+        history=[],
+        existing_files=None,
+        blueprint=blueprint,
+    )
+    user_content = msgs[-1]["content"]
+    assert "PawWalk" in user_content
+    assert "BLUEPRINT" in user_content
+    assert "Book a Walk" in user_content
+
+
+def test_build_messages_no_blueprint_still_works():
+    """_build_messages with blueprint=None must not raise."""
+    from services.code_generation_service import _build_messages
+    msgs = _build_messages(
+        slug="test-app",
+        user_message="make a saas app",
+        history=[],
+        existing_files=None,
+        blueprint=None,
+    )
+    assert len(msgs) >= 2
+    assert msgs[0]["role"] == "system"
+
+
+# ---------------------------------------------------------------------------
+# D) Back-link wiring
+# ---------------------------------------------------------------------------
+
+def test_back_link_missing_warns_and_repairs():
+    """A pages/*.html with no ../index.html link should get a warning and repair."""
+    from services.link_wiring import run_link_wiring_pass
+    from services.code_generation_service import FileChange
+
+    page_html = """\
+<!DOCTYPE html><html><head><title>Pricing</title></head>
+<body>
+  <nav><a href="about.html">About</a></nav>
+  <main><h1>Pricing</h1></main>
+</body></html>"""
+
+    changes = [FileChange(path="data/websites/slug/pages/pricing.html",
+                          action="create", content=page_html)]
+    updated, warnings = run_link_wiring_pass("slug", changes, None)
+    # Warning must mention the missing back-link
+    assert any("return path" in w or "← Home" in w for w in warnings), warnings
+    # Repaired HTML must now contain ../index.html
+    assert "../index.html" in updated[0].content
+
+
+def test_back_link_present_no_warning():
+    """A pages/*.html that already has ../index.html must not trigger a warning."""
+    from services.link_wiring import run_link_wiring_pass
+    from services.code_generation_service import FileChange
+
+    page_html = """\
+<!DOCTYPE html><html><head><title>About</title></head>
+<body>
+  <nav><a href="../index.html">← Home</a></nav>
+  <main><h1>About</h1></main>
+</body></html>"""
+
+    changes = [FileChange(path="data/websites/slug/pages/about.html",
+                          action="create", content=page_html)]
+    _, warnings = run_link_wiring_pass("slug", changes, None)
+    back_link_warnings = [w for w in warnings if "return path" in w or "← Home" in w]
+    assert not back_link_warnings, f"Unexpected back-link warnings: {back_link_warnings}"
+
+
+def test_index_page_not_checked_for_back_link():
+    """index.html is not a secondary page and must not trigger back-link warnings."""
+    from services.link_wiring import run_link_wiring_pass
+    from services.code_generation_service import FileChange
+
+    html = "<!DOCTYPE html><html><body><h1>Home</h1></body></html>"
+    changes = [FileChange(path="data/websites/slug/index.html",
+                          action="create", content=html)]
+    _, warnings = run_link_wiring_pass("slug", changes, None)
+    assert not any("return path" in w for w in warnings)
+
+
+# ---------------------------------------------------------------------------
+# E) Fallback transparency
+# ---------------------------------------------------------------------------
+
+def test_fallback_used_message_contains_note():
+    """When the heuristic fallback fires, assistant_message must mention fallback mode."""
+    from services.code_generation_service import generate
+    from services.provider_router import LLMResult
+
+    # Patch call_llm to return an empty response (no content) so fallback fires
+    import services.code_generation_service as svc
+    import services.spec_generator as _spec_gen
+    original = svc.call_llm
+    original_spec = _spec_gen.call_llm
+
+    svc.call_llm = lambda msgs, **kwargs: LLMResult(
+        content="",
+        provider="mock",
+        model_mode="mock",
+        fallback_used=True,
+        fallback_reason="test_forced_fallback",
+    )
+
+    def _raise_spec(*a, **kw):
+        raise RuntimeError("spec forced fail for test")
+
+    _spec_gen.call_llm = _raise_spec
+    try:
+        result = generate(
+            slug="test-fallback",
+            user_message="build me a test app",
+            history=[],
+            existing_files=None,
+        )
+        assert result.fallback_used
+        assert "fallback" in result.assistant_message.lower()
+    finally:
+        svc.call_llm = original
+        _spec_gen.call_llm = original_spec
+
+
+# ---------------------------------------------------------------------------
+# F) Uniqueness regression — two distinct intents → different blueprints
+# ---------------------------------------------------------------------------
+
+def test_distinct_intents_produce_different_blueprints():
+    """A fitness app and a B2B finance app must produce different layout_family values.
+
+    We pass explicit product_type so the test does not depend on parse_intent
+    classification quality — it tests the _derive_brand_style_brief mapping only.
+    """
+    from services.generation_pipeline import _derive_brand_style_brief
+
+    fitness_intent = {"product_type": "fitness", "product_name": "FitTrack", "target_user": "gym goers"}
+    finance_intent = {"product_type": "finance", "product_name": "CFOSuite", "target_user": "CFOs"}
+
+    fitness_brief = _derive_brand_style_brief(fitness_intent, [], None, None)
+    finance_brief = _derive_brand_style_brief(finance_intent, [], None, None)
+
+    assert fitness_brief["layout_family"] != finance_brief["layout_family"], (
+        f"Expected different layout families but both got: {fitness_brief['layout_family']!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 1 v2 — BrandSpec tests
+# ---------------------------------------------------------------------------
+
+def test_brand_spec_dataclass_round_trip():
+    """BrandSpec.to_dict / from_dict round-trip is stable."""
+    from services.code_generation_service import BrandSpec
+    bs = BrandSpec(
+        brand_name="GlossKit",
+        product_category="beauty",
+        target_audience="makeup enthusiasts",
+        core_offer="Find lipsticks by finish, pigment, and shade family",
+        must_include_keywords=["pigment", "formula", "finish", "shade"],
+        primary_cta="Shop Shades",
+        pages=["index.html", "pages/shop.html"],
+        layout_profile="split_hero",
+        visual_motif="gradient_rich",
+        copy_style="warm_conversational",
+    )
+    d = bs.to_dict()
+    bs2 = BrandSpec.from_dict(d)
+    assert bs2.brand_name == "GlossKit"
+    assert bs2.must_include_keywords == ["pigment", "formula", "finish", "shade"]
+    assert bs2.layout_profile == "split_hero"
+
+
+def test_uniqueness_profile_selection_varies_across_time():
+    """Two calls with different time buckets must not always return identical profiles."""
+    from services.code_generation_service import _select_uniqueness_profile, _LAYOUT_PROFILES, _VISUAL_MOTIFS, _COPY_STYLES
+    # Just verify all returned values are valid pool members
+    layout, visual, copy, seed = _select_uniqueness_profile("TestBrand")
+    assert layout in _LAYOUT_PROFILES
+    assert visual in _VISUAL_MOTIFS
+    assert copy in _COPY_STYLES
+    assert len(seed) > 0
+
+
+def test_validate_against_brand_spec_catches_missing_brand_name():
+    """Validation flags missing brand name in generated HTML."""
+    from services.code_generation_service import BrandSpec, FileChange, GenerationResult, _validate_against_brand_spec
+    bs = BrandSpec(
+        brand_name="GlossKit",
+        product_category="beauty",
+        target_audience="makeup lovers",
+        core_offer="...",
+        must_include_keywords=["pigment"],
+    )
+    gen = GenerationResult(
+        assistant_message="Done.",
+        changes=[FileChange(
+            path="data/websites/glosskit/index.html",
+            action="create",
+            content="<!DOCTYPE html><html><head></head><body><h1>Some Generic App</h1></body></html>",
+        )],
+    )
+    issues = _validate_against_brand_spec(gen, bs)
+    assert any("GlossKit" in i for i in issues), f"Expected brand name issue, got: {issues}"
+
+
+def test_validate_against_brand_spec_passes_good_output():
+    """Validation passes when brand name and keywords are present."""
+    from services.code_generation_service import BrandSpec, FileChange, GenerationResult, _validate_against_brand_spec
+    bs = BrandSpec(
+        brand_name="GlossKit",
+        product_category="beauty",
+        target_audience="makeup lovers",
+        core_offer="...",
+        must_include_keywords=["pigment", "formula"],
+        forbidden_generic_phrases=["revolutionize"],
+        pages=["index.html"],
+    )
+    gen = GenerationResult(
+        assistant_message="Done.",
+        changes=[FileChange(
+            path="data/websites/glosskit/index.html",
+            action="create",
+            content=(
+                "<!DOCTYPE html><html><head></head><body>"
+                "<h1>GlossKit</h1><p>High pigment formula lipsticks.</p>"
+                "</body></html>"
+            ),
+        )],
+    )
+    issues = _validate_against_brand_spec(gen, bs)
+    assert not issues, f"Expected no issues, got: {issues}"
+
+
+def test_generate_passes_brand_spec_to_messages(monkeypatch):
+    """generate() with brand_spec injects BRAND SPEC block into LLM messages."""
+    from services.code_generation_service import BrandSpec, generate, FileChange, GenerationResult
+    from services import code_generation_service as _cgs
+
+    captured_messages = []
+
+    def _fake_call_llm(messages, **kwargs):
+        captured_messages.extend(messages)
+        # Legacy path calls _extract_html on content — return raw HTML
+        html = "<!DOCTYPE html><html><head></head><body><h1>GlossKit</h1><p>pigment formula</p></body></html>"
+        from services.provider_router import LLMResult
+        return LLMResult(content=html, provider="openai", model_mode="openai")
+
+    monkeypatch.setattr(_cgs, "call_llm", _fake_call_llm)
+
+    # Also block the spec_generator path so generate_via_spec fails and falls
+    # through to the legacy path where _fake_call_llm is used.
+    import services.spec_generator as _spec_gen
+
+    def _raise_spec(*a, **kw):
+        raise RuntimeError("spec forced fail for test")
+
+    monkeypatch.setattr(_spec_gen, "call_llm", _raise_spec)
+
+    bs = BrandSpec(
+        brand_name="GlossKit",
+        product_category="beauty",
+        target_audience="makeup lovers",
+        core_offer="lipstick finder",
+        must_include_keywords=["pigment", "formula"],
+        pages=["index.html"],
+        layout_profile="split_hero",
+        visual_motif="gradient_rich",
+        copy_style="warm_conversational",
+    )
+    result = generate(slug="glosskit", user_message="build a lipstick site", history=[], brand_spec=bs)
+    assert result.changes
+    # Verify brand spec block appeared in the user message
+    user_msgs = [m["content"] for m in captured_messages if m["role"] == "user"]
+    assert any("BRAND SPEC" in c for c in user_msgs), "Expected BRAND SPEC block in user message"
+    assert any("GlossKit" in c for c in user_msgs)

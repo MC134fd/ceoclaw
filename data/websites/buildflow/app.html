@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workspace — Buildflow</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow: hidden; }
+    .workspace {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: 64px 1fr;
+      height: 100vh;
+    }
+    /* Top bar */
+    .topbar {
+      grid-column: 1 / -1;
+      background: rgba(15,23,42,0.95);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-md);
+      gap: var(--space-md);
+      position: relative;
+      z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: var(--space-md); }
+    .topbar-right { display: flex; align-items: center; gap: var(--space-sm); }
+    .project-name {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .project-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.5rem;
+      background: rgba(52,211,153,0.12);
+      color: var(--color-accent);
+      border: 1px solid rgba(52,211,153,0.2);
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .breadcrumb { display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--color-text-subtle); }
+    .breadcrumb a { color: var(--color-text-subtle); }
+    .breadcrumb a:hover { color: var(--color-text-muted); }
+    .breadcrumb-sep { color: var(--color-border); }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--color-surface-soft);
+      border-right: 1px solid var(--color-border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+    .sidebar-section { padding: var(--space-md) var(--space-sm); }
+    .sidebar-section + .sidebar-section { border-top: 1px solid var(--color-border-soft); }
+    .sidebar-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--color-text-subtle);
+      padding: 0.25rem 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--color-text); }
+    .sidebar-item.active { background: rgba(56,189,248,0.1); color: var(--color-primary); border-color: rgba(56,189,248,0.15); }
+    .sidebar-item-icon { font-size: 1rem; width: 18px; text-align: center; }
+    .sidebar-item-count { margin-left: auto; font-size: 0.7rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 0.1rem 0.45rem; color: var(--color-text-subtle); }
+
+    /* Main canvas */
+    .canvas {
+      background: var(--color-bg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .canvas-header {
+      padding: var(--space-xl) var(--space-2xl) var(--space-md);
+      border-bottom: 1px solid var(--color-border-soft);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+    .canvas-body { padding: var(--space-xl) var(--space-2xl); flex: 1; }
+
+    /* Agent cards */
+    .agent-grid-app { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-md); }
+    .agent-card-app {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .agent-card-app:hover { border-color: var(--color-primary); transform: translateY(-1px); box-shadow: var(--shadow-glow); }
+    .agent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
+    .agent-title { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; }
+    .agent-status { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .status-dot-active { background: var(--color-accent); box-shadow: 0 0 6px var(--color-accent); animation: pulse 2s infinite; }
+    .status-dot-idle { background: var(--color-text-subtle); }
+    .status-dot-running { background: var(--color-warm); box-shadow: 0 0 6px var(--color-warm); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .agent-desc { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: var(--space-sm); max-width: unset; }
+    .agent-meta { display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-subtle); }
+    .last-run { font-family: var(--font-mono); }
+
+    /* Activity feed */
+    .activity-feed { display: flex; flex-direction: column; gap: 0; }
+    .activity-item {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--color-border-soft);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0F172A;
+      flex-shrink: 0;
+    }
+    .activity-text { font-size: 0.85rem; }
+    .activity-text strong { color: var(--color-text); }
+    .activity-time { font-size: 0.75rem; color: var(--color-text-subtle); margin-top: 0.2rem; font-family: var(--font-mono); }
+
+    /* Quick actions */
+    .quick-actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-xl); }
+    .quick-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-soft);
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .quick-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: rgba(56,189,248,0.05); }
+
+    /* Progress bars */
+    .progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; background: var(--accent-gradient); transition: width 0.3s ease; }
+
+    /* Insight cards */
+    .insights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl); }
+    .insight-card {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: var(--space-md);
+    }
+    .insight-value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+    .insight-label { font-size: 0.75rem; color: var(--color-text-subtle); margin-top: 0.2rem; }
+    .insight-change { font-size: 0.75rem; margin-top: 0.4rem; }
+    .insight-up { color: var(--color-accent); }
+    .insight-down { color: var(--color-danger); }
+
+    @media (max-width: 768px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .canvas-body { padding: var(--space-md); }
+      .canvas-header { padding: var(--space-md); }
+      .agent-grid-app { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="workspace">
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-mark">BF</div>
+        Buildflow
+      </a>
+      <div class="breadcrumb">
+        <span class="breadcrumb-sep">/</span>
+        <span>My Startup</span>
+        <span class="project-badge">Active</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary btn-sm">⚡ Run all agents</button>
+      <button class="btn btn-ghost btn-icon" title="Settings">⚙</button>
+      <div class="author-avatar" style="width:32px;height:32px;font-size:0.7rem;">ME</div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Workspace</div>
+      <a href="app.html" class="sidebar-item active">
+        <span class="sidebar-item-icon">⚡</span> Overview
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">🧠</span> Agents
+        <span class="sidebar-item-count">6</span>
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">📋</span> Tasks
+        <span class="sidebar-item-count">12</span>
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">📊</span> Metrics
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Product</div>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">🗺</span> Roadmap
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">📝</span> PRD
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">🐛</span> Issues
+        <span class="sidebar-item-count">3</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Growth</div>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">🚀</span> GTM Plan
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">✉️</span> Outreach
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">📈</span> Analytics
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Finance</div>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">💰</span> Revenue
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">📉</span> Runway
+      </a>
+      <a href="#" class="sidebar-item">
+        <span class="sidebar-item-icon">💼</span> Fundraising
+      </a>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:auto;">
+      <a href="pages/pricing.html" class="sidebar-item">
+        <span class="sidebar-item-icon">⭐</span> Upgrade plan
+      </a>
+      <a href="resources/docs.html" class="sidebar-item">
+        <span class="sidebar-item-icon">📚</span> Documentation
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main canvas -->
+  <main class="canvas">
+    <div class="canvas-header">
+      <div>
+        <h2 style="font-size:1.5rem;">Good morning ✦</h2>
+        <p style="color:var(--color-text-muted); font-size:0.9rem; margin-top:0.25rem; max-width:unset;">Your agents completed 3 tasks overnight. Here's what needs your attention.</p>
+      </div>
+      <div style="display:flex; gap:var(--space-sm);">
+        <button class="btn btn-secondary btn-sm">Export report</button>
+        <button class="btn btn-primary btn-sm">+ New task</button>
+      </div>
+    </div>
+
+    <div class="canvas-body">
+      <!-- Quick actions -->
+      <div class="quick-actions">
+        <a href="#" class="quick-btn">✦ Ask AI anything</a>
+        <a href="#" class="quick-btn">📋 Create task</a>
+        <a href="#" class="quick-btn">📝 Draft content</a>
+        <a href="#" class="quick-btn">📊 View metrics</a>
+        <a href="#" class="quick-btn">🔗 Connect integration</a>
+      </div>
+
+      <!-- Insight cards -->
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="insight-value">$4,200</div>
+          <div class="insight-label">Monthly Revenue</div>
+          <div class="insight-change insight-up">↑ 18% this week</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-value">287</div>
+          <div class="insight-label">Active Users</div>
+          <div class="insight-change insight-up">↑ 34 new today</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-value">14mo</div>
+          <div class="insight-label">Runway Left</div>
+          <div class="insight-change insight-up">↑ +2 from last month</div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-value">94%</div>
+          <div class="insight-label">Retention (30d)</div>
+          <div class="insight-change insight-up">↑ 3% improvement</div>
+        </div>
+      </div>
+
+      <!-- Agents -->
+      <h3 style="font-size:1.1rem; margin-bottom:var(--space-md);">Active Agents</h3>
+      <div class="agent-grid-app mb-xl">
+        <div class="agent-card-app">
+          <div class="agent-header">
+            <div class="agent-title">🧠 Product Agent</div>
+            <div class="agent-status">
+              <div class="status-dot status-dot-active"></div>
+              <span style="color:var(--color-accent); font-size:0.7rem;">Ready</span>
+            </div>
+          </div>
+          <p class="agent-desc">Last run: Drafted Q2 roadmap with 18 features prioritized by impact × effort.</p>
+          <div style="margin-bottom:0.5rem;">
+            <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+          </div>
+          <div class="agent-meta">
+            <span>78% sprint complete</span>
+            <span class="last-run">2h ago</span>
+          </div>
+        </div>
+
+        <div class="agent-card-app">
+          <div class="agent-header">
+            <div class="agent-title">🚀 Marketing Agent</div>
+            <div class="agent-status">
+              <div class="status-dot status-dot-running"></div>
+              <span style="color:var(--color-warm); font-size:0.7rem;">Running</span>
+            </div>
+          </div>
+          <p class="agent-desc">Generating 10 cold email variants for SaaS founders segment. ETA 3 min.</p>
+          <div style="margin-bottom:0.5rem;">
+            <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+          </div>
+          <div class="agent-meta">
+            <span>In progress…</span>
+            <span class="last-run">Now</span>
+          </div>
+        </div>
+
+        <div class="agent-card-app">
+          <div class="agent-header">
+            <div class="agent-title">🎯 Sales Agent</div>
+            <div class="agent-status">
+              <div class="status-dot status-dot-active"></div>
+              <span style="color:var(--color-accent); font-size:0.7rem;">Ready</span>
+            </div>
+          </div>
+          <p class="agent-desc">Pipeline: 14 prospects qualified. 3 proposals sent. 2 follow-ups due today.</p>
+          <div style="margin-bottom:0.5rem;">
+            <div class="progress-bar"><div class="progress-fill" style="width:62%"></div></div>
+          </div>
+          <div class="agent-meta">
+            <span>$12k pipeline value</span>
+            <span class="last-run">5h ago</span>
+          </div>
+        </div>
+
+        <div class="agent-card-app">
+          <div class="agent-header">
+            <div class="agent-title">💰 Finance Agent</div>
+            <div class="agent-status">
+              <div class="status-dot status-dot-idle"></div>
+              <span style="color:var(--color-text-subtle); font-size:0.7rem;">Idle</span>
+            </div>
+          </div>
+          <p class="agent-desc">Monthly model updated. Breakeven at $8,200 MRR. 3 scenarios modeled.</p>
+          <div style="margin-bottom:0.5rem;">
+            <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+          </div>
+          <div class="agent-meta">
+            <span>Up to date</span>
+            <span class="last-run">Yesterday</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <h3 style="font-size:1.1rem; margin-bottom:var(--space-md);">Recent Activity</h3>
+      <div class="activity-feed">
+        <div class="activity-item">
+          <div class="activity-avatar">🧠</div>
+          <div>
+            <div class="activity-text"><strong>Product Agent</strong> completed <strong>Q2 Roadmap Draft</strong> — 18 features prioritized</div>
+            <div class="activity-time">2h 14m ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-avatar">🎯</div>
+          <div>
+            <div class="activity-text"><strong>Sales Agent</strong> sent follow-up to <strong>Acme Corp, Velaris, Stackrift</strong></div>
+            <div class="activity-time">5h 02m ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-avatar">💰</div>
+          <div>
+            <div class="activity-text"><strong>Finance Agent</strong> updated monthly model — runway extended to <strong>14 months</strong></div>
+            <div class="activity-time">Yesterday at 11:42 PM</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-avatar">🚀</div>
+          <div>
+            <div class="activity-text"><strong>Marketing Agent</strong> published <strong>3 blog posts</strong> to content calendar</div>
+            <div class="activity-time">Yesterday at 4:15 PM</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-avatar">⚙</div>
+          <div>
+            <div class="activity-text"><strong>System</strong> connected <strong>Stripe integration</strong> — billing synced</div>
+            <div class="activity-time">2 days ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

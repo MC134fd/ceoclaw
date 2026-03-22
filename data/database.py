@@ -344,6 +344,22 @@ CREATE TABLE IF NOT EXISTS session_versions (
 CREATE INDEX IF NOT EXISTS idx_session_versions_session ON session_versions(session_id);
 """
 
+_SCHEMA_V09 = """
+CREATE TABLE IF NOT EXISTS project_files (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id  TEXT    NOT NULL,
+    file_path   TEXT    NOT NULL,
+    content     TEXT,
+    file_type   TEXT    NOT NULL DEFAULT 'text',
+    size_bytes  INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL,
+    updated_at  TEXT    NOT NULL,
+    UNIQUE(session_id, file_path),
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_project_files_session ON project_files(session_id);
+"""
+
 _SCHEMA_V06 = """
 CREATE TABLE IF NOT EXISTS prospects (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -386,6 +402,7 @@ def init_db() -> list[str]:
         conn.executescript(_SCHEMA_V07)
         conn.executescript(_SCHEMA_V08)
         conn.executescript(_SCHEMA_ACCOUNTS)
+        conn.executescript(_SCHEMA_V09)
         _migrate_graph_runs_budget_cols(conn)
         _migrate_graph_runs_autonomy_col(conn)
         _migrate_chat_sessions_design_system(conn)
@@ -1218,3 +1235,98 @@ def get_credit_ledger(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
             (user_id, limit),
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Project file persistence  (v0.9)
+# ---------------------------------------------------------------------------
+
+
+def upsert_project_file(
+    session_id: str,
+    file_path: str,
+    content: str,
+    file_type: str = "text",
+) -> None:
+    """Create or update a project file. Computes size_bytes from content length."""
+    now = utc_now()
+    size_bytes = len(content.encode("utf-8")) if content else 0
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO project_files
+                (session_id, file_path, content, file_type, size_bytes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(session_id, file_path) DO UPDATE SET
+                content    = excluded.content,
+                file_type  = excluded.file_type,
+                size_bytes = excluded.size_bytes,
+                updated_at = excluded.updated_at
+            """,
+            (session_id, file_path, content, file_type, size_bytes, now, now),
+        )
+
+
+def get_project_file(session_id: str, file_path: str) -> Optional[dict[str, Any]]:
+    """Return the full row as dict (including content), or None."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM project_files WHERE session_id=? AND file_path=?",
+            (session_id, file_path),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def list_project_files_for_session(session_id: str) -> list[dict[str, Any]]:
+    """Return all files for a session WITHOUT content — just metadata.
+
+    Ordered by file_path ASC. Used for the file tree endpoint.
+    """
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT file_path, file_type, size_bytes, updated_at
+            FROM project_files
+            WHERE session_id=?
+            ORDER BY file_path ASC
+            """,
+            (session_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def delete_project_file(session_id: str, file_path: str) -> bool:
+    """Delete one file. Returns True if a row was actually deleted."""
+    with get_connection() as conn:
+        cur = conn.execute(
+            "DELETE FROM project_files WHERE session_id=? AND file_path=?",
+            (session_id, file_path),
+        )
+    return cur.rowcount > 0
+
+
+def delete_all_project_files(session_id: str) -> int:
+    """Delete every file for a session. Returns count deleted."""
+    with get_connection() as conn:
+        cur = conn.execute(
+            "DELETE FROM project_files WHERE session_id=?",
+            (session_id,),
+        )
+    return cur.rowcount
+
+
+def get_project_files_content(session_id: str, file_paths: list[str]) -> dict[str, str]:
+    """Batch-read content for specific files. Returns {file_path: content}.
+
+    Uses a single query with WHERE file_path IN (...). Paths not found are omitted.
+    """
+    if not file_paths:
+        return {}
+    placeholders = ",".join("?" * len(file_paths))
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"SELECT file_path, content FROM project_files "
+            f"WHERE session_id=? AND file_path IN ({placeholders})",
+            [session_id, *file_paths],
+        ).fetchall()
+    return {row["file_path"]: row["content"] for row in rows if row["content"] is not None}

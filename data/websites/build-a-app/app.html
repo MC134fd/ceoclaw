@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lipsticks App — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary:#6366f1;--color-secondary:#a78bfa;--color-accent-pink:#ec4899;--accent-gradient:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 50%,var(--color-accent-pink) 100%);
+      --color-bg:#0a0a0f;--color-surface:#12121a;--color-sidebar:#0f172a;--color-text:#f0f0ff;--color-muted:#6b7280;--color-border:rgba(255,255,255,0.06);
+      --font-display:'Cormorant Garamond',serif;--font-body:'DM Sans',sans-serif;--radius-md:12px;--space-md:clamp(.75rem,1.5vw,1.25rem);--space-lg:clamp(1rem,2vw,1.75rem);
+      --container-width:clamp(320px,90vw,1200px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-text);min-height:100vh;display:flex}
+    .sidebar{width:240px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);color:var(--color-text);padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-lg);min-height:100vh;flex-shrink:0;border-right:1px solid var(--color-border)}
+    .sidebar-brand{font-family:var(--font-display);font-weight:700;font-size:1.1rem;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .sidebar-nav{list-style:none;display:flex;flex-direction:column;gap:.5rem;padding:0;margin:0}
+    .sidebar-nav a{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;border-radius:8px;color:rgba(240,240,255,.85);text-decoration:none;font-size:.875rem;transition:all .2s;min-height:44px}
+    .sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(255,255,255,0.02);color:#fff}
+    .main{flex:1;padding:var(--space-lg);overflow-y:auto}
+    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)}
+    .top-bar h1{font-family:var(--font-display);font-size:1.4rem;font-weight:700}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-lg)}
+    .metric-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md)}
+    .metric-label{font-size:.8rem;color:var(--color-muted);margin-bottom:.25rem}
+    .metric-value{font-family:var(--font-display);font-size:1.75rem;font-weight:700}
+    .metric-value.accent{background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg)}
+    .card h2{font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:var(--space-md)}
+    .feature-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;padding:0;margin:0}
+    .feature-list li{font-size:.9rem;color:var(--color-muted);padding:.25rem 0}
+    .connect-card{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);text-align:center;margin-top:var(--space-md)}
+    .connect-card input[type=password]{width:100%;max-width:320px;padding:.5rem .75rem;border:1.5px solid var(--color-border);border-radius:8px;font-family:var(--font-body);margin-bottom:.75rem;min-height:44px;background:transparent;color:var(--color-text)}
+    .btn{min-height:44px;padding:.5rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;border:none}
+    .btn-primary{background:var(--accent-gradient);color:#fff}
+    @media(max-width:640px){.sidebar{display:none}.main{padding:var(--space-md)}.metrics{grid-template-columns:1fr 1fr}}
+
+    /* Reveal-on-scroll and motion */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .4s ease,transform .4s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.reveal,.reveal.visible{opacity:1;transform:none;transition:none}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">Lipsticks App</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="active">📈 Dashboard</a></li>
+      <li><a href="#">💄 Listings</a></li>
+      <li><a href="#">⚙️ Settings</a></li>
+      <li><a href="index.html">↩ Back to site</a></li>
+    </ul>
+  </aside>
+  <main class="main">
+    <div class="top-bar">
+      <h1>Welcome to Lipsticks App</h1>
+    </div>
+    <div class="metrics">
+      <div class="metric-card reveal"><div class="metric-label">Lipsticks sold</div><div class="metric-value accent"><span class="counter" data-target="12482">0</span></div></div>
+      <div class="metric-card reveal"><div class="metric-label">Active listings</div><div class="metric-value"><span class="counter" data-target="3210">0</span></div></div>
+      <div class="metric-card reveal"><div class="metric-label">Revenue</div><div class="metric-value">$<span class="counter" data-target="75432">0</span></div></div>
+      <div class="metric-card reveal"><div class="metric-label">Status</div><div class="metric-value" style="font-size:1rem;color:#10b981">● Live</div></div>
+    </div>
+    <div class="card reveal">
+      <h2>Platform features</h2>
+      <ul class="feature-list"><li>✓ core functionality for lipstick listings</li><li>✓ seller dashboard with shade analytics</li><li>✓ export orders & accounting CSVs</li></ul>
+    </div>
+    <div class="connect-card reveal">
+      <p style="margin-bottom:.75rem;font-size:.9rem;color:var(--color-muted)">Connect your API to sync orders and inventory</p>
+      <input type="password" placeholder="sk-..." aria-label="API token">
+      <br><button class="btn btn-primary" style="margin-top:.75rem">Connect</button>
+    </div>
+  </main>
+
+  <script>
+    // Reveal-on-scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+    },{threshold:0.15});
+    reveals.forEach(r=>obs.observe(r));
+
+    // Sticky nav handled on index; keep minimal here
+
+    // Animated counters
+    function animateCounter(el, target){
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduced){ el.textContent = target.toLocaleString(); return; }
+      let start=0,duration=1200,startTime=null;
+      function step(ts){ if(!startTime) startTime=ts; const progress=Math.min((ts-startTime)/duration,1); el.textContent=Math.floor(progress*target).toLocaleString(); if(progress<1) requestAnimationFrame(step); }
+      requestAnimationFrame(step);
+    }
+    document.querySelectorAll('.counter').forEach(el=>{
+      const target=parseInt(el.getAttribute('data-target'),10)||0;
+      const observer=new IntersectionObserver((entries,obs)=>{ entries.forEach(entry=>{ if(entry.isIntersecting){ animateCounter(el,target); obs.unobserve(el); } }); },{threshold:0.2});
+      observer.observe(el);
+    });
+
+    // Basic client-side validation for Connect button (visual only)
+    document.querySelector('.connect-card button').addEventListener('click',()=>{
+      const input = document.querySelector('.connect-card input');
+      if(!input.value || input.value.length<6){ input.focus(); input.style.borderColor='rgba(255,99,132,0.6)'; setTimeout(()=>input.style.borderColor='var(--color-border)',1200); return; }
+      alert('API token accepted — (demo)');
+    });
+  </script>
+</body>
+</html>

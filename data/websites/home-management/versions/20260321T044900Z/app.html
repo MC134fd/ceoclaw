@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Management — App Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
+      --color-accent-pink: #ec4899;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #06b6d4, #22d3ee);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    html,body{
+      height:100%;
+      margin:0;
+      background:linear-gradient(180deg,var(--color-bg), #041226 80%);
+      color:var(--color-text);
+      font-family:var(--font-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      font-size:16px;
+      line-height:1.4;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
+
+    /* Layout */
+    .app-wrap{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap:clamp(12px, 2vw, 24px);
+      padding:clamp(16px, 3vw, 28px);
+      min-height:100vh;
+      box-sizing:border-box;
+    }
+
+    /* Sticky top nav */
+    header#top-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      top:0;
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 clamp(12px, 2vw, 24px);
+      background:transparent;
+      backdrop-filter: blur(6px);
+      z-index:40;
+      transition:all .22s ease;
+    }
+    header#top-nav.scrolled{
+      background: linear-gradient(90deg, rgba(6,182,212,0.06), rgba(34,211,238,0.03));
+      box-shadow:var(--shadow-sm);
+      border-bottom:1px solid rgba(255,255,255,0.02);
+      transform:translateY(0);
+    }
+    .brand-inline{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-family:var(--font-display);
+      color:var(--color-text);
+      font-weight:600;
+      font-size:clamp(16px, 1.6vw, 20px);
+    }
+    .brand-badge{
+      width:38px;
+      height:38px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#041226;
+      font-weight:700;
+      box-shadow:var(--shadow-md);
+      flex-shrink:0;
+    }
+
+    /* Hamburger visible on mobile */
+    .hamburger{
+      display:none;
+      background:transparent;
+      border:0;
+      color:var(--color-text);
+      font-size:20px;
+      padding:8px;
+    }
+
+    /* Sidebar */
+    aside.sidebar{
+      background:linear-gradient(180deg,var(--color-surface), rgba(15,25,41,0.9));
+      border-radius:var(--radius-md);
+      padding:18px;
+      height:calc(100vh - 96px);
+      margin-top:64px;
+      box-shadow:var(--shadow-lg);
+      position:sticky;
+      top:18px;
+      overflow:auto;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .nav-list{
+      list-style:none;
+      margin:18px 0 0 0;
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .nav-item a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px;
+      border-radius:8px;
+      color:var(--color-text);
+      font-weight:500;
+      font-size:14px;
+    }
+    .nav-item a:hover{
+      background:rgba(6,182,212,0.06);
+      color:var(--color-primary);
+    }
+
+    /* Main content */
+    main.content{
+      margin-top:64px;
+    }
+
+    .intro{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:clamp(18px, 3.5vw, 28px);
+    }
+    .intro-left h1{
+      margin:0 0 6px 0;
+      font-family:var(--font-display);
+      font-size:clamp(20px, 3.4vw, 32px);
+      letter-spacing:-0.02em;
+      color:var(--color-text);
+    }
+    .intro-left p{
+      margin:0;
+      color:var(--color-muted);
+      font-size:14px;
+    }
+    .intro-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:10px;
+      border:1px solid transparent;
+      cursor:pointer;
+      font-weight:600;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      text-decoration:none;
+      color:#041226;
+      background:var(--accent-gradient);
+      box-shadow:var(--shadow-sm);
+      font-family:var(--font-body);
+    }
+    .btn.secondary{
+      background:transparent;
+      color:var(--color-text);
+      border:1px solid rgba(255,255,255,0.04);
+    }
+    .btn:hover{ transform:translateY(-2px); }
+    .btn:active{ transform:translateY(0); opacity:0.95; }
+
+    /* Bento grid */
+    .bento-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:clamp(12px, 2vw, 20px);
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius-md);
+      padding:16px;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--color-text);
+    }
+
+    /* Metrics row */
+    .metrics-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .metric{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border-radius:10px;
+      background:linear-gradient(90deg, rgba(6,182,212,0.04), rgba(34,211,238,0.02));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .metric .meta{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .metric .value{
+      font-family:var(--font-display);
+      font-size:20px;
+      font-weight:700;
+      color:var(--color-text);
+    }
+    .metric .label{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+    .metric .icon{
+      width:48px;
+      height:48px;
+      border-radius:10px;
+      background:rgba(255,255,255,0.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:var(--color-primary);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    /* Features list */
+    .features-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .feature{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:10px;
+      border-radius:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .feature .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--color-primary);
+      margin-top:6px;
+      flex-shrink:0;
+    }
+    .feature h4{
+      margin:0;
+      font-size:14px;
+      color:var(--color-text);
+    }
+    .feature p{
+      margin:4px 0 0 0;
+      color:var(--color-muted);
+      font-size:13px;
+    }
+
+    /* API connect card */
+    .api-form{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .token-input{
+      flex:1 1 320px;
+      min-width:160px;
+      display:flex;
+      gap:8px;
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:8px;
+      border-radius:10px;
+      align-items:center;
+    }
+    .token-input input{
+      background:transparent;
+      border:0;
+      outline:none;
+      color:var(--color-text);
+      font-size:14px;
+      width:100%;
+    }
+    .small-btn{
+      padding:8px 10px;
+      min-height:44px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.03);
+      background:transparent;
+      color:var(--color-text);
+      cursor:pointer;
+    }
+
+    /* Footer area within main */
+    .note{
+      color:var(--color-muted);
+      font-size:13px;
+      margin-top:10px;
+    }
+
+    /* Reveal animations */
+    .reveal{ opacity:0; transform:translateY(12px); transition:opacity .6s ease, transform .6s ease; will-change:opacity,transform; }
+    .reveal.visible{ opacity:1; transform:translateY(0); }
+
+    /* Responsive rules */
+    @media (max-width:1024px){
+      .app-wrap{ grid-template-columns: 220px 1fr; padding:12px; }
+      .aside{ padding:14px; }
+    }
+
+    @media (max-width:640px){
+      .app-wrap{
+        grid-template-columns: 1fr;
+        padding:12px;
+      }
+      aside.sidebar{
+        display:none; /* sidebar collapses below 640px */
+        height:auto;
+        position:static;
+        margin-top:0;
+      }
+      .hamburger{ display:inline-flex; }
+      main.content{ margin-top:64px; }
+      header#top-nav{ padding-right:12px; padding-left:12px; }
+    }
+
+    /* Utility */
+    .muted{ color:var(--color-muted); font-size:13px; }
+    .row{ display:flex; gap:12px; align-items:center; }
+    .space-between{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  </style>
+</head>
+<body>
+  <header id="top-nav" role="banner">
+    <div class="brand-inline" aria-label="Home Management">
+      <button class="hamburger" id="toggle-sidebar" aria-label="Toggle navigation" title="Toggle navigation">☰</button>
+      <div class="brand-badge" aria-hidden="true">HM</div>
+      <div>
+        <div style="font-size:12px;color:var(--color-muted);">Home Management</div>
+        <div style="font-size:12px;color:var(--color-muted);">App Dashboard</div>
+      </div>
+    </div>
+
+    <div class="space-between" style="gap:12px;">
+      <nav aria-label="Top actions" style="display:flex;align-items:center;gap:8px;">
+        <a class="btn secondary" href="pages/signup.html">Get Started</a>
+        <a class="btn" href="pages/signup.html" style="display:none;">Primary</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="app-wrap" id="app">
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="brand-badge" style="width:46px;height:46px;border-radius:12px;">HM</div>
+        <div>
+          <div style="font-family:var(--font-display);font-weight:700;">Home Management</div>
+          <div style="font-size:13px;color:var(--color-muted);">Centralize home control</div>
+        </div>
+      </div>
+
+      <ul class="nav-list" role="navigation">
+        <li class="nav-item"><a href="app.html" title="Dashboard">Dashboard</a></li>
+        <li class="nav-item"><a href="app.html#features" title="Features">Features</a></li>
+        <li class="nav-item"><a href="app.html#settings" title="Settings">Settings</a></li>
+        <li class="nav-item"><a href="index.html" title="Back to site">Back to site</a></li>
+      </ul>
+
+      <div style="margin-top:18px;">
+        <div class="muted" style="font-size:13px;">Account</div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <a class="btn secondary" href="pages/signup.html" style="flex:1;">Invite</a>
+          <a class="btn" href="pages/signup.html" style="padding:8px 10px;">New</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content" role="main">
+      <section class="intro">
+        <div class="intro-left">
+          <h1>Welcome back — precision home management.</h1>
+          <p>Your user dashboard for scheduling, monitoring devices, and quick data export. Get the core functionality you need — fast.</p>
+        </div>
+
+        <div class="intro-actions">
+          <a class="btn" href="pages/signup.html">Get Started</a>
+          <a class="btn secondary" href="app.html#features">Learn more</a>
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section aria-labelledby="metrics-heading" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <h2 id="metrics-heading" style="margin:0;font-size:16px;font-family:var(--font-display);">Snapshot</h2>
+          <div class="muted">Updated just now</div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="card metric reveal">
+            <div class="meta">
+              <div class="value">12</div>
+              <div class="label">Active Devices</div>
+              <div class="muted" style="margin-top:6px;font-size:12px;">Live feeds and statuses in your core functionality.</div>
+            </div>
+            <div class="icon" aria-hidden="true">D</div>
+          </div>
+
+          <div class="card metric reveal">
+            <div class="meta">
+              <div class="value">7</div>
+              <div class="label">Open Tasks</div>
+              <div class="muted" style="margin-top:6px;font-size:12px;">Pending schedules and automation jobs on your dashboard.</div>
+            </div>
+            <div class="icon" aria-hidden="true">T</div>
+          </div>
+
+          <div class="card metric reveal">
+            <div class="meta">
+              <div class="value">34%</div>
+              <div class="label">Monthly Energy Saved</div>
+              <div class="muted" style="margin-top:6px;font-size:12px;">Efficiency gains tracked by automated routines.</div>
+            </div>
+            <div class="icon" aria-hidden="true">E</div>
+          </div>
+
+          <div class="card metric reveal">
+            <div class="meta">
+              <div class="value">5</div>
+              <div class="label">Data Exports</div>
+              <div class="muted" style="margin-top:6px;font-size:12px;">CSV exports from your user dashboard this month.</div>
+            </div>
+            <div class="icon" aria-hidden="true">X</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bento grid -->
+      <section class="bento-grid">
+        <!-- Feature list card -->
+        <article class="card reveal" id="features" aria-labelledby="features-title">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 id="features-title" style="margin:0;font-family:var(--font-display);">Platform Capabilities</h3>
+              <p class="muted" style="margin-top:6px;">Focused tools for everyday home management.</p>
+            </div>
+            <div class="muted">Core & smart</div>
+          </div>
+
+          <div class="features-list" style="margin-top:12px;">
+            <div class="feature">
+              <div class="dot" aria-hidden="true"></div>
+              <div>
+                <h4>Centralized user dashboard</h4>
+                <p>One view for devices, schedules, and alerts — designed for quick decisions.</p>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot" aria-hidden="true"></div>
+              <div>
+                <h4>Automations & scheduled tasks</h4>
+                <p>Create rules that run on time or trigger from device events — reduce manual checks.</p>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot" aria-hidden="true"></div>
+              <div>
+                <h4>Real-time device status</h4>
+                <p>Live telemetry feeds integrated into the dashboard for instant visibility.</p>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot" aria-hidden="true"></div>
+              <div>
+                <h4>Data export & integrations</h4>
+                <p>Export CSV reports or connect via API for external analysis and backups.</p>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot" aria-hidden="true"></div>
+              <div>
+                <h4>Secure API tokens</h4>
+                <p>Issue scoped tokens for integrations; revoke at any time from Settings.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Connect API card -->
+        <article class="card reveal" id="connect">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="margin:0;font-family:var(--font-display);">Connect your API</h3>
+              <p class="muted" style="margin-top:6px;">Use an API token to link external tools to the user dashboard and enable data export.</p>
+            </div>
+            <div class="muted">Secure • Fast</div>
+          </div>
+
+          <form class="api-form" onsubmit="return false;" aria-label="Connect API form" style="margin-top:12px;">
+            <label class="token-input" for="api-token">
+              <input id="api-token" name="api-token" type="password" placeholder="Enter API token" aria-label="API token" />
+            </label>
+
+            <button class="small-btn" id="connect-btn" type="button">Connect</button>
+            <button class="small-btn" id="paste-btn" type="button" title="Paste token from clipboard">Paste</button>
+            <button class="small-btn" id="copy-btn" type="button" title="Copy current token">Copy</button>
+          </form>
+
+          <div class="note">Tip: Generate tokens in Settings and use them to enable integrations or export automation data.</div>
+        </article>
+
+        <!-- Settings quick card -->
+        <article class="card reveal" id="settings" aria-labelledby="settings-title">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 id="settings-title" style="margin:0;font-family:var(--font-display);">Quick Settings</h3>
+              <p class="muted" style="margin-top:6px;">Fine-tune your core functionality without leaving the dashboard.</p>
+            </div>
+            <div class="muted">Personalize</div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+            <a class="btn secondary" href="app.html#connect">API Tokens</a>
+            <a class="btn secondary" href="app.html#features">Automations</a>
+            <a class="btn" href="pages/signup.html">Manage Users</a>
+          </div>
+
+          <div class="note" style="margin-top:12px;">All changes reflect immediately in the user dashboard. Exports run on-demand or schedule nightly backups.</div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Sticky header: add .scrolled when scroll > 14px
+    (function(){
+      const header = document.getElementById('top-nav');
+      function onScroll(){
+        if(window.scrollY > 14) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+      window.addEventListener('scroll', onScroll, { passive:true });
+      onScroll();
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const items = document.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      items.forEach(i => obs.observe(i));
+    })();
+
+    // Sidebar toggle for mobile
+    (function(){
+      const sidebar = document.getElementById('sidebar');
+      const btn = document.getElementById('toggle-sidebar');
+      if(!sidebar || !btn) return;
+      let open = false;
+      btn.addEventListener('click', () => {
+        open = !open;
+        if(open){
+          sidebar.style.display = 'block';
+          sidebar.style.position = 'fixed';
+          sidebar.style.left = '12px';
+          sidebar.style.right = '12px';
+          sidebar.style.zIndex = 60;
+          sidebar.style.top = '72px';
+          sidebar.style.maxHeight = 'calc(100vh - 90px)';
+          sidebar.style.overflow = 'auto';
+          btn.setAttribute('aria-expanded','true');
+        } else {
+          sidebar.style.display = 'none';
+          btn.setAttribute('aria-expanded','false');
+        }
+      });
+
+      // hide sidebar by default on load if small screen
+      function adjust(){
+        if(window.innerWidth <= 640){
+          sidebar.style.display = 'none';
+          btn.style.display = 'inline-flex';
+        } else {
+          sidebar.style.display = '';
+          btn.style.display = 'none';
+        }
+      }
+      window.addEventListener('resize', adjust);
+      adjust();
+    })();
+
+    // API token connect, copy, paste interactions (local only)
+    (function(){
+      const tokenInput = document.getElementById('api-token');
+      const connectBtn = document.getElementById('connect-btn');
+      const copyBtn = document.getElementById('copy-btn');
+      const pasteBtn = document.getElementById('paste-btn');
+
+      connectBtn.addEventListener('click', () => {
+        const token = tokenInput.value.trim();
+        if(!token){
+          alert('Enter your API token to connect. Generate one in Settings if needed.');
+          return;
+        }
+        // Simulate a connection flow
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+        setTimeout(() => {
+          connectBtn.disabled = false;
+          connectBtn.textContent = 'Connect';
+          alert('API token connected. Your user dashboard can now sync with external tools and data export endpoints.');
+        }, 900);
+      });
+
+      copyBtn.addEventListener('click', async () => {
+        const token = tokenInput.value.trim();
+        if(!token){ alert('No token to copy.'); return; }
+        try {
+          await navigator.clipboard.writeText(token);
+          copyBtn.textContent = 'Copied';
+          setTimeout(()=> copyBtn.textContent = 'Copy', 1200);
+        } catch(e){
+          alert('Copy failed. You can manually select and copy the token.');
+        }
+      });
+
+      pasteBtn.addEventListener('click', async () => {
+        try{
+          const text = await navigator.clipboard.readText();
+          if(text && text.length > 8){
+            tokenInput.value = text;
+            pasteBtn.textContent = 'Pasted';
+            setTimeout(()=> pasteBtn.textContent = 'Paste', 1000);
+          } else {
+            alert('Clipboard does not contain a valid token.');
+          }
+        } catch(e){
+          alert('Paste failed. Grant clipboard permission or paste manually.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

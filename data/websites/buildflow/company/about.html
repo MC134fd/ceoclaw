@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-lg); }
+    .team-card { text-align: center; padding: var(--space-xl) var(--space-lg); }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 700; font-size: 1.25rem;
+      color: #0F172A; margin: 0 auto var(--space-md);
+    }
+    .team-name { font-weight: 600; margin-bottom: 0.25rem; }
+    .team-role { font-size: 0.85rem; color: var(--color-text-muted); }
+    .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); }
+    .value-card h4 { margin-bottom: 0.5rem; }
+    .value-card p { font-size: 0.9rem; color: var(--color-text-muted); max-width: unset; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo">
+      <div class="logo-mark">BF</div>
+      Buildflow
+    </a>
+    <div class="navbar-links">
+      <a href="../product/features.html">Product</a>
+      <a href="../pages/pricing.html">Pricing</a>
+      <a href="../resources/docs.html">Docs</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start building</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Page header -->
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">About Buildflow</div>
+    <h1>We believe every founder<br>deserves an unfair advantage.</h1>
+    <p>Buildflow started with a simple question: why should only well-funded startups have access to world-class strategic talent? We're fixing that with AI.</p>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="section">
+  <div class="container">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-2xl); align-items: center;">
+      <div>
+        <div class="badge badge-secondary mb-md">Our mission</div>
+        <h2>Democratize the operating edge</h2>
+        <p style="color:var(--color-text-muted); margin-top:var(--space-md);">The world's best startups don't succeed because of luck — they succeed because of relentless execution, sharp strategy, and the right people in the right roles at the right time.</p>
+        <p style="color:var(--color-text-muted); margin-top:var(--space-md);">Most founders don't have that team. We built Buildflow so they can.</p>
+        <a href="mission.html" class="btn btn-secondary mt-lg">Read our mission statement →</a>
+      </div>
+      <div class="card" style="padding: var(--space-xl);">
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr; gap:var(--space-xl);">
+          <div><div class="stat-value">2023</div><div class="stat-label">Founded</div></div>
+          <div><div class="stat-value">4,200+</div><div class="stat-label">Founders</div></div>
+          <div><div class="stat-value">60+</div><div class="stat-label">Countries</div></div>
+          <div><div class="stat-value">$40M+</div><div class="stat-label">Revenue generated</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="section" style="background: linear-gradient(180deg, transparent, rgba(23,37,84,0.2), transparent);">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-accent mb-md">Values</div>
+      <h2>How we think and build</h2>
+    </div>
+    <div class="values-grid">
+      <div class="card value-card">
+        <div class="feature-icon feature-icon-primary mb-sm">🎯</div>
+        <h4>Founders first</h4>
+        <p>Every decision we make starts with: does this help founders build better, faster? Not metrics, not process — founders.</p>
+      </div>
+      <div class="card value-card">
+        <div class="feature-icon feature-icon-secondary mb-sm">⚡</div>
+        <h4>Velocity over perfection</h4>
+        <p>We ship fast, learn fast, and iterate relentlessly. We'd rather deliver 80% great today than 100% perfect next quarter.</p>
+      </div>
+      <div class="card value-card">
+        <div class="feature-icon feature-icon-accent mb-sm">🔒</div>
+        <h4>Trust is everything</h4>
+        <p>Founders share their most sensitive ideas with us. We protect that data with the same ferocity they protect their startups.</p>
+      </div>
+      <div class="card value-card">
+        <div class="feature-icon feature-icon-warm mb-sm">🌍</div>
+        <h4>Radically accessible</h4>
+        <p>World-class tools shouldn't require world-class funding. We price for early-stage and build for ambitious, not just affluent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-primary mb-md">The team</div>
+      <h2>Built by founders, for founders</h2>
+      <p>We've all been in the trenches — scrappy, resourceful, and hungry to build something that matters.</p>
+    </div>
+    <div class="team-grid">
+      <div class="card team-card">
+        <div class="team-avatar">JC</div>
+        <div class="team-name">Jordan Cole</div>
+        <div class="team-role">CEO & Co-founder</div>
+        <p style="font-size:0.8rem; color:var(--color-text-subtle); margin-top:0.5rem; max-width:unset;">Ex-Google PM. Built and sold two startups. Y Combinator W21.</p>
+      </div>
+      <div class="card team-card">
+        <div class="team-avatar" style="background: linear-gradient(135deg, #A78BFA, #34D399);">AS</div>
+        <div class="team-name">Anya Sharma</div>
+        <div class="team-role">CTO & Co-founder</div>
+        <p style="font-size:0.8rem; color:var(--color-text-subtle); margin-top:0.5rem; max-width:unset;">ML researcher turned builder. Ex-Anthropic, ex-Scale AI.</p>
+      </div>
+      <div class="card team-card">
+        <div class="team-avatar" style="background: linear-gradient(135deg, #34D399, #F59E0B);">ML</div>
+        <div class="team-name">Marcus Liu</div>
+        <div class="team-role">Head of Product</div>
+        <p style="font-size:0.8rem; color:var(--color-text-subtle); margin-top:0.5rem; max-width:unset;">Ex-Notion, ex-Figma. Obsessed with tools that feel inevitable.</p>
+      </div>
+      <div class="card team-card">
+        <div class="team-avatar" style="background: linear-gradient(135deg, #F59E0B, #38BDF8);">RO</div>
+        <div class="team-name">Rachel O'Brien</div>
+        <div class="team-role">Head of Growth</div>
+        <p style="font-size:0.8rem; color:var(--color-text-subtle); margin-top:0.5rem; max-width:unset;">Grew two B2B SaaS products from 0 to $5M ARR. PLG specialist.</p>
+      </div>
+    </div>
+    <div class="text-center mt-xl">
+      <a href="careers.html" class="btn btn-secondary">We're hiring — see open roles →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Ready to build your startup smarter?</h2>
+      <p class="text-muted mt-md" style="max-width:40ch; margin-inline:auto;">Join 4,200+ founders already using Buildflow to move faster and build better.</p>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-lg mt-lg">Start building free →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="navbar-logo" style="display:inline-flex;">
+          <div class="logo-mark">BF</div>
+          Buildflow
+        </a>
+        <p>The AI-native operating system for ambitious founders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="../product/features.html">Features</a></li>
+          <li><a href="../product/agents.html">Agents</a></li>
+          <li><a href="../product/integrations.html">Integrations</a></li>
+          <li><a href="../product/roadmap.html">Roadmap</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="../resources/docs.html">Docs</a></li>
+          <li><a href="../resources/blog.html">Blog</a></li>
+          <li><a href="../resources/faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="mission.html">Mission</a></li>
+          <li><a href="careers.html">Careers</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="../legal/privacy.html">Privacy</a></li>
+          <li><a href="../legal/terms.html">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Buildflow, Inc. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+{
+  "site": {
+    "title": "PawsPath",
+    "description": "On-demand dog walking app with GPS tracking, vetted walkers, and flexible scheduling for busy pet owners.",
+    "theme": "light",
+    "primaryColor": "#4338ca",
+    "secondaryColor": "#7c3aed",
+    "accentColor": "#ec4899",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Syne",
+    "bodyFont": "Manrope",
+    "logoText": "PawsPath"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "PawsPath — On-demand dog walking",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome",
+            "subheadline": "",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "",
+            "secondaryCtaHref": ""
+          }
+        },
+        {
+          "type": "stats",
+          "props": {
+            "heading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "how_it_works",
+          "props": {
+            "heading": "How it works",
+            "steps": []
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Features",
+            "subheading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "testimonials",
+          "props": {
+            "heading": "What people say",
+            "items": []
+          }
+        },
+        {
+          "type": "pricing",
+          "props": {
+            "heading": "Pricing",
+            "subheading": "",
+            "tiers": []
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "",
+            "description": "",
+            "buttonText": "Get Started",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "faq",
+          "props": {
+            "heading": "FAQ",
+            "items": []
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "",
+            "tagline": "",
+            "links": [],
+            "copyright": ""
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to PawsPath",
+        "metrics": [
+          {
+            "label": "Active Users",
+            "value": "8,420",
+            "icon": "👥"
+          },
+          {
+            "label": "Walks Today",
+            "value": "732",
+            "icon": "🦮"
+          },
+          {
+            "label": "Monthly Revenue",
+            "value": "$18.4k",
+            "icon": "💰"
+          },
+          {
+            "label": "Average Rating",
+            "value": "4.9",
+            "icon": "⭐"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Bookings",
+            "href": "#",
+            "icon": "🗓️"
+          },
+          {
+            "label": "Walkers",
+            "href": "#",
+            "icon": "🧑‍⚕️"
+          },
+          {
+            "label": "Settings",
+            "href": "#",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

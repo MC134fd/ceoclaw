@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .docs-layout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-2xl); align-items: start; }
+    .docs-nav { position: sticky; top: 80px; }
+    .docs-nav-section { margin-bottom: var(--space-lg); }
+    .docs-nav-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: var(--color-text-subtle); margin-bottom: 0.35rem; }
+    .docs-nav a { display: block; padding: 0.35rem 0.5rem; font-size: 0.875rem; color: var(--color-text-muted); border-radius: var(--radius-sm); }
+    .docs-nav a:hover { background: var(--color-surface-soft); color: var(--color-text); }
+    .docs-nav a.active { background: rgba(56,189,248,0.08); color: var(--color-primary); }
+    .docs-search { display: flex; align-items: center; gap: 0.5rem; margin-bottom: var(--space-lg); background: var(--color-surface-soft); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--color-text-subtle); }
+    .quickstart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-2xl); }
+    .quickstart-card { padding: var(--space-md); }
+    .quickstart-card h4 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .quickstart-card p { font-size: 0.8rem; color: var(--color-text-muted); max-width: unset; }
+    @media (max-width: 768px) { .docs-layout { grid-template-columns: 1fr; } .docs-nav { display: none; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-links">
+      <a href="blog.html">Blog</a>
+      <a href="guides.html">Guides</a>
+      <a href="../pages/pricing.html">Pricing</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">Documentation</div>
+    <h1>Everything you need to get started.</h1>
+    <p>Guides, references, and tutorials for every Buildflow feature — from first login to advanced agent configuration.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="docs-layout">
+      <aside class="docs-nav">
+        <div class="docs-search">🔍 Search docs…</div>
+        <div class="docs-nav-section">
+          <div class="docs-nav-label">Getting started</div>
+          <a href="#" class="active">Quick start</a>
+          <a href="#">Your first project</a>
+          <a href="#">Activating agents</a>
+          <a href="#">Workspace overview</a>
+        </div>
+        <div class="docs-nav-section">
+          <div class="docs-nav-label">Agents</div>
+          <a href="#">Product Agent</a>
+          <a href="#">Marketing Agent</a>
+          <a href="#">Sales Agent</a>
+          <a href="#">Finance Agent</a>
+          <a href="#">Tech Agent</a>
+          <a href="#">Ops Agent</a>
+        </div>
+        <div class="docs-nav-section">
+          <div class="docs-nav-label">Integrations</div>
+          <a href="#">Notion</a>
+          <a href="#">Linear</a>
+          <a href="#">GitHub</a>
+          <a href="#">Slack</a>
+        </div>
+        <div class="docs-nav-section">
+          <div class="docs-nav-label">Account</div>
+          <a href="#">Billing</a>
+          <a href="#">Team & seats</a>
+          <a href="#">Security</a>
+        </div>
+      </aside>
+      <main>
+        <h2 style="margin-bottom:var(--space-lg);">Quick start</h2>
+        <div class="quickstart-grid">
+          <a href="#" class="card quickstart-card" style="text-decoration:none; color:inherit;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">⚡</div>
+            <h4>Set up your workspace</h4>
+            <p>Create a project, describe your startup, and activate your first agents in 5 minutes.</p>
+          </a>
+          <a href="#" class="card quickstart-card" style="text-decoration:none; color:inherit;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🧠</div>
+            <h4>Run your first agent</h4>
+            <p>Ask the Product Agent to write a PRD for your core feature. See what strategic AI looks like.</p>
+          </a>
+          <a href="#" class="card quickstart-card" style="text-decoration:none; color:inherit;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔗</div>
+            <h4>Connect Notion</h4>
+            <p>Sync your existing docs and databases in 2 minutes. No configuration required.</p>
+          </a>
+          <a href="#" class="card quickstart-card" style="text-decoration:none; color:inherit;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🚀</div>
+            <h4>Build a GTM plan</h4>
+            <p>Give the Marketing Agent your ICP and get a full go-to-market strategy in minutes.</p>
+          </a>
+        </div>
+        <div class="prose">
+          <h2>How Buildflow works</h2>
+          <p>Buildflow is organized around <strong>projects</strong> — each representing one startup or major initiative. Within each project, you have access to a set of specialized AI agents that share a unified context.</p>
+          <p>When you describe your startup (during onboarding or by editing your project settings), every agent uses that description as its foundation. The Product Agent knows your target customer. The Marketing Agent knows your positioning. The Sales Agent knows your pricing.</p>
+          <h3>Project context</h3>
+          <p>The project context is the brain of your Buildflow workspace. It includes:</p>
+          <ul>
+            <li><strong>Business description</strong> — what you build and for whom</li>
+            <li><strong>ICP</strong> — your ideal customer profile</li>
+            <li><strong>Competitive landscape</strong> — key competitors and differentiators</li>
+            <li><strong>Tone & brand voice</strong> — how you communicate</li>
+            <li><strong>Current stage & metrics</strong> — where you are and where you're going</li>
+          </ul>
+          <p>You can update any part of the context at any time from your project settings. Agents immediately reflect the changes in their next outputs.</p>
+          <h3>Agent runs</h3>
+          <p>Each time you ask an agent to complete a task, that's one agent run. On the Starter plan, you have 3 runs per day. On Pro and Scale, runs are unlimited.</p>
+          <p>Agent outputs can be saved, edited, exported, or pushed directly to connected integrations like Notion or Linear.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Resources</h4><ul><li><a href="docs.html">Docs</a></li><li><a href="blog.html">Blog</a></li><li><a href="guides.html">Guides</a></li><li><a href="faq.html">FAQ</a></li></ul></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="../product/features.html">Features</a></li><li><a href="../product/agents.html">Agents</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

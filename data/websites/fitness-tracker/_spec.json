@@ -1,0 +1,188 @@
+{
+  "site": {
+    "title": "FitTrack",
+    "description": "A wearable fitness tracker and companion app that records workouts, sleep, and recovery while providing adaptive training guidance.",
+    "theme": "light",
+    "primaryColor": "#0ea5a4",
+    "secondaryColor": "#06b6d4",
+    "accentColor": "#f97316",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Syne",
+    "bodyFont": "Inter",
+    "logoText": "FitTrack"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "FitTrack — Personalized fitness tracking",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome",
+            "subheadline": "",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "",
+            "secondaryCtaHref": ""
+          }
+        },
+        {
+          "type": "stats",
+          "props": {
+            "heading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "how_it_works",
+          "props": {
+            "heading": "How it works",
+            "steps": []
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Features",
+            "subheading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "testimonials",
+          "props": {
+            "heading": "What people say",
+            "items": []
+          }
+        },
+        {
+          "type": "pricing",
+          "props": {
+            "heading": "Pricing",
+            "subheading": "",
+            "tiers": []
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "",
+            "description": "",
+            "buttonText": "Get Started",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "faq",
+          "props": {
+            "heading": "FAQ",
+            "items": []
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "",
+            "tagline": "",
+            "links": [],
+            "copyright": ""
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to FitTrack",
+        "metrics": [
+          {
+            "label": "Workouts This Week",
+            "value": "5",
+            "icon": "🏋️"
+          },
+          {
+            "label": "Calories Burned",
+            "value": "3,450",
+            "icon": "🔥"
+          },
+          {
+            "label": "Recovery Score",
+            "value": "82",
+            "icon": "🛌"
+          },
+          {
+            "label": "Avg Sleep",
+            "value": "7h 12m",
+            "icon": "⏱️"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Workouts",
+            "href": "#",
+            "icon": "🏃‍♀️"
+          },
+          {
+            "label": "Sleep",
+            "href": "#",
+            "icon": "🛌"
+          },
+          {
+            "label": "Settings",
+            "href": "#",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

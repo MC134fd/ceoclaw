@@ -402,6 +402,20 @@ class TestDynamicFileServing:
 class TestVersionEndpoints:
     """Tests for GET/POST /builder/sessions/{session_id}/versions/..."""
 
+    @pytest.fixture(autouse=True)
+    def _disable_auth(self, monkeypatch):
+        monkeypatch.setenv("AUTH_REQUIRED", "false")
+        import config.settings as cs
+        cs.settings = cs.Settings()
+
+    @pytest.fixture()
+    def client(self):
+        import config.settings as cs
+        cs.settings.auth_required = False
+        from api.server import app
+        from fastapi.testclient import TestClient
+        return TestClient(app)
+
     @pytest.fixture()
     def seeded_client(self, client, tmp_path, monkeypatch):
         monkeypatch.setenv("CEOCLAW_WEBSITES_DIR", str(tmp_path))
@@ -418,6 +432,7 @@ class TestVersionEndpoints:
         monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "ver_test.db"))
         import config.settings as cs
         cs.settings = cs.Settings()
+        cs.settings.auth_required = False  # load_dotenv overrides env — force-disable after reload
         from data.database import init_db, save_session_version
         init_db()
 
@@ -442,6 +457,7 @@ class TestVersionEndpoints:
         monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "ver_meta.db"))
         import config.settings as cs
         cs.settings = cs.Settings()
+        cs.settings.auth_required = False
         from data.database import init_db, save_session_version
         init_db()
 
@@ -462,6 +478,7 @@ class TestVersionEndpoints:
         monkeypatch.setenv("CEOCLAW_DATABASE_PATH", str(tmp_path / "ver_file.db"))
         import config.settings as cs
         cs.settings = cs.Settings()
+        cs.settings.auth_required = False
         from data.database import init_db, save_session_version
         init_db()
 

@@ -9,8 +9,8 @@
 ## 3-Command Demo Script
 
 ```bash
-# 1. One-command full demo run (mock mode — no API key needed)
-python main.py demo --cycles 8 --mock-model
+# 1. One-command full demo run
+python main.py demo --cycles 8
 
 # 2. Explore results via the REST API
 uvicorn api.server:app --port 8000 &
@@ -26,7 +26,7 @@ That's it. No environment variables, no external services.
 
 ## What Each Command Does
 
-### `python main.py demo --cycles 8 --mock-model`
+### `python main.py demo --cycles 8`
 
 Runs 8 autonomous founder-agent cycles, then prints:
 
@@ -41,7 +41,7 @@ Expected output snippet:
 ================================================================
   CEOClaw  –  Autonomous Founder Agent  –  Demo Mode
 ================================================================
-  goal=$100 MRR | cycles=8 | mock=True
+  goal=$100 MRR | cycles=8
 ----------------------------------------------------------------
   #  Domain       Action                         MRR    Score  Trend  Flags
   ────────────────────────────────────────────────────────────────────────
@@ -110,25 +110,23 @@ Includes: run metadata, KPI timeline, artifacts, risk events, node stats, confid
 
 | Time | What to show |
 |------|-------------|
-| 0:00 | Run `python main.py demo --cycles 8 --mock-model` — explain the topology on the right panel |
+| 0:00 | Run `python main.py demo --cycles 8` — explain the topology on the right panel |
 | 0:30 | Watch cycle table print — point out stagnation flags (⏸) and trend arrows |
 | 0:50 | Demo the domain rotation: stagnation forces the planner away from the stuck domain |
 | 1:10 | Open `data/exports/*_summary.md` in a browser/editor — highlight KPI timeline and confidence note |
 | 1:30 | Show `curl http://localhost:8000/summary/latest` in a second terminal |
-| 1:50 | Mention: 132 passing tests, SQLite audit trail, circuit breaker, model_mode transparency, mock + live + fallback modes |
+| 1:50 | Mention: 132 passing tests, SQLite audit trail, circuit breaker, model_mode transparency, live + fallback modes |
 
 ---
 
 ## Fallback Behavior
 
-### Mock mode (no FLock API)
-`--mock-model` flag enables fully deterministic responses — no network calls.
-The mock planner cycles through all four domains in order; the mock evaluator
-computes real weighted KPI scores from actual metrics.
+### Normal live operation
+Use valid `FLOCK_ENDPOINT` and `FLOCK_API_KEY` for direct model calls.
 
 ### Model failure during live mode
 If the FLock HTTP endpoint is unreachable, `FlockChatModel` automatically
-falls back to deterministic mock responses tagged `[FALLBACK]`.
+falls back to deterministic template responses tagged `[FALLBACK]`.
 The run continues without interruption — no exception is raised.
 
 ### Circuit breaker
@@ -146,7 +144,7 @@ display is unaffected. The run data is still in SQLite.
 
 ```
 START
- └─> PlannerNode       (FLock model / mock)
+ └─> PlannerNode       (FLock model)
       └─> RouterNode   (domain validation + circuit breaker)
            ├─> ProductExecutorNode   (website_builder, seo_tool)
            ├─> MarketingExecutorNode (seo_tool, analytics_tool)

@@ -1,0 +1,196 @@
+{
+  "site": {
+    "title": "Result Build",
+    "description": "Result automates build pipelines, parallel test execution, and artifact delivery for engineering teams.",
+    "theme": "light",
+    "primaryColor": "#0ea5a4",
+    "secondaryColor": "#1e3a8a",
+    "accentColor": "#f97316",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Syne",
+    "bodyFont": "Inter",
+    "logoText": "Result"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      },
+      {
+        "label": "Docs",
+        "href": "https://docs.result.build"
+      },
+      {
+        "label": "Blog",
+        "href": "/blog"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "Result — Build pipelines that finish predictably",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome",
+            "subheadline": "",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "",
+            "secondaryCtaHref": ""
+          }
+        },
+        {
+          "type": "stats",
+          "props": {
+            "heading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "how_it_works",
+          "props": {
+            "heading": "How it works",
+            "steps": []
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Features",
+            "subheading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "testimonials",
+          "props": {
+            "heading": "What people say",
+            "items": []
+          }
+        },
+        {
+          "type": "pricing",
+          "props": {
+            "heading": "Pricing",
+            "subheading": "",
+            "tiers": []
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "",
+            "description": "",
+            "buttonText": "Get Started",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "faq",
+          "props": {
+            "heading": "FAQ",
+            "items": []
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "",
+            "tagline": "",
+            "links": [],
+            "copyright": ""
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to Result",
+        "metrics": [
+          {
+            "label": "Active Builds",
+            "value": "84",
+            "icon": "👥"
+          },
+          {
+            "label": "Artifacts",
+            "value": "12.3K",
+            "icon": "📦"
+          },
+          {
+            "label": "Average Build Time",
+            "value": "9m 12s",
+            "icon": "⏱️"
+          },
+          {
+            "label": "Success Rate",
+            "value": "97.6%",
+            "icon": "✅"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Pipelines",
+            "href": "#pipelines",
+            "icon": "🧭"
+          },
+          {
+            "label": "Artifacts",
+            "href": "#artifacts",
+            "icon": "📁"
+          },
+          {
+            "label": "Settings",
+            "href": "#settings",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

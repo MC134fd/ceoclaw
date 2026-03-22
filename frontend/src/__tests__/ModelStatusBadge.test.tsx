@@ -16,12 +16,6 @@ describe('ModelStatusBadge', () => {
     expect(screen.getByText('Live (OpenAI)')).toBeInTheDocument()
   })
 
-  it('renders "Mock" for mock mode', () => {
-    const model: ModelInfo = { provider: 'mock', model_mode: 'mock' }
-    render(<ModelStatusBadge model={model} />)
-    expect(screen.getByText('Mock')).toBeInTheDocument()
-  })
-
   it('shows fallback indicator when fallback_used is true', () => {
     const model: ModelInfo = {
       provider: 'openai',
@@ -38,10 +32,10 @@ describe('ModelStatusBadge', () => {
     expect(badge.title).toContain('flock_error: timeout')
   })
 
-  it('renders "Fallback Mock" for fallback_mock mode', () => {
-    const model: ModelInfo = { provider: 'mock', model_mode: 'fallback_mock' }
+  it('renders "Error" for unknown mode', () => {
+    const model: ModelInfo = { provider: 'flock', model_mode: 'fallback' }
     render(<ModelStatusBadge model={model} />)
-    expect(screen.getByText('Fallback Mock')).toBeInTheDocument()
+    expect(screen.getByText('Error')).toBeInTheDocument()
   })
 
   it('renders checking state when model is null', () => {

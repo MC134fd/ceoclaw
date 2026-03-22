@@ -1,0 +1,161 @@
+{
+  "site": {
+    "title": "RecipeNest",
+    "description": "Organize, scale, and share your recipes with smart shopping lists and meal planning.",
+    "theme": "light",
+    "primaryColor": "#EF4444",
+    "secondaryColor": "#10B981",
+    "accentColor": "#F59E0B",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Syne",
+    "bodyFont": "Inter",
+    "logoText": "RecipeNest"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      },
+      {
+        "label": "Recipes",
+        "href": "app.html"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "Organize recipes, plan meals, and shop with confidence",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome",
+            "subheadline": "",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "",
+            "secondaryCtaHref": ""
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "",
+            "description": "",
+            "buttonText": "Get Started",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Features",
+            "subheading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "RecipeNest",
+            "tagline": "",
+            "links": [],
+            "copyright": "© 2026 RecipeNest. All rights reserved."
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to RecipeNest",
+        "metrics": [
+          {
+            "label": "Saved Recipes",
+            "value": "1,284",
+            "icon": "📚"
+          },
+          {
+            "label": "Active Meal Plans",
+            "value": "12",
+            "icon": "📅"
+          },
+          {
+            "label": "Shopping Lists Generated",
+            "value": "3,742",
+            "icon": "🛒"
+          },
+          {
+            "label": "Average Rating",
+            "value": "4.8",
+            "icon": "⭐"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Recipes",
+            "href": "#recipes",
+            "icon": "📚"
+          },
+          {
+            "label": "Meal Planner",
+            "href": "#planner",
+            "icon": "📅"
+          },
+          {
+            "label": "Shopping Lists",
+            "href": "#lists",
+            "icon": "🛒"
+          },
+          {
+            "label": "Settings",
+            "href": "#settings",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

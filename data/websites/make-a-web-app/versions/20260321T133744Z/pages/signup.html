@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign up — Make A Web App</title>
+  <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@300;400;600;700&family=Manrope:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #4338ca;
+      --color-secondary: #7c3aed;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f0a2e;
+      --color-surface: #1e1652;
+      --color-text: #eef2ff;
+      --color-muted: #818cf8;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #4338ca, #7c3aed);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background: radial-gradient(1200px 400px at 10% 10%, rgba(124,58,237,0.08), transparent),
+                  radial-gradient(800px 300px at 90% 90%, rgba(67,56,202,0.06), transparent),
+                  var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding:clamp(16px, calc(12px + 1.2vw), 28px);
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+
+    /* Header / navbar */
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding: clamp(12px, calc(8px + .8vw), 18px) clamp(16px, calc(10px + 1vw), 28px);
+      border-radius:var(--radius-md);
+      transition: all 220ms ease;
+      background:transparent;
+    }
+    header.scrolled{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(6px);
+      transform: translateZ(0);
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      text-decoration:none;
+      color:var(--color-text);
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:inline-grid;
+      place-items:center;
+      font-family:var(--font-display);
+      font-weight:700;
+      color:var(--color-text);
+      box-shadow:var(--shadow-md);
+      flex:0 0 44px;
+    }
+    .brand h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-weight:600;
+      font-size:clamp(16px, 2.2vw, 20px);
+      letter-spacing:-0.01em;
+    }
+
+    nav{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    nav a{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-weight:500;
+      padding:6px 10px;
+      border-radius:8px;
+      transition:color 180ms ease, background 180ms ease, transform 120ms ease;
+    }
+    nav a:hover{ color:var(--color-text); transform:translateY(-2px) }
+
+    /* Page layout: scroll story sections with centered card */
+    main{
+      width:100%;
+      max-width:1100px;
+      margin: clamp(18px, calc(10px + 3vw), 44px) auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(18px, calc(12px + 1.6vw), 32px);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:20px;
+      align-items:center;
+    }
+
+    .story{
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      border-radius:var(--radius-lg);
+      padding:clamp(20px, calc(18px + 1.4vw), 36px);
+      box-shadow:var(--shadow-lg);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:18px;
+    }
+
+    .intro{
+      display:flex;
+      gap:18px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .intro-left{
+      max-width:680px;
+    }
+    .kicker{
+      display:inline-block;
+      font-weight:700;
+      font-family:var(--font-display);
+      color:var(--color-accent-pink);
+      font-size:13px;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    h2{
+      margin:0 0 6px 0;
+      font-family:var(--font-display);
+      font-size:clamp(20px, 3.4vw, 32px);
+      color:var(--color-text);
+      line-height:1.02;
+    }
+    p.lead{
+      margin:0;
+      color:var(--color-muted);
+      font-weight:500;
+    }
+
+    /* Centered card for signup */
+    .card-wrap{
+      display:grid;
+      grid-template-columns: 1fr;
+      justify-items:center;
+    }
+
+    .card{
+      width:100%;
+      max-width:540px;
+      background:var(--color-surface);
+      border-radius:var(--radius-lg);
+      padding:clamp(18px, calc(16px + 1.6vw), 28px);
+      box-shadow:var(--shadow-md);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    form{
+      display:grid;
+      gap:14px;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--color-muted);
+      margin-bottom:6px;
+      font-weight:600;
+    }
+
+    .input{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      border-radius:var(--radius-sm);
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--color-text);
+      outline:none;
+      font-size:15px;
+      transition:box-shadow 160ms ease, border-color 160ms ease, transform 120ms ease;
+      box-shadow:var(--shadow-sm);
+    }
+    input:focus{
+      border-color:var(--color-primary);
+      box-shadow:0 6px 20px rgba(67,56,202,0.08);
+      transform:translateY(-2px);
+    }
+
+    .row-grid{
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .hint{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    .errors{
+      color:var(--color-accent-pink);
+      font-size:13px;
+      min-height:18px;
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:4px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 16px;
+      min-height:44px;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      font-weight:700;
+      font-size:15px;
+      color:var(--color-text);
+      background:var(--accent-gradient);
+      box-shadow:var(--shadow-sm);
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      text-decoration:none;
+    }
+    .btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow-md) }
+    .btn:active{ transform:translateY(-1px); opacity:0.95 }
+
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--color-text);
+      font-weight:600;
+      padding:10px 14px;
+      min-height:44px;
+    }
+
+    .muted-link{
+      color:var(--color-muted); text-decoration:none; font-weight:600;
+    }
+
+    footer{
+      margin-top:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding-top:18px;
+      color:var(--color-muted);
+      font-size:13px;
+    }
+
+    /* Reveal-on-scroll */
+    .reveal{
+      opacity:0;
+      transform:translateY(12px) scale(.995);
+      transition:opacity 560ms cubic-bezier(.2,.9,.2,1), transform 560ms cubic-bezier(.2,.9,.2,1);
+      will-change:opacity, transform;
+      will-change:opacity, transform;
+    }
+    .reveal.active{
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+
+    /* Responsive tweaks */
+    @media (min-width:1024px){
+      .hero{ grid-template-columns: 1fr 420px; gap:28px }
+      .card-wrap{ align-self:start }
+    }
+    @media (max-width:640px){
+      header{ padding:12px }
+      .story{ padding:16px }
+      .card{ padding:18px }
+      .intro-left h2{ font-size:20px }
+    }
+  </style>
+</head>
+<body>
+  <header id="siteHeader" class="reveal">
+    <a class="brand" href="../index.html">
+      <span class="logo" aria-hidden="true">MAWA</span>
+      <div>
+        <h1>Make A Web App</h1>
+      </div>
+    </a>
+
+    <nav aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="signup.html" aria-current="page">Sign up</a>
+      <a href="../app.html">App</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="story reveal" id="storyIntro">
+        <div class="intro">
+          <div class="intro-left">
+            <div class="kicker">Core functionality</div>
+            <h2>Create a personal app. Fast. Secure. Accessible.</h2>
+            <p class="lead">Make A Web App delivers a simple workflow to get a personal web app running. You will get an intuitive user dashboard, secure storage, and built-in data export so you control your information.</p>
+          </div>
+
+          <div style="align-self:center;">
+            <p class="hint" style="text-align:right; margin:0;">Sign up to access the full set of tools: templates, integrations, and data export from day one.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <ul style="margin:0;padding:0 0 0 18px;color:var(--color-muted);">
+            <li>Launch a private app in minutes with guided setup.</li>
+            <li>Manage content and users from your user dashboard.</li>
+            <li>Download your records anytime via reliable data export.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card-wrap reveal" id="signupCardWrap">
+        <div class="card" role="region" aria-labelledby="signupTitle">
+          <h3 id="signupTitle" style="margin:0 0 6px 0; font-family:var(--font-display);">Create your account</h3>
+          <p class="hint" style="margin:0 0 12px 0;">Start building with access to core functionality and your user dashboard.</p>
+
+          <form id="signupForm" action="../app.html" method="get" novalidate>
+            <div class="input">
+              <label for="fullname">Full name</label>
+              <input id="fullname" name="fullname" type="text" aria-label="Full name" placeholder="Ada Lovelace" required />
+            </div>
+
+            <div class="input">
+              <label for="email">Email address</label>
+              <input id="email" name="email" type="email" aria-label="Email address" placeholder="you@example.com" required />
+            </div>
+
+            <div class="input">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" aria-label="Password" placeholder="At least 8 characters" minlength="8" required />
+              <div class="hint">Passwords must be at least 8 characters.</div>
+            </div>
+
+            <div class="errors" id="formErrors" role="alert" aria-live="polite"></div>
+
+            <div class="actions">
+              <button class="btn" type="submit" id="submitBtn">Get Started</button>
+              <a class="muted-link" href="../index.html">Already have an account? Sign in</a>
+            </div>
+
+            <div style="margin-top:10px; font-size:13px; color:var(--color-muted);">
+              <strong>Privacy:</strong> Your data is encrypted. Use the user dashboard to manage exports and backups via the built-in data export tool.
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="reveal">
+    <div>Make A Web App — Fast setup, complete control. © <span id="year"></span></div>
+  </footer>
+
+  <script>
+    // Set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Header sticky scrolled class logic
+    (function() {
+      var header = document.getElementById('siteHeader');
+      function checkScroll(){
+        if(window.scrollY > 14) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+      checkScroll();
+      window.addEventListener('scroll', checkScroll, {passive:true});
+    })();
+
+    // Reveal on scroll for .reveal elements
+    (function(){
+      var reveals = document.querySelectorAll('.reveal');
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('active');
+            io.unobserve(entry.target);
+          }
+        });
+      }, {threshold: 0.12});
+      reveals.forEach(function(r){ io.observe(r); });
+    })();
+
+    // Client-side form validation with clear error messages
+    (function(){
+      var form = document.getElementById('signupForm');
+      var email = document.getElementById('email');
+      var password = document.getElementById('password');
+      var fullname = document.getElementById('fullname');
+      var errors = document.getElementById('formErrors');
+
+      function validateEmail(value){
+        // Basic email pattern
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+
+      function showError(message){
+        errors.textContent = message;
+      }
+
+      function clearError(){
+        errors.textContent = '';
+      }
+
+      form.addEventListener('submit', function(e){
+        clearError();
+        var nameVal = fullname.value.trim();
+        var emailVal = email.value.trim();
+        var pwVal = password.value;
+
+        if(!nameVal){
+          e.preventDefault();
+          showError('Full name is required.');
+          fullname.focus();
+          return;
+        }
+        if(!emailVal){
+          e.preventDefault();
+          showError('Email address is required.');
+          email.focus();
+          return;
+        }
+        if(!validateEmail(emailVal)){
+          e.preventDefault();
+          showError('Enter a valid email address.');
+          email.focus();
+          return;
+        }
+        if(!pwVal || pwVal.length < 8){
+          e.preventDefault();
+          showError('Password must be at least 8 characters.');
+          password.focus();
+          return;
+        }
+
+        // At this point the form is valid. Let it submit to ../app.html
+        // Optionally, we could provide a quick visual confirmation before navigation.
+        // Do nothing; allow default submit to proceed.
+      });
+
+      // Live input validation feedback
+      email.addEventListener('input', function(){
+        if(email.value && !validateEmail(email.value)) {
+          showError('Email address looks invalid.');
+        } else {
+          clearError();
+        }
+      });
+      password.addEventListener('input', function(){
+        if(password.value && password.value.length < 8){
+          showError('Password must be at least 8 characters.');
+        } else {
+          clearError();
+        }
+      });
+      fullname.addEventListener('input', function(){
+        if(fullname.value.trim()){
+          clearError();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

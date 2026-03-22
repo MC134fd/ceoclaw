@@ -3,10 +3,10 @@ LLM-driven website generator.
 
 Flow:
   1. Build system + history messages for the provider
-  2. Call provider_router (Flock → OpenAI → mock)
+  2. Call provider_router (OpenAI only — raises RuntimeError if unavailable)
   3. Parse structured JSON response  {assistant_message, product_name, files, notes}
   4. Validate / sanitize HTML via output_validator
-  5. If LLM unavailable or output invalid → heuristic template fallback
+  5. Raise RuntimeError if output is invalid or empty
 
 The caller (api/server.py) is responsible for persisting files and
 updating the session store.
@@ -18,7 +18,7 @@ import re
 from typing import Optional
 
 from services.output_validator import validate_files
-from services.provider_router import LLMResult, _mock_response, call_llm
+from services.provider_router import LLMResult, call_llm
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,6 @@ def generate_website(
     user_message: str,
     history: list[dict],
     existing_html: Optional[str] = None,
-    mock_mode: bool = False,
 ) -> dict:
     """Generate or update a website.
 
@@ -83,13 +82,9 @@ def generate_website(
         "warnings": list[str],
     }
     """
-    if mock_mode:
-        llm_result = _mock_response()
-    else:
-        messages = _build_messages(user_message, history, existing_html)
-        llm_result = call_llm(messages)
+    messages = _build_messages(user_message, history, existing_html)
+    llm_result = call_llm(messages)
 
-    # If the LLM returned content, try to parse it
     if llm_result.content:
         parsed = _parse_response(llm_result.content)
         raw_files = parsed.get("files") or {}
@@ -105,9 +100,8 @@ def generate_website(
                     "model_mode": llm_result.model_mode,
                     "warnings": warnings,
                 }
-            logger.warning("LLM files failed validation: %s", warnings)
 
-    # Heuristic template fallback
+    # No usable LLM content — use template fallback
     return _template_generate(user_message, existing_html, llm_result)
 
 
@@ -266,7 +260,7 @@ def _provider_setup_hint(llm_result: LLMResult) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Simple edit helpers (template/mock mode only)
+# Simple edit helpers (template fallback only)
 # ---------------------------------------------------------------------------
 
 

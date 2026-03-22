@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Management — Sign up</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #94a3b8;
+      --color-secondary: #cbd5e1;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f8fafc;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #94a3b8, #cbd5e1);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    * { box-sizing: border-box; }
+    html,body { height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent), var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding: clamp(16px, calc(1rem * var(--spacing)), 32px);
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+    }
+
+    /* Navbar */
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding: clamp(10px, calc(0.5rem * var(--spacing)), 18px);
+      transition: all 220ms ease;
+      border-radius: calc(var(--radius-md) / 1.5);
+      backdrop-filter: blur(6px);
+    }
+    .nav-inner{
+      width:100%;
+      max-width:1100px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+    }
+    .brand{
+      font-family: var(--font-display);
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--color-text);
+      text-decoration:none;
+    }
+    .brand-mark{
+      width:36px;
+      height:36px;
+      border-radius:8px;
+      background: var(--accent-gradient);
+      display:inline-grid;
+      place-items:center;
+      color:var(--color-bg);
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+      font-family: var(--font-display);
+    }
+    .nav-links{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .nav a{
+      color:var(--color-secondary);
+      text-decoration:none;
+      font-size:0.95rem;
+    }
+
+    .nav.scrolled{
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+      box-shadow: var(--shadow-sm);
+      transform: translateY(-1px);
+    }
+
+    /* Centered card layout */
+    .container{
+      width:100%;
+      max-width:980px;
+      margin: clamp(24px, calc(2rem * var(--spacing)), 48px) auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .card{
+      width:100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent), var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: clamp(18px, calc(1.25rem * var(--spacing)), 28px);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.02);
+      display:grid;
+      gap: clamp(14px, calc(1rem * var(--spacing)), 22px);
+      align-items:start;
+      max-width:780px;
+    }
+
+    .header{
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .title{
+      font-family:var(--font-display);
+      font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+      margin:0;
+      color:var(--color-text);
+      line-height:1.05;
+    }
+    .subtitle{
+      margin:0;
+      color:var(--color-muted);
+      font-size:0.95rem;
+    }
+
+    .bento_grid{
+      display:grid;
+      gap:14px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .feature{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      padding:12px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--color-secondary);
+      font-size:0.95rem;
+    }
+    .feature strong{ color:var(--color-text); display:block; margin-bottom:6px; font-weight:600; }
+
+    /* Form */
+    form{
+      display:grid;
+      gap:12px;
+      margin-top:6px;
+    }
+    label{
+      font-size:0.9rem;
+      color:var(--color-secondary);
+      display:block;
+      margin-bottom:6px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      border-radius: var(--radius-sm);
+      color:var(--color-text);
+      font-size:1rem;
+      outline:none;
+      transition: box-shadow 160ms ease, border-color 160ms ease, transform 120ms ease;
+      box-shadow: var(--shadow-sm);
+    }
+    input:focus{
+      border-color: var(--color-primary);
+      box-shadow: 0 6px 18px rgba(14, 18, 29, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+
+    .button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:0 16px;
+      min-height:44px;
+      border-radius: calc(var(--radius-md) / 1.25);
+      border: none;
+      cursor:pointer;
+      color:var(--color-bg);
+      background: var(--accent-gradient);
+      font-weight:600;
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 120ms ease;
+      box-shadow: var(--shadow-md);
+    }
+    .button:hover{ transform: translateY(-2px); }
+    .button:active{ transform: translateY(0); opacity:0.95; }
+
+    .secondary{
+      background:transparent;
+      color:var(--color-secondary);
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow:none;
+    }
+
+    .note{
+      color:var(--color-muted);
+      font-size:0.9rem;
+    }
+
+    .form-meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .error{
+      color:var(--color-accent-pink);
+      font-size:0.85rem;
+      margin-top:6px;
+    }
+
+    .link-muted{
+      color:var(--color-secondary);
+      text-decoration:none;
+      font-size:0.95rem;
+    }
+
+    /* reveal */
+    .reveal{ opacity:0; transform: translateY(12px) scale(0.995); transition: opacity 520ms ease, transform 520ms cubic-bezier(.2,.9,.2,1); will-change: opacity, transform; }
+    .reveal.reveal--visible{ opacity:1; transform:none; }
+
+    /* Footer small */
+    .foot{
+      text-align:center;
+      color:var(--color-muted);
+      font-size:0.9rem;
+      margin-top:10px;
+    }
+
+    /* Responsive */
+    @media (min-width: 1024px){
+      .card{ padding: clamp(22px, calc(1.6rem * var(--spacing)), 36px); }
+      .header{ align-items:center; }
+    }
+    @media (max-width: 640px){
+      body{ padding: clamp(12px, calc(1rem * var(--spacing)), 18px); }
+      .nav-inner{ padding:0 4px; }
+      .brand-mark{ width:34px; height:34px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="topNav">
+    <div class="nav-inner">
+      <a class="brand" href="../index.html" aria-label="Home Management home">
+        <span class="brand-mark" aria-hidden="true">HM</span>
+        <span>
+          Home Management
+          <div style="font-size:0.85rem;color:var(--color-secondary);font-weight:500">Simple control. Powerful home data.</div>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Overview</a>
+        <a href="../app.html">Open app</a>
+        <a href="../index.html#features">Features</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="card reveal" aria-labelledby="signupTitle">
+      <header class="header">
+        <div>
+          <h1 id="signupTitle" class="title">Create an account — Home Management</h1>
+          <p class="subtitle">Get access to the core functionality that organizes your household: inventory, tasks, bills and a centralized user dashboard.</p>
+        </div>
+        <div style="text-align:right">
+          <div class="note">Secure sign up. Fast setup.</div>
+        </div>
+      </header>
+
+      <div class="bento_grid">
+        <div class="feature">
+          <strong>Core functionality</strong>
+          Streamline routines: schedule maintenance, coordinate shared tasks, and keep an accurate inventory across devices.
+        </div>
+        <div class="feature">
+          <strong>User dashboard</strong>
+          One screen for everything—activity, upcoming tasks, and household metrics so you know what needs attention now.
+        </div>
+        <div class="feature">
+          <strong>Data export</strong>
+          Export records and reports for budgeting or archiving. CSV and secure backup options included.
+        </div>
+      </div>
+
+      <form id="signupForm" action="../app.html" method="post" novalidate>
+        <div>
+          <label for="fullname">Full name</label>
+          <input id="fullname" name="fullname" type="text" aria-label="Full name" required autocomplete="name" placeholder="Alex Rivera" />
+          <div id="fullnameError" class="error" aria-live="polite"></div>
+        </div>
+
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" aria-label="Email address" required autocomplete="email" placeholder="you@home.com" />
+          <div id="emailError" class="error" aria-live="polite"></div>
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" aria-label="Create password" required minlength="8" placeholder="Minimum 8 characters" />
+          <div id="passwordError" class="error" aria-live="polite"></div>
+        </div>
+
+        <div class="form-meta">
+          <div class="note">By creating an account you can access your user dashboard and export data when needed.</div>
+          <button type="submit" class="button" id="submitBtn">Get Started</button>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;">
+          <a class="link-muted" href="../index.html">Already have an account? Sign in</a>
+          <a class="link-muted" href="../app.html">Try the demo (no account)</a>
+        </div>
+      </form>
+
+      <p class="foot">We protect your data. Passwords are stored securely and backups are available via the data export tool.</p>
+    </section>
+  </main>
+
+  <script>
+    // Sticky nav behavior
+    (function(){
+      const nav = document.getElementById('topNav');
+      function onScroll(){
+        if(window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      }
+      window.addEventListener('scroll', onScroll, { passive:true });
+      onScroll();
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const observer = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            entry.target.classList.add('reveal--visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.08
+      });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    })();
+
+    // Form validation
+    (function(){
+      const form = document.getElementById('signupForm');
+      const fullname = document.getElementById('fullname');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+
+      const fullnameError = document.getElementById('fullnameError');
+      const emailError = document.getElementById('emailError');
+      const passwordError = document.getElementById('passwordError');
+
+      function validateEmail(val){
+        // basic RFC-like check
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+      }
+
+      function clearErrors(){
+        fullnameError.textContent = '';
+        emailError.textContent = '';
+        passwordError.textContent = '';
+      }
+
+      form.addEventListener('submit', function(e){
+        clearErrors();
+        let ok = true;
+
+        if(!fullname.value.trim()){
+          fullnameError.textContent = 'Enter the full name used for your household account.';
+          ok = false;
+        }
+
+        if(!email.value.trim()){
+          emailError.textContent = 'Email is required so we can secure your account.';
+          ok = false;
+        } else if(!validateEmail(email.value.trim())){
+          emailError.textContent = 'Provide a valid email address (example: you@home.com).';
+          ok = false;
+        }
+
+        if(!password.value){
+          passwordError.textContent = 'Choose a password for account protection.';
+          ok = false;
+        } else if(password.value.length < 8){
+          passwordError.textContent = 'Password must be at least 8 characters.';
+          ok = false;
+        }
+
+        if(!ok){
+          e.preventDefault();
+          const firstError = document.querySelector('.error:not(:empty)');
+          if(firstError){
+            const input = firstError.previousElementSibling;
+            if(input && typeof input.focus === 'function') input.focus();
+          }
+        } else {
+          // Let the form submit to ../app.html (server or client will handle session init).
+          // Offer a tiny UX delay to ensure users see action
+          // (No preventDefault — allow normal navigation to app page).
+        }
+      });
+
+      // Live validation feedback
+      email.addEventListener('input', ()=> {
+        if(email.value && validateEmail(email.value)){
+          emailError.textContent = '';
+        }
+      });
+      password.addEventListener('input', ()=> {
+        if(password.value.length >= 8) passwordError.textContent = '';
+      });
+      fullname.addEventListener('input', ()=> {
+        if(fullname.value.trim()) fullnameError.textContent = '';
+      });
+    })();
+  </script>
+</body>
+</html>

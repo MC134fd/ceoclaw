@@ -1,0 +1,197 @@
+{
+  "site": {
+    "title": "FailTest",
+    "description": "Automated failure injection and validation for CI builds to catch resilience gaps before deployment.",
+    "theme": "light",
+    "primaryColor": "#0ea5a4",
+    "secondaryColor": "#0369a1",
+    "accentColor": "#f97316",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Syne",
+    "bodyFont": "Inter",
+    "logoText": "FailTest"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      },
+      {
+        "label": "Docs",
+        "href": "pages/docs.html"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "FailTest — Automated Failure Testing for CI",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome",
+            "subheadline": "",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "",
+            "secondaryCtaHref": ""
+          }
+        },
+        {
+          "type": "stats",
+          "props": {
+            "heading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "how_it_works",
+          "props": {
+            "heading": "How it works",
+            "steps": []
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Features",
+            "subheading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "testimonials",
+          "props": {
+            "heading": "What people say",
+            "items": []
+          }
+        },
+        {
+          "type": "pricing",
+          "props": {
+            "heading": "Pricing",
+            "subheading": "",
+            "tiers": []
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "",
+            "description": "",
+            "buttonText": "Get Started",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "faq",
+          "props": {
+            "heading": "FAQ",
+            "items": []
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "",
+            "tagline": "",
+            "links": [],
+            "copyright": ""
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to FailTest",
+        "metrics": [
+          {
+            "label": "Active Users",
+            "value": "1,234",
+            "icon": "👥"
+          },
+          {
+            "label": "Tests Run",
+            "value": "120K+",
+            "icon": "🧪"
+          },
+          {
+            "label": "Avg. Incident Reduction",
+            "value": "73%",
+            "icon": "📉"
+          },
+          {
+            "label": "Average Test Time",
+            "value": "45s",
+            "icon": "⏱️"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Scenarios",
+            "href": "#",
+            "icon": "🧩"
+          },
+          {
+            "label": "Runs",
+            "href": "#",
+            "icon": "⚙️"
+          },
+          {
+            "label": "Reports",
+            "href": "#",
+            "icon": "📄"
+          },
+          {
+            "label": "Settings",
+            "href": "#",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

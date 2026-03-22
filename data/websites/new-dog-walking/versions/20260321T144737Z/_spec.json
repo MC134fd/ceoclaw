@@ -1,0 +1,197 @@
+{
+  "site": {
+    "title": "PawRoute",
+    "description": "PawRoute pairs dog owners with vetted local walkers, provides live GPS routes, photo reports, and in-app payments.",
+    "theme": "light",
+    "primaryColor": "#4338ca",
+    "secondaryColor": "#7c3aed",
+    "accentColor": "#ec4899",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Syne",
+    "bodyFont": "Manrope",
+    "logoText": "PawRoute"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      },
+      {
+        "label": "How It Works",
+        "href": "#how-it-works"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "PawRoute — On-demand dog walking",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome",
+            "subheadline": "",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "",
+            "secondaryCtaHref": ""
+          }
+        },
+        {
+          "type": "stats",
+          "props": {
+            "heading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "how_it_works",
+          "props": {
+            "heading": "How it works",
+            "steps": []
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Features",
+            "subheading": "",
+            "items": []
+          }
+        },
+        {
+          "type": "testimonials",
+          "props": {
+            "heading": "What people say",
+            "items": []
+          }
+        },
+        {
+          "type": "pricing",
+          "props": {
+            "heading": "Pricing",
+            "subheading": "",
+            "tiers": []
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "",
+            "description": "",
+            "buttonText": "Get Started",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "faq",
+          "props": {
+            "heading": "FAQ",
+            "items": []
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "",
+            "tagline": "",
+            "links": [],
+            "copyright": ""
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to PawRoute",
+        "metrics": [
+          {
+            "label": "Upcoming Walks",
+            "value": "3",
+            "icon": "🚶‍♂️"
+          },
+          {
+            "label": "Total Walks",
+            "value": "1,234",
+            "icon": "🐾"
+          },
+          {
+            "label": "Monthly Revenue",
+            "value": "$4,200",
+            "icon": "💳"
+          },
+          {
+            "label": "Average Rating",
+            "value": "4.9",
+            "icon": "⭐"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Walkers",
+            "href": "#",
+            "icon": "👟"
+          },
+          {
+            "label": "Schedule",
+            "href": "#",
+            "icon": "📅"
+          },
+          {
+            "label": "Payments",
+            "href": "#",
+            "icon": "💳"
+          },
+          {
+            "label": "Settings",
+            "href": "#",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — Water Selling Web</title>
+  <style>
+    /* Font import */
+    @import url('https://fonts.googleapis.com/css2?family=Cal+Sans:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #14b8a6;
+      --color-secondary: #06b6d4;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0a1628;
+      --color-surface: #0f2340;
+      --color-text: #e0f7f7;
+      --color-muted: #6b9aaa;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #14b8a6, #06b6d4);
+      --font-display: 'Cal Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg, rgba(10,22,40,1) 0%, rgba(10,22,40,0.95) 50%, rgba(15,35,64,1) 100%);
+      font-family: var(--font-body);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+    }
+
+    /* Container */
+    .page {
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: clamp(16px, calc(2 * var(--spacing) * 1vh), 40px);
+      box-sizing:border-box;
+    }
+
+    /* Sticky nav */
+    nav.site-nav{
+      position:sticky;
+      top:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      padding: clamp(10px, 1.5vh, 18px) clamp(14px, 2vw, 28px);
+      width:100%;
+      max-width:1100px;
+      margin:0 auto;
+      z-index:40;
+      transition: all .28s ease;
+      border-radius: var(--radius-md);
+      background: transparent;
+    }
+    nav.site-nav.scrolled{
+      background: linear-gradient(180deg, rgba(10,22,40,0.7), rgba(15,35,64,0.6));
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+
+    .brand {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      text-decoration:none;
+      color:var(--color-text);
+      font-family:var(--font-display);
+      font-weight:700;
+      letter-spacing:0.2px;
+      font-size: clamp(18px, 2.2vw, 22px);
+    }
+    .brand .mark{
+      width:38px;
+      height:38px;
+      border-radius:10px;
+      display:inline-grid;
+      place-items:center;
+      background:var(--accent-gradient);
+      box-shadow: var(--shadow-sm);
+      color:white;
+      font-weight:700;
+      font-family:var(--font-display);
+    }
+
+    .nav-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .nav-actions a{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:14px;
+      padding:6px 10px;
+      border-radius:8px;
+    }
+    .nav-actions a.primary{
+      background:var(--accent-gradient);
+      color:white;
+      box-shadow: var(--shadow-sm);
+      padding:8px 12px;
+    }
+
+    /* Card center */
+    .card-wrap{
+      width:100%;
+      max-width:920px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(18px, calc(1.5 * var(--spacing) * 1vh), 28px);
+      align-items:start;
+      padding-top: 28px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(15,35,64,0.9), rgba(15,35,64,0.86));
+      border-radius: var(--radius-lg);
+      padding: clamp(18px, calc(2 * var(--spacing) * 1vh), 32px);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.02);
+      max-width:680px;
+      margin:0 auto;
+      overflow:visible;
+    }
+
+    .card h1{
+      margin:0 0 8px 0;
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size: clamp(20px, 3.2vw, 28px);
+      color:var(--color-text);
+    }
+    .card p.lead{
+      margin:0 0 18px 0;
+      color:var(--color-muted);
+      font-size:14px;
+    }
+
+    form.signup-form{
+      display:grid;
+      gap:12px;
+      margin-top:8px;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--color-muted);
+      margin-bottom:6px;
+      font-weight:600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      display:block;
+      padding:12px 14px;
+      border-radius: var(--radius-sm);
+      border:1px solid rgba(255,255,255,0.04);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color:var(--color-text);
+      font-size:15px;
+      outline:none;
+      transition: box-shadow .18s ease, transform .12s ease, border-color .12s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    input:focus{
+      border-color: var(--color-primary);
+      box-shadow: 0 6px 22px rgba(20,184,166,0.08);
+      transform: translateY(-1px);
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .helper{
+      font-size:13px;
+      color:var(--color-muted);
+      margin-top:6px;
+    }
+
+    .error{
+      font-size:13px;
+      color: var(--color-accent-pink);
+      margin-top:6px;
+      display:none;
+    }
+    .error.visible{ display:block; }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+
+    button.cta {
+      min-height:44px;
+      min-width:160px;
+      border:0;
+      border-radius:10px;
+      padding:10px 16px;
+      background: var(--color-primary);
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+      transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease;
+      box-shadow: 0 8px 28px rgba(20,184,166,0.12);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:15px;
+    }
+    button.cta:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(20,184,166,0.16);
+    }
+    button.cta:active{
+      transform: translateY(0);
+      opacity:0.95;
+    }
+
+    a.signin-link{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:14px;
+    }
+
+    /* Benefits grid - uses fluid grid rule */
+    .benefits{
+      margin-top:18px;
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .benefit{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border-radius: var(--radius-sm);
+      padding:12px;
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .benefit .icon{
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,0.02);
+      color:var(--color-primary);
+      font-weight:700;
+      font-family:var(--font-display);
+      flex-shrink:0;
+    }
+    .benefit h4{
+      margin:0;
+      font-size:15px;
+      color:var(--color-text);
+    }
+    .benefit p{
+      margin:4px 0 0 0;
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* Reveal animations */
+    .reveal{
+      opacity:0;
+      transform: translateY(12px) scale(0.996);
+      transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
+      will-change: opacity, transform;
+    }
+    .reveal.revealed{
+      opacity:1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Footer note */
+    .footer-note{
+      margin-top:12px;
+      font-size:13px;
+      color:var(--color-muted);
+      text-align:center;
+    }
+
+    /* Responsive adjustments */
+    @media (min-width:1024px){
+      .card-wrap{
+        grid-template-columns: 1fr;
+      }
+      .card{
+        max-width:740px;
+      }
+    }
+
+    @media (max-width:640px){
+      nav.site-nav{
+        padding:10px 12px;
+      }
+      .brand { font-size:18px; }
+      .card{
+        padding:18px;
+        border-radius:12px;
+      }
+      .benefit .icon{ width:36px; height:36px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="site-nav reveal" aria-label="Top navigation">
+      <a class="brand" href="../index.html">
+        <span class="mark" aria-hidden="true">W</span>
+        Water Selling Web
+      </a>
+      <div class="nav-actions" aria-hidden="false">
+        <a href="../index.html">Home</a>
+        <a href="../app.html" class="primary">Open App</a>
+      </div>
+    </nav>
+
+    <main class="card-wrap" role="main">
+      <section class="card reveal" aria-labelledby="signup-title">
+        <header>
+          <h1 id="signup-title">Create your Water Selling Web account</h1>
+          <p class="lead">Join a simple app built for selling and managing water deliveries. Access core functionality quickly — your user dashboard, order history, and data export tools are ready when you are.</p>
+        </header>
+
+        <form class="signup-form" id="signupForm" action="../app.html" method="get" novalidate>
+          <div class="field">
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="fullName" type="text" aria-label="Full name" required autocomplete="name" placeholder="Jane Rivers" />
+            <div id="err-name" class="error" role="alert">Please enter your full name.</div>
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" aria-label="Email address" required autocomplete="email" placeholder="jane@wellco.com" />
+            <div id="err-email" class="error" role="alert">Enter a valid email address (example@domain.com).</div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" aria-label="Password" required minlength="8" placeholder="At least 8 characters" />
+            <div class="helper">Must be at least 8 characters. Use a mix of letters and numbers for better security.</div>
+            <div id="err-password" class="error" role="alert">Password must be at least 8 characters.</div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="cta" id="submitBtn">Get Started</button>
+            <a class="signin-link" href="../index.html">Already have an account? Sign in</a>
+          </div>
+
+          <div class="footer-note">By creating an account you agree to use Water Selling Web to manage orders, inventory, and data export responsibly.</div>
+        </form>
+
+        <div class="benefits reveal" aria-hidden="false">
+          <div class="benefit">
+            <div class="icon">⚙️</div>
+            <div>
+              <h4>Core functionality</h4>
+              <p>Quickly list products, track deliveries, and manage pricing — the app focuses on the essential tools you need to sell water efficiently.</p>
+            </div>
+          </div>
+
+          <div class="benefit">
+            <div class="icon">📊</div>
+            <div>
+              <h4>User dashboard</h4>
+              <p>Your dashboard puts orders, customer contact, and real-time balances in one place so you can make informed decisions faster.</p>
+            </div>
+          </div>
+
+          <div class="benefit">
+            <div class="icon">⬇️</div>
+            <div>
+              <h4>Data export</h4>
+              <p>Export sales reports and customer lists in CSV to integrate with accounting and analytics. Data export keeps your operations portable.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Sticky nav: add .scrolled when scrollY > 14
+    (function(){
+      const nav = document.querySelector('.site-nav');
+      function onScroll(){
+        if(window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('revealed');
+              io.unobserve(entry.target);
+            }
+          });
+        }, {threshold: 0.08});
+        reveals.forEach(el => io.observe(el));
+      } else {
+        // Fallback: reveal all
+        reveals.forEach(el => el.classList.add('revealed'));
+      }
+    })();
+
+    // Form validation handler
+    (function(){
+      const form = document.getElementById('signupForm');
+      const nameEl = document.getElementById('fullName');
+      const emailEl = document.getElementById('email');
+      const passEl = document.getElementById('password');
+
+      const errName = document.getElementById('err-name');
+      const errEmail = document.getElementById('err-email');
+      const errPass = document.getElementById('err-password');
+
+      function showError(el){
+        el.classList.add('visible');
+      }
+      function hideError(el){
+        el.classList.remove('visible');
+      }
+
+      function validateEmail(email){
+        // Basic email regex for client-side feedback
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      form.addEventListener('submit', function(e){
+        // Clear errors
+        hideError(errName); hideError(errEmail); hideError(errPass);
+
+        let valid = true;
+
+        if(!nameEl.value.trim()){
+          showError(errName);
+          valid = false;
+        }
+
+        if(!validateEmail(emailEl.value.trim())){
+          showError(errEmail);
+          valid = false;
+        }
+
+        if(!passEl.value || passEl.value.length < 8){
+          showError(errPass);
+          valid = false;
+        }
+
+        if(!valid){
+          e.preventDefault();
+          // Focus first invalid field
+          if(errName.classList.contains('visible')) nameEl.focus();
+          else if(errEmail.classList.contains('visible')) emailEl.focus();
+          else passEl.focus();
+          return false;
+        }
+
+        // Allow native submission to app page. Optionally, show a small success state.
+        // Small visual feedback before navigation:
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Starting...';
+        // If using GET, let it proceed. No preventDefault.
+      }, {passive:false});
+    })();
+  </script>
+</body>
+</html>

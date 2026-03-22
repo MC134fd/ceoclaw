@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — Make A Web App</title>
+  <meta name="description" content="Create an account to access Make A Web App — unlock the user dashboard, core functionality, and secure data export." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-accent-pink: #ec4899;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --color-border: #bbf7d0;
+      --accent-gradient: linear-gradient(135deg, #16a34a, #15803d);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Utility clamps for fluid spacing */
+    :root{
+      --gutter: clamp(1rem, calc(var(--spacing) * 0.625rem), 2rem);
+      --card-pad: clamp(1rem, calc(var(--spacing) * 0.75rem), 2.25rem);
+      --title-size: clamp(1.25rem, 2.5vw, 2rem);
+      --lead-size: clamp(.95rem, 1.6vw, 1.05rem);
+    }
+
+    /* Base */
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: var(--font-body);
+      color:var(--color-text);
+      background: radial-gradient(600px 350px at 10% 10%, rgba(22,163,74,0.06), transparent),
+                  radial-gradient(500px 250px at 90% 90%, rgba(236,72,153,0.04), transparent),
+                  var(--color-bg);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+
+    /* Layout container */
+    .page {
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding: calc(var(--gutter) * 1.25) var(--gutter);
+    }
+
+    /* Sticky navbar */
+    header.site-header{
+      position:sticky;
+      top:14px;
+      width:100%;
+      max-width:1100px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      margin:0 auto calc(var(--gutter) * 0.5);
+      padding: clamp(.5rem, calc(var(--spacing) * 0.25rem), 0.75rem) clamp(.75rem, calc(var(--spacing) * 0.5rem), 1rem);
+      background:transparent;
+      transition:all .25s ease;
+      z-index:20;
+    }
+    header.site-header.scrolled{
+      background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(6px);
+      border-radius: calc(var(--radius-md) / 1.5);
+      padding: .35rem .6rem;
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      text-decoration:none;
+      color:var(--color-text);
+    }
+    .brand .logo {
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background: var(--accent-gradient);
+      display:grid;
+      place-items:center;
+      color:white;
+      font-family: var(--font-display);
+      font-weight:700;
+      box-shadow: var(--shadow-md);
+      flex:0 0 44px;
+    }
+    .brand .name{
+      font-family:var(--font-display);
+      font-size:1.05rem;
+      letter-spacing:.01em;
+    }
+
+    nav.main-nav{
+      display:flex;
+      gap:.5rem;
+      align-items:center;
+    }
+    nav.main-nav a{
+      font-size:.95rem;
+      color:var(--color-muted);
+      text-decoration:none;
+      padding:.5rem .6rem;
+      border-radius:8px;
+    }
+    nav.main-nav a.is-active{
+      background: linear-gradient(90deg, rgba(22,163,74,.08), rgba(22,163,74,0.03));
+      color:var(--color-primary);
+      font-weight:600;
+    }
+
+    /* Bento grid background */
+    .bento {
+      width:100%;
+      max-width:1100px;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(.5rem, calc(var(--spacing) * 0.5rem), 1rem);
+      align-items:stretch;
+      margin:0 auto;
+    }
+
+    .tile {
+      background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.6));
+      border-radius: var(--radius-md);
+      padding: calc(var(--card-pad) * 0.6);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      min-height:72px;
+    }
+    /* Make the central signup card prominent */
+    .signup-card {
+      grid-column: 1/-1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: calc(var(--card-pad) * 1);
+      background: linear-gradient(160deg, rgba(255,255,255,0.85), rgba(255,255,255,0.95));
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .signup-card:hover{ transform: translateY(-4px); }
+
+    .card-inner{
+      width:100%;
+      max-width:520px;
+      background:var(--color-surface);
+      border-radius: var(--radius-md);
+      padding: var(--card-pad);
+      box-shadow: var(--shadow-md);
+      border:1px solid rgba(22,163,74,0.06);
+    }
+
+    .eyebrow{
+      display:inline-block;
+      font-size:.8rem;
+      color:var(--color-accent-pink);
+      font-weight:600;
+      letter-spacing:.03em;
+      margin-bottom:.5rem;
+    }
+
+    h1 {
+      margin:0 0 .4rem 0;
+      font-family:var(--font-display);
+      font-size:var(--title-size);
+      color:var(--color-text);
+      line-height:1.05;
+    }
+    p.lead{
+      margin:0 0 1rem 0;
+      color:var(--color-muted);
+      font-size:var(--lead-size);
+    }
+
+    /* Form */
+    form.signup-form{
+      margin-top:1rem;
+      display:grid;
+      gap:.75rem;
+    }
+    label{
+      display:block;
+      font-size:.9rem;
+      margin-bottom:.35rem;
+      color:var(--color-text);
+      font-weight:500;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding: .65rem .75rem;
+      border-radius: var(--radius-sm);
+      border:1px solid rgba(20,83,45,0.08);
+      background:transparent;
+      box-shadow: var(--shadow-sm);
+      font-size:.95rem;
+      color:var(--color-text);
+      transition: box-shadow .14s ease, border-color .14s ease;
+    }
+    input:focus{
+      outline:none;
+      border-color: var(--color-primary);
+      box-shadow: 0 6px 20px rgba(22,163,74,0.08);
+    }
+
+    .row {
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:.75rem;
+    }
+
+    .actions{
+      margin-top:.5rem;
+      display:flex;
+      gap:.5rem;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    button.primary {
+      background: var(--accent-gradient);
+      color:white;
+      border:none;
+      padding: .5rem 1rem;
+      min-height:44px;
+      min-width:140px;
+      border-radius: calc(var(--radius-sm) * 1.1);
+      cursor:pointer;
+      font-weight:600;
+      box-shadow: 0 6px 18px rgba(22,163,74,0.12);
+      transition: transform .14s ease, box-shadow .14s ease, opacity .12s ease;
+    }
+    button.primary:hover{ transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    button.primary:active{ transform: translateY(0); opacity:.96; }
+    button.primary:disabled{ opacity:.6; cursor:not-allowed; transform:none; box-shadow:var(--shadow-sm); }
+
+    .secondary-link{
+      color:var(--color-primary);
+      text-decoration:none;
+      font-size:.95rem;
+      margin-left:auto;
+    }
+
+    .help {
+      font-size:.85rem;
+      color:var(--color-muted);
+    }
+
+    .error {
+      color:#b91c1c;
+      font-size:.85rem;
+      margin-top:.25rem;
+      display:none;
+    }
+    .error.active{ display:block; }
+
+    .notice {
+      margin-top:.8rem;
+      font-size:.9rem;
+      color:var(--color-muted);
+      background: linear-gradient(90deg, rgba(22,163,74,0.03), transparent);
+      padding:.6rem;
+      border-radius: var(--radius-sm);
+      border:1px dashed rgba(22,163,74,0.06);
+    }
+
+    /* Reveal */
+    .reveal{
+      opacity:0;
+      transform:translateY(12px) scale(.995);
+      transition: opacity .6s ease, transform .6s ease;
+      will-change: transform, opacity;
+    }
+    .reveal.revealed{
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+
+    footer.site-foot{
+      margin-top: calc(var(--gutter) * 0.75);
+      color:var(--color-muted);
+      font-size:.9rem;
+      text-align:center;
+      max-width:900px;
+    }
+
+    /* Responsive adjustments */
+    @media (min-width: 1024px){
+      .signup-card{ grid-column: 2/ -2; }
+      header.site-header{ max-width:1200px; }
+    }
+    @media (max-width: 640px){
+      header.site-header{ top:8px; padding:.25rem .5rem; }
+      .brand .name{ font-size:.95rem; }
+      .bento{ gap:.6rem; }
+      .signup-card{ padding: calc(var(--card-pad) * .75); }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header" id="siteHeader">
+      <a href="../index.html" class="brand" aria-label="Go back to Make A Web App home">
+        <div class="logo" aria-hidden="true">MWA</div>
+        <div class="name">Make A Web App</div>
+      </a>
+
+      <nav class="main-nav" aria-label="Top navigation">
+        <a href="../index.html">Home</a>
+        <a href="signup.html" class="is-active" aria-current="page">Sign up</a>
+        <a href="../app.html">App</a>
+      </nav>
+    </header>
+
+    <main class="bento" role="main" aria-labelledby="signupHeading">
+      <!-- Decorative tiles to create bento_grid aesthetic -->
+      <div class="tile reveal" style="background: linear-gradient(135deg, rgba(22,163,74,0.08), rgba(236,72,153,0.03));">
+        <strong style="display:block;color:var(--color-primary);font-family:var(--font-display);">Build fast</strong>
+        <div style="color:var(--color-muted);font-size:.92rem;margin-top:.4rem;">Start from templates tuned for core functionality so you can ship iterations quickly.</div>
+      </div>
+
+      <div class="tile reveal" style="display:flex;flex-direction:column;justify-content:center;">
+        <strong style="display:block;color:var(--color-secondary);font-family:var(--font-display);">Keep control</strong>
+        <div style="color:var(--color-muted);font-size:.92rem;margin-top:.4rem;">Your user dashboard centralizes settings, user data, and integrations in one place.</div>
+      </div>
+
+      <section class="signup-card reveal" aria-labelledby="signupHeading">
+        <div class="card-inner">
+          <span class="eyebrow">Create your account</span>
+          <h1 id="signupHeading">One account to manage your web app</h1>
+          <p class="lead">Sign up to unlock the user dashboard and begin configuring core functionality — from templates to secure data export. Make A Web App turns your concept into a dependable web presence.</p>
+
+          <form class="signup-form" id="signupForm" action="../app.html" method="post" novalidate>
+            <div class="row">
+              <div>
+                <label for="fullname">Full name</label>
+                <input id="fullname" name="fullname" type="text" aria-label="Full name" required />
+                <div class="error" id="err-fullname" aria-live="polite"></div>
+              </div>
+
+              <div>
+                <label for="email">Email address</label>
+                <input id="email" name="email" type="email" aria-label="Email address" required />
+                <div class="error" id="err-email" aria-live="polite"></div>
+              </div>
+
+              <div>
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" aria-label="Password" required minlength="8" />
+                <div class="error" id="err-password" aria-live="polite"></div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primary" id="submitBtn">Get Started</button>
+              <a class="secondary-link" href="../index.html">Already have an account? Sign in</a>
+            </div>
+
+            <div class="notice" role="status" aria-live="polite">
+              After you sign up, you’ll land in the user dashboard where you can enable integrations, review analytics, and export data securely when needed.
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <div class="tile reveal" style="background: linear-gradient(90deg, rgba(236,72,153,0.03), rgba(22,163,74,0.02));">
+        <strong style="display:block;color:var(--color-accent-pink);font-family:var(--font-display);">Data export</strong>
+        <div style="color:var(--color-muted);font-size:.92rem;margin-top:.4rem;">Export CSV or JSON directly from your user dashboard for reporting or migration.</div>
+      </div>
+
+      <div class="tile reveal" style="display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;color:var(--color-muted);font-size:.92rem;">
+          <div style="font-weight:600;color:var(--color-secondary);font-family:var(--font-display);margin-bottom:.35rem;">Why Make A Web App</div>
+          Build a focused web app with features that matter: authentication, user dashboard controls and robust data export — without the overhead.
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-foot reveal" role="contentinfo">
+      <div>Make A Web App — professional tools to turn your idea into a working application. © <span id="year"></span></div>
+    </footer>
+  </div>
+
+  <script>
+    // Year footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sticky header toggling
+    (function(){
+      const header = document.getElementById('siteHeader');
+      function update() {
+        if (window.scrollY > 14) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+      update();
+      window.addEventListener('scroll', update, {passive:true});
+    })();
+
+    // Reveal on scroll using IntersectionObserver
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        reveals.forEach(el => el.classList.add('revealed'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('revealed');
+            obs.unobserve(e.target);
+          }
+        });
+      }, {threshold: 0.08});
+      reveals.forEach(el => io.observe(el));
+    })();
+
+    // Client-side validation and submit handling
+    (function(){
+      const form = document.getElementById('signupForm');
+      const btn = document.getElementById('submitBtn');
+
+      const fldName = document.getElementById('fullname');
+      const fldEmail = document.getElementById('email');
+      const fldPassword = document.getElementById('password');
+
+      const errName = document.getElementById('err-fullname');
+      const errEmail = document.getElementById('err-email');
+      const errPassword = document.getElementById('err-password');
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function clearErrors(){
+        [errName, errEmail, errPassword].forEach(e => { e.textContent=''; e.classList.remove('active'); });
+      }
+      function showError(el, msg){
+        el.textContent = msg;
+        el.classList.add('active');
+      }
+
+      form.addEventListener('submit', function(ev){
+        clearErrors();
+        let valid = true;
+
+        const nameVal = fldName.value.trim();
+        const emailVal = fldEmail.value.trim();
+        const passVal = fldPassword.value;
+
+        if (!nameVal){
+          showError(errName, 'Please enter your full name.');
+          valid = false;
+        } else if (nameVal.length < 2){
+          showError(errName, 'Please provide a full name with at least 2 characters.');
+          valid = false;
+        }
+
+        if (!emailVal){
+          showError(errEmail, 'We need an email to create your account.');
+          valid = false;
+        } else if (!emailRegex.test(emailVal)){
+          showError(errEmail, 'Enter a valid email address (example@domain.com).');
+          valid = false;
+        }
+
+        if (!passVal){
+          showError(errPassword, 'Choose a password with at least 8 characters.');
+          valid = false;
+        } else if (passVal.length < 8){
+          showError(errPassword, 'Password must be at least 8 characters long.');
+          valid = false;
+        }
+
+        if (!valid){
+          ev.preventDefault();
+          // focus first invalid field
+          const firstErr = document.querySelector('.error.active');
+          if (firstErr){
+            const input = firstErr.previousElementSibling;
+            if (input && typeof input.focus === 'function') input.focus();
+          }
+          return;
+        }
+
+        // Provide immediate feedback and allow form to submit to ../app.html
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+        // Let the native form submission proceed; if you want to simulate async,
+        // you could use fetch to submit, but per requirements we submit to ../app.html.
+      }, false);
+
+      // Optional: realtime validation feedback
+      fldEmail.addEventListener('input', () => {
+        errEmail.classList.remove('active');
+        if (fldEmail.value && !emailRegex.test(fldEmail.value)){
+          showError(errEmail, 'This email does not look valid yet.');
+        } else {
+          errEmail.classList.remove('active');
+          errEmail.textContent = '';
+        }
+      });
+
+      fldPassword.addEventListener('input', () => {
+        errPassword.classList.remove('active');
+        if (fldPassword.value && fldPassword.value.length > 0 && fldPassword.value.length < 8){
+          showError(errPassword, 'Passwords shorter than 8 characters are insecure.');
+        } else {
+          errPassword.classList.remove('active');
+          errPassword.textContent = '';
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

@@ -172,15 +172,13 @@ def _route_from_router(state: CEOClawState) -> str:
 
 def evaluator_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
     """EvaluatorNode: weighted KPI scoring, stagnation tracking, cycle persistence."""
-    cfg = config.get("configurable", {})
-    mock_mode: bool = cfg.get("mock_mode", False)
     cycle_count = state.get("cycle_count", 0)
 
     exec_id = log_node_start(
         run_id=state["run_id"],
         cycle_count=cycle_count,
         node_name="evaluator",
-        input_summary=f"cycle={cycle_count} mock={mock_mode}",
+        input_summary=f"cycle={cycle_count}",
     )
 
     metrics = state.get("latest_metrics") or {}
@@ -190,7 +188,7 @@ def evaluator_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any
     last_mrr = state.get("last_mrr", 0.0)
 
     try:
-        evaluation = _run_evaluator(state, mock_mode, prev_weighted)
+        evaluation = _run_evaluator(state, prev_weighted)
 
         # Extract and remove internal budget sidecar before persisting evaluation
         budget = evaluation.pop("_budget", {})
@@ -291,9 +289,9 @@ def evaluator_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any
 
 
 def _run_evaluator(
-    state: CEOClawState, mock_mode: bool, prev_weighted: float
+    state: CEOClawState, prev_weighted: float
 ) -> dict[str, Any]:
-    """Run the evaluator — deterministically in mock mode, via model otherwise."""
+    """Run the evaluator via model with deterministic score overrides."""
     metrics = state.get("latest_metrics") or {}
     current_mrr = metrics.get("mrr", 0.0)
     goal_mrr = state.get("goal_mrr", 100.0)
@@ -303,39 +301,7 @@ def _run_evaluator(
     progress = compute_progress_score(current_mrr, goal_mrr)
     trend = compute_trend(weighted, prev_weighted)
 
-    if mock_mode:
-        # Deterministic evaluation from real state metrics — no model call
-        risk_flags: list[str] = []
-        stagnant = state.get("stagnant_cycles", 0)
-        if stagnant >= _STAGNATION_THRESHOLD:
-            risk_flags.append(f"stagnant_{stagnant}_cycles")
-        if current_mrr == 0.0 and cycle_count > 4:
-            risk_flags.append("no_revenue_after_4_cycles")
-
-        rec = _recommendation(progress, trend)
-        data = EvaluatorOutput(
-            kpi_snapshot={
-                "mrr": current_mrr,
-                "signups": metrics.get("signups", 0),
-                "traffic": metrics.get("website_traffic", 0),
-                "revenue": metrics.get("revenue", 0.0),
-            },
-            progress_score=progress,
-            weighted_score=weighted,
-            trend_direction=trend,
-            recommendation=rec,
-            risk_flags=risk_flags,
-        ).model_dump()
-        data["_budget"] = {
-            "model_mode": "mock",
-            "tokens_delta": 0,
-            "external_calls_delta": 0,
-            "fallback_delta": 0,
-        }
-        return data
-
-    # Live model path
-    model = get_model(mock_mode=False, cycle_index=cycle_count)
+    model = get_model(cycle_index=cycle_count)
     prompt = build_evaluator_prompt(
         cycle_count=cycle_count,
         goal_mrr=goal_mrr,
@@ -562,13 +528,13 @@ def run_graph(
     cycles: int = 1,
     continuous: bool = False,
     goal_mrr: float = 100.0,
-    mock_mode: bool = False,
     max_cycles: int = 20,
     quiet: bool = False,
     run_id: str | None = None,
     autonomy_mode: str = "A_AUTONOMOUS",
     product_intent: dict[str, Any] | None = None,
     workflow_mode: str = "adaptive",
+    mock_mode: bool = False,  # accepted for test compatibility; model mock is configured via env
 ) -> dict[str, Any]:
     """Run the CEOClaw LangGraph.
 
@@ -576,7 +542,6 @@ def run_graph(
         cycles:     Number of cycles (ignored when continuous=True).
         continuous: Run until goal or max_cycles.
         goal_mrr:   MRR target in USD.
-        mock_mode:  Deterministic responses, no HTTP calls.
         max_cycles: Hard stop.
         quiet:      Suppress per-cycle streaming output (demo mode).
 
@@ -593,7 +558,6 @@ def run_graph(
     config: RunnableConfig = {
         "configurable": {
             "thread_id": run_id,
-            "mock_mode": mock_mode,
             "max_cycles": effective_max,
             "stagnation_threshold": _STAGNATION_THRESHOLD,
             "autonomy_mode": autonomy_mode,
@@ -603,7 +567,7 @@ def run_graph(
     if not quiet:
         print(
             f"\nCEOClaw {run_id[:8]}… | goal=${goal_mrr} | "
-            f"mock={mock_mode} | max={effective_max}"
+            f"max={effective_max}"
         )
         print("-" * 100)
 
@@ -620,7 +584,6 @@ def run_graph(
         "type": "run_start",
         "goal_mrr": goal_mrr,
         "max_cycles": effective_max,
-        "mock_mode": mock_mode,
         "autonomy_mode": autonomy_mode,
         "workflow_mode": workflow_mode,
     })

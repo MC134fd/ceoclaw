@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App Calculator — Precise application calculations and exports</title>
+  <style>
+    /* Font import (required) */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
+      --color-accent-pink: #ec4899;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #06b6d4, #22d3ee);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Global reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--color-bg);
+      color:var(--color-text);
+      font-family:var(--font-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    a{color:inherit; text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
+
+    /* Layout spacing using clamp() */
+    .container{
+      width:100%;
+      max-width:1200px;
+      margin:0 auto;
+      padding-inline:clamp(16px, calc(2vw + 8px), 32px);
+      padding-top:clamp(18px, calc(1.5vw + 12px), 36px);
+      padding-bottom:clamp(18px, calc(1.5vw + 12px), 36px);
+    }
+
+    header.nav{
+      position:sticky;
+      top:0;
+      z-index:60;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:clamp(12px, calc(0.8vw + 8px), 20px);
+      padding:clamp(10px, 1.2vw, 16px);
+      background:linear-gradient(180deg, rgba(15,25,41,0.6), rgba(15,25,41,0.4));
+      backdrop-filter: blur(6px);
+      border-bottom:1px solid rgba(226,232,240,0.04);
+      transition:box-shadow .22s ease, background-color .22s ease, transform .18s ease;
+    }
+
+    header.nav.scrolled{
+      background:linear-gradient(180deg, rgba(15,25,41,0.85), rgba(15,25,41,0.75));
+      box-shadow:var(--shadow-md);
+      transform:translateY(0);
+      border-bottom:1px solid rgba(226,232,240,0.06);
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .brand .logo{
+      width:44px;
+      height:44px;
+      border-radius:var(--radius-sm);
+      background:var(--accent-gradient);
+      display:grid;
+      place-items:center;
+      color:var(--color-bg);
+      font-weight:700;
+      font-family:var(--font-display);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .brand h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:clamp(18px, 1.6vw, 22px);
+      letter-spacing:0.2px;
+      color:var(--color-text);
+    }
+
+    nav.primary{
+      display:flex;
+      gap:clamp(10px, 1.4vw, 18px);
+      align-items:center;
+    }
+
+    nav.primary a{
+      color:var(--color-text);
+      font-size:14px;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid transparent;
+    }
+
+    nav.primary a:hover{
+      background:rgba(226,243,255,0.02);
+      border-color:rgba(226,232,240,0.03);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:0 14px;
+      font-weight:600;
+      font-size:14px;
+      border-radius:10px;
+      cursor:pointer;
+      transition:transform .14s ease, box-shadow .14s ease, opacity .12s ease;
+      border:1px solid var(--color-border);
+      background:transparent;
+      color:var(--color-text);
+    }
+
+    .btn.primary{
+      background:var(--accent-gradient);
+      color:var(--color-bg);
+      border:1px solid rgba(255,255,255,0.04);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .btn.ghost{
+      background:transparent;
+      color:var(--color-text);
+    }
+
+    .btn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-md)}
+    .btn:active{ transform:translateY(0); box-shadow:var(--shadow-sm); opacity:0.95 }
+
+    main{
+      padding-top:clamp(22px, calc(2vw + 14px), 40px);
+    }
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:clamp(16px, 2.2vw, 28px);
+      align-items:start;
+    }
+
+    .hero-grid{
+      display:grid;
+      gap:clamp(12px, 1.6vw, 20px);
+      grid-template-columns:repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .hero-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(226,232,240,0.035);
+      padding:clamp(18px, 2vw, 28px);
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .hero-left{
+      padding:clamp(18px, 2.2vw, 28px);
+      border-radius:var(--radius-lg);
+      background:linear-gradient(180deg, rgba(6,182,212,0.06), rgba(34,211,238,0.02));
+      border:1px solid rgba(6,182,212,0.06);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .hero-left h2{
+      margin:0;
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size:clamp(22px, 3.6vw, 42px);
+      line-height:1.02;
+      color:var(--color-text);
+    }
+
+    .hero-left p{
+      margin:0;
+      color:var(--color-muted);
+      font-size:16px;
+      max-width:72ch;
+    }
+
+    .hero-ctas{
+      display:flex;
+      gap:12px;
+      margin-top:8px;
+      flex-wrap:wrap;
+    }
+
+    .small-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    /* Features - bento grid style */
+    section.features{
+      margin-top:clamp(18px, 2.4vw, 36px);
+    }
+
+    .bento{
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .feature{
+      background:var(--color-surface);
+      border:1px solid rgba(226,232,240,0.04);
+      padding:clamp(14px, 1.6vw, 20px);
+      border-radius:var(--radius-md);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .feature svg{flex:0 0 44px; height:44px; width:44px; border-radius:8px; padding:8px; background:transparent; stroke:var(--color-primary)}
+
+    .feature h3{
+      margin:0 0 6px 0;
+      font-size:16px;
+      color:var(--color-text);
+      font-weight:600;
+    }
+
+    .feature p{ margin:0; color:var(--color-muted); font-size:14px }
+
+    /* Testimonials */
+    .testimonials{
+      margin-top:clamp(18px, 2vw, 30px);
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:12px;
+    }
+
+    .testimonial{
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border:1px solid rgba(226,232,240,0.03);
+      padding:16px;
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .testi-quote{
+      font-style:normal;
+      color:var(--color-text);
+      margin:0 0 10px 0;
+      font-size:15px;
+    }
+
+    .testi-author{
+      font-size:13px;
+      color:var(--color-muted);
+      margin:0;
+    }
+
+    /* Pricing */
+    section.pricing{
+      margin-top:clamp(18px, 2.2vw, 34px);
+    }
+
+    .pricing-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:16px;
+    }
+
+    .plan{
+      border-radius:var(--radius-md);
+      padding:18px;
+      background:var(--color-surface);
+      border:1px solid rgba(226,232,240,0.03);
+      box-shadow:var(--shadow-sm);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .plan h4{ margin:0; color:var(--color-text) }
+    .plan .price{ font-size:20px; color:var(--color-primary); font-weight:700 }
+    .plan ul{ margin:0; padding-left:18px; color:var(--color-muted) }
+    .plan li{ margin-bottom:8px; font-size:14px }
+
+    .plan .plan-cta{ margin-top:auto; }
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top:clamp(20px, 3vw, 40px);
+      padding:18px;
+      border-radius:var(--radius-lg);
+      background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(236,72,153,0.03));
+      border:1px solid rgba(226,232,240,0.03);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .prefooter .lead{ font-weight:600; color:var(--color-text); margin:0; }
+    .prefooter .sub{ color:var(--color-muted); margin:0; font-size:14px }
+
+    /* Footer */
+    footer.site-footer{
+      margin-top:clamp(22px, 3vw, 44px);
+      padding-top:clamp(18px, 2vw, 28px);
+      border-top:1px solid rgba(226,232,240,0.03);
+      color:var(--color-muted);
+    }
+
+    footer .foot-grid{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+
+    footer a{ color:var(--color-muted) }
+
+    /* Reveal animations */
+    .reveal{ opacity:0; transform:translateY(14px); transition:opacity .6s cubic-bezier(.2,.9,.2,1), transform .6s cubic-bezier(.2,.9,.2,1) }
+    .reveal.revealed{ opacity:1; transform:none }
+
+    /* Responsive breakpoints */
+    @media (min-width:1024px){
+      .hero{ grid-template-columns: 1.3fr .7fr; align-items:start }
+      .hero-grid{ grid-template-columns: 1fr }
+      .small-grid{ grid-template-columns:1fr 1fr }
+    }
+
+    @media (max-width:640px){
+      header.nav{ padding:12px }
+      .brand h1{ font-size:18px }
+      .hero-left h2{ font-size:28px }
+      .hero{ gap:14px }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="nav" id="site-nav">
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;padding:0;">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">AC</div>
+        <h1>App Calculator</h1>
+      </div>
+
+      <nav class="primary" aria-label="Primary navigation">
+        <a href="app.html">App</a>
+        <a href="pages/signup.html">Sign up</a>
+        <a href="pages/signup.html" class="btn primary">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left hero-card reveal" data-reveal>
+        <div>
+          <h2>App Calculator — deterministic calculations for app planning</h2>
+          <p>Precise, auditable computations for general users planning application configuration and cost. Core functionality includes formula presets, scenario comparison, a consolidated user dashboard, and one-click data export for reporting or further analysis.</p>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn primary" href="pages/signup.html" role="button">Get Started</a>
+          <a class="btn ghost" href="app.html" role="button">Open App</a>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-card small-grid reveal" data-reveal>
+          <div style="display:flex;flex-direction:column;gap:10px;padding:8px;">
+            <strong style="color:var(--color-primary)">Live Scenario</strong>
+            <p style="margin:0;color:var(--color-muted)">Run parallel scenarios with side-by-side metrics and synchronized input variables for reliable comparisons.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;padding:8px;">
+            <strong style="color:var(--color-accent-pink)">Export Ready</strong>
+            <p style="margin:0;color:var(--color-muted)">Export detailed CSV or JSON reports directly from the user dashboard for downstream processing.</p>
+          </div>
+        </div>
+
+        <div class="hero-card reveal" data-reveal>
+          <h3 style="margin:0 0 8px 0;color:var(--color-text)">Operational summary</h3>
+          <p style="margin:0;color:var(--color-muted)">Real-time validation of inputs, deterministic outputs, and audit logs that align with technical review requirements.</p>
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <a class="btn" href="pages/signup.html">Create account</a>
+            <a class="btn ghost" href="app.html">View demo</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" aria-labelledby="features-heading">
+      <h2 id="features-heading" style="margin:18px 0 12px 0;font-family:var(--font-display);font-size:18px;">Key features</h2>
+      <div class="bento">
+        <article class="feature reveal" data-reveal>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <path d="M8 2v4"></path>
+            <path d="M16 2v4"></path>
+            <path d="M7 12h10"></path>
+          </svg>
+          <div>
+            <h3>Deterministic computation engine</h3>
+            <p>Stable, repeatable calculations with versioned formulae to ensure results can be reproduced across audits and integrations.</p>
+          </div>
+        </article>
+
+        <article class="feature reveal" data-reveal>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 20v-8"></path>
+            <circle cx="12" cy="8" r="3"></circle>
+            <path d="M21 21H3"></path>
+          </svg>
+          <div>
+            <h3>User dashboard insights</h3>
+            <p>Centralized user dashboard aggregates scenarios, recent runs, and exports — enabling quick operational decisions and audit reviews.</p>
+          </div>
+        </article>
+
+        <article class="feature reveal" data-reveal>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2l3 7h6l-5 4 2 7-6-4-6 4 2-7L3 9h6z"></path>
+          </svg>
+          <div>
+            <h3>Batch processing</h3>
+            <p>Queue multiple datasets for synchronous runs to accelerate large-scale scenario validation while preserving result integrity.</p>
+          </div>
+        </article>
+
+        <article class="feature reveal" data-reveal>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 7h18"></path>
+            <path d="M3 12h18"></path>
+            <path d="M3 17h18"></path>
+          </svg>
+          <div>
+            <h3>Data export & integrations</h3>
+            <p>Structured data export (CSV/JSON) and API-ready outputs to feed downstream systems or compliance tooling.</p>
+          </div>
+        </article>
+
+        <article class="feature reveal" data-reveal>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="14" rx="2"></rect>
+            <path d="M7 21h10"></path>
+            <path d="M12 17v4"></path>
+          </svg>
+          <div>
+            <h3>Audit trails & versioning</h3>
+            <p>Every calculation run is timestamped and stored with input snapshots to support traceability and technical review.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials" aria-label="User testimonials" style="margin-top:22px;">
+      <div class="testimonial reveal" data-reveal>
+        <p class="testi-quote">"App Calculator standardized our forecast workflows. The core functionality allowed our team to run repeatable scenarios and the export feature fed our financial models directly."</p>
+        <p class="testi-author">— Morgan Li, Operations Analyst</p>
+      </div>
+
+      <div class="testimonial reveal" data-reveal>
+        <p class="testi-quote">"The user dashboard consolidates study runs and audit metadata. We reduced manual reconciliation by 60% using App Calculator's deterministic engine."</p>
+        <p class="testi-author">— Priya K., Product Manager</p>
+      </div>
+
+      <div class="testimonial reveal" data-reveal>
+        <p class="testi-quote">"Data export produced clean JSON exports that plugged into our reporting pipeline. Reliable results and clear versioning make regulatory reviews painless."</p>
+        <p class="testi-author">— Alejandro R., Compliance Lead</p>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="pricing" aria-labelledby="pricing-heading">
+      <h2 id="pricing-heading" style="margin:22px 0 12px 0;font-family:var(--font-display);font-size:18px;">Pricing</h2>
+      <div class="pricing-grid">
+        <div class="plan reveal" data-reveal>
+          <div>
+            <h4>Free</h4>
+            <p class="price">$0</p>
+            <p style="color:var(--color-muted);margin:6px 0 0 0;font-size:14px">For individual users validating small scenarios.</p>
+          </div>
+          <ul style="margin-top:8px;">
+            <li>Basic calculation templates</li>
+            <li>Single workspace</li>
+            <li>CSV export (limited)</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn primary" href="pages/signup.html">Start free</a>
+          </div>
+        </div>
+
+        <div class="plan reveal" data-reveal>
+          <div>
+            <h4>Pro</h4>
+            <p class="price">$12 / month</p>
+            <p style="color:var(--color-muted);margin:6px 0 0 0;font-size:14px">For power users and small teams requiring exports and dashboards.</p>
+          </div>
+          <ul style="margin-top:8px;">
+            <li>All Free features</li>
+            <li>Multi-scenario comparison</li>
+            <li>User dashboard + CSV/JSON export</li>
+            <li>Priority support</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn primary" href="pages/signup.html">Get Pro</a>
+          </div>
+        </div>
+
+        <div class="plan reveal" data-reveal>
+          <div>
+            <h4>Enterprise</h4>
+            <p class="price">Contact sales</p>
+            <p style="color:var(--color-muted);margin:6px 0 0 0;font-size:14px">For organizations needing SLA, integrations, and bulk processing.</p>
+          </div>
+          <ul style="margin-top:8px;">
+            <li>Dedicated instance & SSO</li>
+            <li>API access and automated exports</li>
+            <li>Batch processing & audit retention</li>
+            <li>Onboarding & custom integrations</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn primary" href="pages/signup.html">Contact sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRE-FOOTER CTA -->
+    <section class="prefooter reveal" data-reveal>
+      <div>
+        <p class="lead">Ready to operationalize deterministic calculations?</p>
+        <p class="sub">Sign up to configure your first scenario, access the user dashboard, and enable data export workflows.</p>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <a class="btn primary" href="pages/signup.html">Get Started</a>
+        <a class="btn" href="app.html">Try demo</a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="foot-grid container" style="padding:0;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="logo" style="width:40px;height:40px;font-size:14px;">AC</div>
+          <div>
+            <strong style="display:block;color:var(--color-text)">App Calculator</strong>
+            <small style="color:var(--color-muted)">Deterministic calculations • user dashboard • data export</small>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;">
+          <nav>
+            <a href="index.html" style="margin-right:12px;">Home</a>
+            <a href="app.html" style="margin-right:12px;">App</a>
+            <a href="pages/signup.html">Sign up</a>
+          </nav>
+        </div>
+      </div>
+
+      <div style="max-width:1200px;margin:18px auto 0 auto;padding-inline:clamp(16px, calc(2vw + 8px), 32px);color:var(--color-muted);font-size:13px;">
+        <p style="margin:0;padding-top:10px;">© <span id="year"></span> App Calculator — All rights reserved. Registered trademarks and usage policies apply.</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // Sticky navbar scrolled class
+    (function(){
+      const nav = document.getElementById('site-nav');
+      let lastScroll = window.scrollY;
+      function checkScroll(){
+        if(window.scrollY > 14){
+          nav.classList.add('scrolled');
+        } else {
+          nav.classList.remove('scrolled');
+        }
+        lastScroll = window.scrollY;
+      }
+      checkScroll();
+      window.addEventListener('scroll', checkScroll, {passive:true});
+    })();
+
+    // Reveal on scroll: intersection observer
+    (function(){
+      const revealElems = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window){
+        const obs = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('revealed');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {root:null, rootMargin:'0px 0px -10% 0px', threshold: 0.08});
+        revealElems.forEach(el => obs.observe(el));
+      } else {
+        // fallback
+        revealElems.forEach(el => el.classList.add('revealed'));
+      }
+    })();
+
+    // Set year in footer
+    (function(){
+      const y = new Date().getFullYear();
+      const el = document.getElementById('year');
+      if(el) el.textContent = y;
+    })();
+  </script>
+</body>
+</html>

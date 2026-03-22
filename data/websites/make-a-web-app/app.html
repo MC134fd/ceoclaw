@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make A Web App — App Dashboard</title>
+  <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-accent-pink: #ec4899;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --color-border: #bbf7d0;
+      --accent-gradient: linear-gradient(135deg, #16a34a, #15803d);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    * { box-sizing: border-box; }
+    html,body { height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: radial-gradient(1200px 400px at 10% 10%, rgba(22,163,74,0.06), transparent), var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding: clamp(12px, calc(var(--spacing) * 1.5rem), 28px);
+    }
+
+    /* Layout: bento grid container */
+    .app-shell{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap: clamp(16px, calc(var(--spacing) * 0.75rem), 24px);
+      align-items:start;
+      min-height: calc(100vh - 2 * clamp(12px, calc(var(--spacing) * 1.5rem), 28px));
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.9));
+      border-radius: var(--radius-lg);
+      padding: clamp(12px, calc(var(--spacing) * 0.75rem), 20px);
+      box-shadow: var(--shadow-md);
+      position:sticky;
+      top: clamp(12px, calc(var(--spacing) * 0.75rem), 20px);
+      height: calc(100vh - 2 * clamp(12px, calc(var(--spacing) * 1.5rem), 28px));
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      border: 1px solid var(--color-border);
+      backdrop-filter: blur(6px);
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .brand-mark{
+      width:48px;
+      height:48px;
+      border-radius: 10px;
+      background: var(--accent-gradient);
+      box-shadow: var(--shadow-sm);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      font-family: var(--font-display);
+      font-size:18px;
+    }
+    .brand-title{
+      font-family: var(--font-display);
+      font-size:1.15rem;
+      color:var(--color-text);
+      line-height:1;
+    }
+    .brand-sub{
+      font-size:0.85rem;
+      color:var(--color-muted);
+    }
+
+    nav.side-nav{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:8px;
+    }
+    nav.side-nav a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius:8px;
+      color:var(--color-text);
+      text-decoration:none;
+      font-weight:500;
+      transition:background .18s ease, transform .12s ease;
+      border:1px solid transparent;
+    }
+    nav.side-nav a:hover{ background: rgba(21,128,61,0.06); transform:translateY(-2px); }
+    nav.side-nav a.active{
+      background: linear-gradient(90deg, rgba(22,163,74,0.12), rgba(21,128,61,0.08));
+      border-color: var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+    .sidebar .spacer{ flex:1; }
+
+    .cta-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 14px;
+      min-height:44px;
+      border-radius:10px;
+      background: var(--accent-gradient);
+      color:white;
+      font-weight:600;
+      text-decoration:none;
+      border: none;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    .cta-btn:hover{ transform:translateY(-3px); box-shadow: var(--shadow-md); }
+    .cta-ghost{
+      background: transparent;
+      border:1px solid rgba(20,83,45,0.06);
+      color:var(--color-text);
+    }
+
+    /* Topbar (sticky behavior) */
+    header.topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px clamp(10px, calc(var(--spacing)*0.75rem), 18px);
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+      transition: box-shadow .18s ease, background .18s ease, transform .12s ease;
+      margin-bottom:8px;
+      border:1px solid var(--color-border);
+      backdrop-filter: blur(6px);
+    }
+    header.topbar.scrolled{
+      box-shadow: var(--shadow-lg);
+      background: rgba(255,255,255,0.88);
+      transform: translateY(0);
+    }
+    .topbar-left{ display:flex; gap:12px; align-items:center; flex:1; }
+    .menu-toggle{
+      display:none;
+      min-height:44px;
+      min-width:44px;
+      border-radius:10px;
+      background: white;
+      border:1px solid var(--color-border);
+      cursor:pointer;
+    }
+    .topbar-actions{ display:flex; gap:8px; align-items:center; }
+
+    /* Main content */
+    main.content{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .hero{
+      background: linear-gradient(120deg, rgba(22,163,74,0.06), rgba(236,72,153,0.03));
+      border-radius: var(--radius-md);
+      padding: clamp(14px, calc(var(--spacing) * 1rem), 28px);
+      box-shadow: var(--shadow-sm);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .hero h1{
+      font-family: var(--font-display);
+      margin:0;
+      font-size: clamp(1.25rem, 1.8vw, 2rem);
+      color: var(--color-text);
+    }
+    .hero p{
+      margin:0;
+      color:var(--color-muted);
+      max-width:70ch;
+    }
+    .hero-cta{
+      display:flex;
+      gap:10px;
+      margin-top:6px;
+    }
+
+    /* Grid for cards (fluid) */
+    .cards-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:16px;
+      align-items:start;
+    }
+
+    .card{
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding:16px;
+      box-shadow: var(--shadow-sm);
+      border:1px solid var(--color-border);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .card:hover{ transform: translateY(-6px); box-shadow: var(--shadow-md); }
+
+    /* Metrics row */
+    .metrics{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      gap:12px;
+    }
+    .metric{
+      padding:14px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(22,163,74,0.03), rgba(255,255,255,0));
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .metric .meta{ color:var(--color-muted); font-size:0.9rem; }
+    .metric .value{ font-size:1.6rem; font-weight:700; color:var(--color-text); font-family: var(--font-display); }
+
+    /* Feature list */
+    .features-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .feature{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:8px;
+      border-radius:8px;
+      background: linear-gradient(90deg, rgba(236,72,153,0.02), rgba(22,163,74,0.01));
+      border:1px dashed rgba(20,83,45,0.03);
+    }
+    .feature .dot{
+      width:36px;
+      height:36px;
+      border-radius:8px;
+      background: var(--accent-gradient);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      font-family: var(--font-display);
+    }
+    .feature strong{ display:block; color:var(--color-text); }
+    .feature small{ color:var(--color-muted); }
+
+    /* Connect API card */
+    .token-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .token-input{
+      flex:1;
+      min-height:44px;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid var(--color-border);
+      background:white;
+      color:var(--color-text);
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:10px;
+      border: none;
+      cursor:pointer;
+      background: var(--color-primary);
+      color: white;
+      font-weight:600;
+      transition: transform .12s ease, opacity .12s ease, box-shadow .12s ease;
+    }
+    .btn:hover{ transform:translateY(-3px); box-shadow: var(--shadow-md); }
+    .btn-ghost{
+      background:transparent;
+      border:1px solid var(--color-border);
+      color:var(--color-text);
+    }
+
+    /* Footer area small */
+    .muted{ color:var(--color-muted); font-size:0.9rem; }
+
+    /* Reveal on scroll initial state */
+    .reveal{ opacity:0; transform: translateY(10px); transition: opacity .6s ease, transform .6s ease; will-change: transform, opacity; }
+    .reveal.reveal-visible{ opacity:1; transform:none; }
+
+    /* Responsive */
+    @media (max-width:1024px){
+      .app-shell{ grid-template-columns: 220px 1fr; }
+      .brand-mark{ width:44px; height:44px; }
+    }
+    @media (max-width:640px){
+      .app-shell{
+        grid-template-columns: 1fr;
+      }
+      .sidebar{
+        display:none;
+      }
+      .menu-toggle{ display:inline-flex; }
+      header.topbar{ border-radius: var(--radius-md); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" id="topbar" role="banner">
+    <div class="topbar-left">
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" title="Open sidebar">
+        ☰
+      </button>
+      <div style="display:flex;flex-direction:column;">
+        <div style="font-family:var(--font-display); font-weight:600; color:var(--color-text);">Make A Web App</div>
+        <div style="font-size:0.82rem; color:var(--color-muted); margin-top:2px;">App dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="cta-btn" href="pages/signup.html">Get Started</a>
+      <a class="cta-ghost" href="index.html" style="padding:10px 12px; text-decoration:none; min-height:44px; display:inline-flex; align-items:center;">Back to site</a>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+      <div>
+        <div class="brand">
+          <div class="brand-mark">MA</div>
+          <div>
+            <div class="brand-title">Make A Web App</div>
+            <div class="brand-sub">Build, connect, and export with confidence</div>
+          </div>
+        </div>
+
+        <nav class="side-nav" aria-label="Main">
+          <a href="app.html" class="active" aria-current="page">Dashboard</a>
+          <a href="#features">Features</a>
+          <a href="#settings">Settings</a>
+          <a href="index.html">Back to site</a>
+        </nav>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div>
+        <div style="margin-bottom:8px; font-size:0.95rem; color:var(--color-muted);">Account</div>
+        <div style="display:flex; gap:8px;">
+          <a class="cta-btn" href="pages/signup.html">Get Started</a>
+          <button class="cta-ghost" onclick="alert('Profile settings are available in Settings.')">Profile</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="content" id="main">
+      <section class="hero card reveal">
+        <h1>Welcome back — your user dashboard for building fast web apps</h1>
+        <p>
+          Make A Web App consolidates the essential tools you need. From the moment a project starts,
+          our platform surfaces core functionality like real-time syncing, workflow automation, and
+          a unified user dashboard so you always know the state of your apps. When the work is done,
+          built-in data export makes delivery and backups straightforward.
+        </p>
+
+        <div class="hero-cta">
+          <a class="cta-btn" href="pages/signup.html">Get Started</a>
+          <button class="btn btn-ghost" onclick="document.getElementById('settings-card').scrollIntoView({behavior:'smooth'})">Open Settings</button>
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section class="cards-grid">
+        <div class="card metrics reveal" aria-labelledby="metrics-heading">
+          <h3 id="metrics-heading" style="margin:0 0 8px 0; font-family:var(--font-display);">Key metrics</h3>
+          <div class="metrics">
+            <div class="metric">
+              <div>
+                <div class="meta">Active Projects</div>
+                <div class="value">18</div>
+              </div>
+              <div style="font-size:0.85rem; color:var(--color-muted);">Across all teams</div>
+            </div>
+
+            <div class="metric">
+              <div>
+                <div class="meta">API Calls Today</div>
+                <div class="value">42,312</div>
+              </div>
+              <div style="font-size:0.85rem; color:var(--color-muted);">Peak at 14:03</div>
+            </div>
+
+            <div class="metric">
+              <div>
+                <div class="meta">Pending Tasks</div>
+                <div class="value">7</div>
+              </div>
+              <div style="font-size:0.85rem; color:var(--color-muted);">Assigned to you</div>
+            </div>
+
+            <div class="metric">
+              <div>
+                <div class="meta">Data Exports Completed</div>
+                <div class="value">1,204</div>
+              </div>
+              <div style="font-size:0.85rem; color:var(--color-muted);">Last export 2h ago</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature list card -->
+        <aside class="card reveal" id="features" aria-labelledby="features-heading">
+          <h3 id="features-heading" style="margin:0 0 8px 0; font-family:var(--font-display);">Platform capabilities</h3>
+          <p class="muted" style="margin:0 0 10px 0;">A concise overview of the features that underpin your projects and workflows.</p>
+          <div class="features-list">
+            <div class="feature">
+              <div class="dot">CF</div>
+              <div>
+                <strong>Core functionality</strong>
+                <small>Essential APIs, role permissions, and environment controls that anchor every build.</small>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot">UD</div>
+              <div>
+                <strong>User dashboard</strong>
+                <small>Centralized activity, task tracking, and real-time project insights for teams.</small>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot">DX</div>
+              <div>
+                <strong>Data export</strong>
+                <small>Scheduled or ad-hoc exports in CSV/JSON with integrity checks for auditability.</small>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot">RT</div>
+              <div>
+                <strong>Real-time sync</strong>
+                <small>State synchronization across devices so collaborators always see current data.</small>
+              </div>
+            </div>
+
+            <div class="feature">
+              <div class="dot">WF</div>
+              <div>
+                <strong>Custom workflows</strong>
+                <small>Automations and hooks to connect your app behavior with external services.</small>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Connect API card -->
+        <section class="card reveal" id="settings-card" aria-labelledby="connect-heading">
+          <h3 id="connect-heading" style="margin:0 0 8px 0; font-family:var(--font-display);">Connect your API</h3>
+          <p class="muted" style="margin:0 0 12px 0;">
+            To enable integrations and programmatic access, register an API token. Tokens power automation and data export workflows.
+          </p>
+
+          <div class="token-row" style="margin-bottom:10px;">
+            <input id="apiToken" class="token-input" type="password" placeholder="Enter API token (or generate new)" aria-label="API token" />
+            <button class="btn btn-ghost" id="revealBtn" aria-pressed="false" title="Show token">Show</button>
+            <button class="btn" id="saveTokenBtn">Save</button>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+            <button class="btn btn-ghost" id="generateBtn">Generate token</button>
+            <button class="btn btn-ghost" id="copyExample" onclick="alert('Example token copied to clipboard.')">Copy example</button>
+            <div class="muted" style="margin-left:auto; font-size:0.9rem;">Last updated: 3 days ago</div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--color-border); margin:12px 0 8px 0;" />
+          <div class="muted">
+            Tip: Use tokens with limited scopes for exports and automation. Rotating tokens regularly reduces risk.
+          </div>
+        </section>
+
+        <!-- Quick settings / smaller card -->
+        <div class="card reveal" aria-labelledby="quick-heading">
+          <h4 id="quick-heading" style="margin:0 0 8px 0; font-family:var(--font-display);">Quick actions</h4>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn" onclick="alert('Export started. You can monitor progress in Data Exports.')">Start export</button>
+            <button class="btn btn-ghost" onclick="alert('Sync requested. Changes will propagate shortly.')">Request sync</button>
+            <a href="#features" class="cta-ghost" style="display:inline-flex; align-items:center; padding:10px 12px; text-decoration:none;">Explore features</a>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Footer note -->
+      <footer class="muted" style="margin-top:6px;">
+        Make A Web App — a streamlined platform focused on delivering dependable core functionality, a friendly user dashboard,
+        and robust data export capabilities for teams of any size.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Sidebar toggle for mobile
+    (function(){
+      const menuToggle = document.getElementById('menuToggle');
+      const sidebar = document.getElementById('sidebar');
+      menuToggle.addEventListener('click', function(){
+        if (!sidebar) return;
+        const isHidden = sidebar.style.display === 'none' || getComputedStyle(sidebar).display === 'none';
+        sidebar.style.display = isHidden ? 'flex' : 'none';
+      });
+
+      // Ensure sidebar hidden on small screens by default
+      function updateSidebarVisibility(){
+        if (window.innerWidth <= 640) {
+          if (sidebar) sidebar.style.display = 'none';
+        } else {
+          if (sidebar) sidebar.style.display = 'flex';
+        }
+      }
+      window.addEventListener('resize', updateSidebarVisibility);
+      updateSidebarVisibility();
+    })();
+
+    // Sticky topbar scrolled class
+    (function(){
+      const topbar = document.getElementById('topbar');
+      function checkScroll(){
+        if (window.scrollY > 14) topbar.classList.add('scrolled');
+        else topbar.classList.remove('scrolled');
+      }
+      document.addEventListener('scroll', checkScroll, {passive:true});
+      checkScroll();
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('reveal-visible');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.06 });
+        reveals.forEach(el => io.observe(el));
+      } else {
+        // fallback
+        reveals.forEach(el => el.classList.add('reveal-visible'));
+      }
+    })();
+
+    // Token controls
+    (function(){
+      const tokenInput = document.getElementById('apiToken');
+      const revealBtn = document.getElementById('revealBtn');
+      const saveBtn = document.getElementById('saveTokenBtn');
+      const generateBtn = document.getElementById('generateBtn');
+
+      revealBtn && revealBtn.addEventListener('click', function(){
+        const isHidden = tokenInput.type === 'password';
+        tokenInput.type = isHidden ? 'text' : 'password';
+        revealBtn.textContent = isHidden ? 'Hide' : 'Show';
+        revealBtn.setAttribute('aria-pressed', String(!isHidden));
+      });
+
+      saveBtn && saveBtn.addEventListener('click', function(){
+        const token = tokenInput.value.trim();
+        if (!token) return alert('Please enter or generate a token before saving.');
+        // Simulate saving securely
+        setTimeout(() => {
+          alert('Token saved securely. Your integrations will be updated.');
+        }, 400);
+      });
+
+      generateBtn && generateBtn.addEventListener('click', function(){
+        // Generate a simple token (demo)
+        const random = Math.random().toString(36).slice(2, 10) + '-' + Math.random().toString(36).slice(2, 10);
+        tokenInput.type = 'text';
+        tokenInput.value = 'maw-' + random;
+      });
+    })();
+
+    // Ensure internal links are relative - nothing to enforce in JS, but handle smooth anchor scroll
+    (function(){
+      document.querySelectorAll('a[href^="#"]').forEach(a=>{
+        a.addEventListener('click', (e)=>{
+          const targetId = a.getAttribute('href').slice(1);
+          const el = document.getElementById(targetId);
+          if (el) {
+            e.preventDefault();
+            el.scrollIntoView({behavior:'smooth', block:'start'});
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

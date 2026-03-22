@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Management — Centralize chores, bills, and home data</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #94a3b8;
+      --color-secondary: #cbd5e1;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f8fafc;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #94a3b8, #cbd5e1);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, var(--color-bg) 0%, #091026 100%);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.35;
+      padding-bottom: clamp(24px, calc(24px + var(--spacing) * 4px), 64px);
+      letter-spacing: -0.01em;
+    }
+    a{color:inherit;text-decoration:none}
+
+    /* Layout container */
+    .container{
+      width: min(1200px, 92%);
+      margin: 0 auto;
+    }
+
+    /* Sticky translucent navbar */
+    .navbar{
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: clamp(12px, calc(8px + var(--spacing) * 2px), 24px);
+      padding: clamp(10px, calc(6px + var(--spacing) * 2px), 18px) clamp(12px, 4%, 32px);
+      margin: 12px auto;
+      border-radius: calc(var(--radius-lg) / 1.8);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      backdrop-filter: blur(6px);
+      box-shadow: var(--shadow-sm);
+      transition: transform .22s ease, box-shadow .2s ease, background .2s ease, padding .18s ease;
+    }
+    .navbar.scrolled{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(180deg, rgba(10,12,20,0.55), rgba(10,12,20,0.45));
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:42px;
+      height:42px;
+      border-radius:10px;
+      background: var(--accent-gradient);
+      display:grid;
+      place-items:center;
+      color:var(--color-bg);
+      font-weight:700;
+      font-family:var(--font-display);
+      box-shadow: var(--shadow-sm);
+      flex:0 0 auto;
+    }
+    .brand h1{
+      font-size: clamp(15px, 2.6vw, 18px);
+      margin:0;
+      font-family: var(--font-display);
+      letter-spacing: -0.02em;
+    }
+    nav.primary{
+      display:flex;
+      gap: clamp(6px, 2vw, 18px);
+      align-items:center;
+      margin-left:auto;
+    }
+    nav.primary a{
+      font-size:14px;
+      color:var(--color-muted);
+      padding:8px 10px;
+      border-radius:8px;
+    }
+    nav.primary a:hover{color:var(--color-text); background: rgba(255,255,255,0.02)}
+
+    .nav-cta{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-weight:600;
+      cursor:pointer;
+      border: 1px solid transparent;
+      transition: transform .14s ease, box-shadow .12s ease, background .14s ease, opacity .12s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn:focus{outline:3px solid rgba(148,163,184,0.12); outline-offset:2px}
+
+    .btn-primary{
+      background: var(--color-accent-pink);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover{filter:brightness(.98); transform:translateY(-1px)}
+    .btn-ghost{
+      background:transparent;
+      color:var(--color-muted);
+      border-radius:10px;
+      padding:8px 12px;
+    }
+    .btn-ghost:hover{color:var(--color-text); background: rgba(255,255,255,0.02)}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(18px, calc(18px + var(--spacing) * 6px), 36px);
+      align-items:center;
+      padding: clamp(20px, calc(40px + var(--spacing) * 6px), 56px) 0;
+    }
+    .hero-inner{
+      display:grid;
+      gap: clamp(12px, calc(8px + var(--spacing) * 6px), 22px);
+    }
+    .eyebrow{
+      color:var(--color-secondary);
+      font-weight:600;
+      font-size:13px;
+      background: linear-gradient(90deg, rgba(236,72,153,0.08), rgba(148,163,184,0.04));
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .hero-title{
+      margin:0;
+      font-family:var(--font-display);
+      font-size: clamp(28px, 6vw, 44px);
+      line-height:1.02;
+      color:var(--color-text);
+      letter-spacing: -0.02em;
+    }
+    .hero-sub{
+      color:var(--color-muted);
+      max-width:72ch;
+      font-size:16px;
+    }
+    .hero-ctas{display:flex; gap:12px; flex-wrap:wrap}
+    .hero-visual{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius-md);
+      padding:20px;
+      box-shadow: var(--shadow-md);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .app-preview{
+      width:100%;
+      height: 320px;
+      border-radius: calc(var(--radius-md) - 6px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      display:grid;
+      grid-template-columns: 1fr 240px;
+      gap:12px;
+      overflow:hidden;
+    }
+    .preview-left{
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      background: linear-gradient(180deg, rgba(148,163,184,0.03), transparent);
+    }
+    .tile{
+      background: rgba(255,255,255,0.02);
+      border-radius:10px;
+      padding:10px;
+      color:var(--color-text);
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow: var(--shadow-sm);
+    }
+    .preview-right{
+      background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(148,163,184,0.03));
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .meter{
+      height:8px;
+      background: rgba(255,255,255,0.03);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .meter > i{display:block; height:100%; background:var(--color-accent-pink)}
+
+    /* Features grid - bento style */
+    .features{
+      padding-top: clamp(18px, calc(12px + var(--spacing) * 6px), 28px);
+      display:grid;
+      gap:16px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .feature-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border-radius: var(--radius-md);
+      padding:16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(255,255,255,0.02);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      transition: transform .14s ease, box-shadow .14s ease;
+    }
+    .feature-card:hover{transform:translateY(-6px); box-shadow: var(--shadow-md)}
+    .feature-icon{
+      width:48px;
+      height:48px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background: rgba(148,163,184,0.06);
+      color:var(--color-secondary);
+      flex:0 0 48px;
+      font-weight:700;
+      font-family:var(--font-display);
+    }
+    .feature-body h3{margin:0 0 6px 0; font-size:16px}
+    .feature-body p{margin:0; color:var(--color-muted); font-size:14px}
+
+    /* Social proof */
+    .testimonials{
+      margin-top: clamp(10px, calc(8px + var(--spacing) * 6px), 22px);
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .quote{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      padding:16px;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--color-text);
+    }
+    .quote p{margin:0 0 8px 0; color:var(--color-secondary)}
+    .quote cite{display:block; font-size:13px; color:var(--color-muted)}
+
+    /* Pricing */
+    .pricing{
+      padding-top: clamp(18px, calc(12px + var(--spacing) * 6px), 28px);
+      display:grid;
+      gap:16px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      align-items:start;
+    }
+    .tier{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:18px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .tier .title{font-weight:700; font-size:18px}
+    .tier .price{font-size:24px; font-weight:700}
+    .tier ul{margin:0;padding:0; list-style:none; color:var(--color-muted); display:flex; flex-direction:column; gap:8px}
+    .tier .foot{margin-top:auto}
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top: clamp(18px, calc(12px + var(--spacing) * 6px), 28px);
+      background: linear-gradient(90deg, rgba(236,72,153,0.06), rgba(148,163,184,0.03));
+      border-radius: var(--radius-lg);
+      padding: clamp(18px, calc(12px + var(--spacing) * 6px), 28px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      box-shadow: var(--shadow-md);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .prefooter h3{margin:0}
+    .prefooter p{margin:0; color:var(--color-muted)}
+
+    /* Footer */
+    footer{
+      margin-top: clamp(18px, calc(12px + var(--spacing) * 6px), 28px);
+      color:var(--color-muted);
+      padding-top:20px;
+    }
+    .footer-inner{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .footer-links a{display:inline-block;padding:8px 10px;border-radius:8px;color:var(--color-muted)}
+    .footer-links a:hover{color:var(--color-text)}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0; transform: translateY(18px) scale(.995); transition: opacity .6s cubic-bezier(.2,.9,.2,1), transform .6s cubic-bezier(.2,.9,.2,1)}
+    .reveal.visible{opacity:1; transform: none}
+
+    /* Responsive tweaks */
+    @media (min-width: 1024px){
+      .hero{grid-template-columns: 1fr 420px}
+      .hero-visual{height:100%}
+      .app-preview{height:360px}
+    }
+    @media (max-width: 640px){
+      .navbar{margin:10px 10px}
+      .brand h1{font-size:15px}
+      .app-preview{grid-template-columns: 1fr}
+      .preview-right{display:none}
+      .hero-title{font-size:28px}
+      .prefooter{flex-direction:column; align-items:flex-start}
+      .footer-inner{flex-direction:column; align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar container" id="mainNav">
+    <div class="brand">
+      <div class="logo">HM</div>
+      <h1>Home Management</h1>
+    </div>
+
+    <nav class="primary" aria-label="Primary navigation">
+      <a href="index.html">Home</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="app.html">App</a>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="pages/signup.html">Sign up</a>
+        <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero reveal" id="hero">
+      <div class="hero-inner">
+        <span class="eyebrow">Core functionality for everyday homes</span>
+        <h2 class="hero-title">Run your home from one modern user dashboard.</h2>
+        <p class="hero-sub">Home Management centralizes chores, bills, inventory, and maintenance schedules so the household runs smoothly. Use automated reminders, share tasks, and export your household data for taxes, records, or moving day.</p>
+
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+          <a class="btn btn-ghost" href="app.html">Open App</a>
+        </div>
+      </div>
+
+      <aside class="hero-visual reveal" aria-hidden="true">
+        <div class="app-preview" role="img" aria-label="App preview">
+          <div class="preview-left">
+            <div class="tile">
+              <div>
+                <strong>Today</strong>
+                <div style="color:var(--color-secondary); font-size:12px">3 tasks, 1 bill due</div>
+              </div>
+              <div style="color:var(--color-accent-pink); font-weight:700">Sync</div>
+            </div>
+
+            <div style="display:grid; gap:10px; margin-top:auto">
+              <div class="tile">
+                <div style="font-size:13px; color:var(--color-secondary)">Grocery list</div>
+                <div style="color:var(--color-muted)">12 items</div>
+              </div>
+              <div class="tile">
+                <div style="font-size:13px; color:var(--color-secondary)">Upcoming repairs</div>
+                <div style="color:var(--color-muted)">Roof inspection</div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="preview-right">
+            <div style="font-weight:700">Overview</div>
+            <div class="meter"><i style="width:62%"></i></div>
+            <div style="font-size:13px; color:var(--color-muted)">Bills paid • Tasks cleared • Inventory healthy</div>
+            <div style="margin-top:auto; display:flex; gap:8px">
+              <div class="btn btn-ghost" style="padding:8px 12px">Share</div>
+              <div class="btn btn-primary" style="padding:8px 12px">Export data</div>
+            </div>
+          </aside>
+        </div>
+      </aside>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" style="margin-top:24px">
+      <h3 style="margin:0 0 12px 0; font-family:var(--font-display)">Features built for real homes</h3>
+      <p style="margin:0 0 18px 0; color:var(--color-muted)">Every tool focuses on reliability: clear tasks, reliable billing, and secure export of home records.</p>
+
+      <div class="features">
+        <article class="feature-card reveal">
+          <div class="feature-icon">✓</div>
+          <div class="feature-body">
+            <h3>Unified user dashboard</h3>
+            <p>One screen to see chores, bills, calendars, and home notes. Quick filters surface what matters now.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon">💡</div>
+          <div class="feature-body">
+            <h3>Smart alerts & reminders</h3>
+            <p>Automated reminders for bills, maintenance, and recurring tasks. Set rules and let the app handle scheduling.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon">📦</div>
+          <div class="feature-body">
+            <h3>Inventory & maintenance</h3>
+            <p>Track appliances, warranties, and consumables. Schedule upkeep and never miss a service appointment again.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon">🔐</div>
+          <div class="feature-body">
+            <h3>Shared household access</h3>
+            <p>Invite family members, assign roles, and coordinate tasks with permission controls tailored for households.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon">⬇️</div>
+          <div class="feature-body">
+            <h3>Data export & backup</h3>
+            <p>Export reports, receipts, and inventory CSVs for taxes, moves, or backups. Full export history available in settings.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section style="margin-top:28px">
+      <h3 style="margin:0 0 12px 0; font-family:var(--font-display)">Trusted by households</h3>
+      <div class="testimonials">
+        <figure class="quote reveal">
+          <p>"Home Management turned our weekend chaos into a weekly routine. The user dashboard keeps everyone accountable and bills organized."</p>
+          <cite>— R. Morgan, homeowner</cite>
+        </figure>
+
+        <figure class="quote reveal">
+          <p>"We export our yearly household expenses and warranty records before tax season. The data export saved hours and kept everything accurate."</p>
+          <cite>— A. Singh, small landlord</cite>
+        </figure>
+
+        <figure class="quote reveal">
+          <p>"The maintenance scheduler reminded us about the HVAC check — avoided an expensive failure. Core functionality is reliable and focused."</p>
+          <cite>— T. Alvarez, property manager</cite>
+        </figure>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing" style="margin-top:28px">
+      <h3 style="margin:0 0 12px 0; font-family:var(--font-display)">Simple pricing. Real value.</h3>
+      <p style="margin:0 0 18px 0; color:var(--color-muted)">Choose a plan that matches your household size and data needs. Upgrade any time — exports and backup included on Pro.</p>
+
+      <div class="pricing">
+        <div class="tier reveal">
+          <div class="title">Free</div>
+          <div class="price">$0 <span style="font-size:13px; color:var(--color-muted)">forever</span></div>
+          <ul>
+            <li>Single household dashboard</li>
+            <li>Basic tasks & reminders</li>
+            <li>Manual CSV export (limit)</li>
+          </ul>
+          <div class="foot">
+            <a class="btn btn-ghost" href="pages/signup.html">Start Free</a>
+          </div>
+        </div>
+
+        <div class="tier reveal" style="border: 1px solid rgba(236,72,153,0.12); box-shadow: var(--shadow-lg);">
+          <div class="title">Pro</div>
+          <div class="price">$6 / month</div>
+          <ul>
+            <li>Multi-user households</li>
+            <li>Automated backups & scheduled exports</li>
+            <li>Priority support & advanced filters</li>
+          </ul>
+          <div class="foot">
+            <a class="btn btn-primary" href="pages/signup.html">Get Pro</a>
+          </div>
+        </div>
+
+        <div class="tier reveal">
+          <div class="title">Enterprise</div>
+          <div class="price">Custom</div>
+          <ul>
+            <li>Multiple properties & teams</li>
+            <li>Dedicated onboarding & SLA</li>
+            <li>Custom data export & integrations</li>
+          </ul>
+          <div class="foot">
+            <a class="btn btn-ghost" href="pages/signup.html">Contact Sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRE-FOOTER CTA -->
+    <section class="prefooter reveal" style="margin-top:28px">
+      <div>
+        <h3 style="margin:0">Ready to control your home with one dashboard?</h3>
+        <p style="margin:6px 0 0 0; color:var(--color-muted)">Sign up in seconds — start organizing tasks, paying bills, and exporting records today.</p>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center">
+        <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+        <a class="btn btn-ghost" href="app.html">Preview App</a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container footer-inner">
+        <div style="display:flex; gap:12px; align-items:center">
+          <div class="logo" style="width:36px;height:36px;font-size:14px">HM</div>
+          <div>
+            <div style="font-weight:700">Home Management</div>
+            <div style="font-size:13px; color:var(--color-muted)">Centralize chores, bills, and home data</div>
+          </div>
+        </div>
+
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="index.html">Home</a>
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="app.html">App</a>
+          <a href="pages/signup.html">Sign up</a>
+        </nav>
+      </div>
+
+      <div class="container" style="margin-top:12px; color:var(--color-muted); font-size:13px">
+        <small>© <span id="year"></span> Home Management — All rights reserved. Use of this site constitutes acceptance of our terms and privacy policy.</small>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal on scroll
+    (function(){
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { root: null, rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
+
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    })();
+
+    // Sticky navbar scrolled state
+    (function(){
+      const nav = document.getElementById('mainNav');
+      const check = () => {
+        if (window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      };
+      check();
+      window.addEventListener('scroll', check, { passive: true });
+    })();
+
+    // Smooth internal link behavior for anchors within page
+    (function(){
+      const links = document.querySelectorAll('a[href^="#"]');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = document.querySelector(link.getAttribute('href'));
+          if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

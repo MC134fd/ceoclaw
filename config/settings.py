@@ -63,7 +63,6 @@ class Settings:
         self.flock_model = os.getenv("FLOCK_MODEL", "flock-default").strip()
         self.flock_timeout = _int_env("FLOCK_TIMEOUT", 30)
         self.flock_max_retries = _int_env("FLOCK_MAX_RETRIES", 3)
-        self.flock_mock_mode = _bool_env("FLOCK_MOCK_MODE", False)
         self.flock_auth_strategy = os.getenv("FLOCK_AUTH_STRATEGY", "both").lower().strip()
 
         # ── Web Research ───────────────────────────────────────────────
@@ -101,6 +100,21 @@ class Settings:
         # Credits granted to new free-tier users on sign-up
         self.free_tier_credits = _int_env("FREE_TIER_CREDITS", 10)
 
+        # ── Builder repair loop (Phase 4) ─────────────────────────────
+        # Default False: conservative until integration tests confirm safety.
+        # Set True + BUILDER_REPAIR_MAX_ROUNDS=1 for a single-pass trial.
+        self.builder_repair_enabled = _bool_env("BUILDER_REPAIR_ENABLED", False)
+        # Hard cap on repair iterations per pipeline run (1–2 recommended).
+        self.builder_repair_max_rounds = _int_env("BUILDER_REPAIR_MAX_ROUNDS", 2)
+        # Max FileChange entries patched per round (1–2 recommended).
+        self.builder_repair_max_files_per_round = _int_env("BUILDER_REPAIR_MAX_FILES_PER_ROUND", 2)
+
+        # ── Generation plan-aware ordering ────────────────────────────
+        # When True, the legacy per-file LLM loop uses scaffold-derived
+        # ordering from the BuildPlan instead of brand_spec.pages.
+        # Set to false to restore pre-Phase-3 behavior exactly.
+        self.plan_aware_generation = _bool_env("PLAN_AWARE_GENERATION", True)
+
         # ── OpenAI primary provider ────────────────────────────────────
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
         self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
@@ -116,6 +130,13 @@ class Settings:
                 self.openai_model,
                 self.openai_api_mode,
             )
+
+        # ── Image generation (DALL-E) ─────────────────────────────────
+        self.image_generation_enabled = _bool_env("IMAGE_GENERATION_ENABLED", True)
+        self.dalle_model = os.getenv("DALLE_MODEL", "dall-e-2").strip()
+        self.dalle_hero_size = os.getenv("DALLE_HERO_SIZE", "1024x1024").strip()
+        self.dalle_icon_size = os.getenv("DALLE_ICON_SIZE", "256x256").strip()
+        self.dalle_timeout = _int_env("DALLE_TIMEOUT", 25)
 
         # ── Social publishing ──────────────────────────────────────────
         self.x_api_key = os.getenv("X_API_KEY", "").strip()

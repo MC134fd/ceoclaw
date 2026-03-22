@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .feature-section { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2xl); align-items: center; padding-block: var(--space-2xl); border-bottom: 1px solid var(--color-border-soft); }
+    .feature-section:last-child { border-bottom: none; }
+    .feature-section.reverse { direction: rtl; }
+    .feature-section.reverse > * { direction: ltr; }
+    .feature-visual { background: var(--color-surface-soft); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-xl); min-height: 260px; display: flex; flex-direction: column; gap: var(--space-sm); }
+    .visual-item { background: rgba(255,255,255,0.04); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-sm) var(--space-md); font-size: 0.875rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 0.5rem; }
+    .visual-item-active { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.2); color: var(--color-text); }
+    .feature-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: var(--space-md); }
+    .feature-list-item { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.9rem; color: var(--color-text-muted); }
+    .feature-list-item::before { content: '✓'; color: var(--color-accent); flex-shrink: 0; font-weight: 700; }
+    @media (max-width: 768px) { .feature-section, .feature-section.reverse { grid-template-columns: 1fr; direction: ltr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-links">
+      <a href="agents.html">Agents</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="../pages/pricing.html">Pricing</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">Features</div>
+    <h1>Every tool a founder needs.<br>One system that ties them together.</h1>
+    <p>Buildflow replaces five scattered tools with one coherent operating system — built around how great founders actually think and work.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <!-- Feature 1 -->
+    <div class="feature-section">
+      <div>
+        <div class="badge badge-primary mb-md">Strategic Intelligence</div>
+        <h2>AI that thinks like a co-founder</h2>
+        <p style="color:var(--color-text-muted); margin-top:var(--space-sm);">Buildflow's agents don't just generate text — they reason about your specific market, customer, and competitive context. Every output is grounded in your startup's reality.</p>
+        <div class="feature-list">
+          <div class="feature-list-item">Real-time market and competitor analysis</div>
+          <div class="feature-list-item">ICP definition and validation frameworks</div>
+          <div class="feature-list-item">Positioning and messaging architecture</div>
+          <div class="feature-list-item">Product-market fit scoring</div>
+        </div>
+      </div>
+      <div class="feature-visual">
+        <div class="visual-item visual-item-active">🧠 Analyzing market landscape…</div>
+        <div class="visual-item">📊 3 competitors identified</div>
+        <div class="visual-item">🎯 ICP: B2B SaaS founders, 1-10 employees</div>
+        <div class="visual-item visual-item-active">✦ Positioning gap found — "AI ops for solo founders"</div>
+      </div>
+    </div>
+    <!-- Feature 2 -->
+    <div class="feature-section reverse">
+      <div>
+        <div class="badge badge-secondary mb-md">Execution Engine</div>
+        <h2>Turn strategy into action automatically</h2>
+        <p style="color:var(--color-text-muted); margin-top:var(--space-sm);">From roadmap to sprint to task — Buildflow manages the entire execution layer so nothing falls through the cracks.</p>
+        <div class="feature-list">
+          <div class="feature-list-item">AI-generated sprint plans with time estimates</div>
+          <div class="feature-list-item">Automatic task breakdown from features</div>
+          <div class="feature-list-item">Priority scoring by impact × effort</div>
+          <div class="feature-list-item">Progress tracking with smart nudges</div>
+        </div>
+      </div>
+      <div class="feature-visual">
+        <div class="visual-item visual-item-active">📋 Q2 Sprint — 12 tasks</div>
+        <div class="visual-item">🔴 High: Auth system (8 points)</div>
+        <div class="visual-item">🟡 Medium: Onboarding flow (5 points)</div>
+        <div class="visual-item">🟢 Low: Email notifications (2 points)</div>
+        <div style="height:4px; background:var(--color-border); border-radius:2px; margin-top:auto; overflow:hidden;"><div style="width:62%; height:100%; background:var(--accent-gradient); border-radius:2px;"></div></div>
+        <div style="font-size:0.75rem; color:var(--color-text-subtle); font-family:var(--font-mono);">62% complete · 4 days remaining</div>
+      </div>
+    </div>
+    <!-- Feature 3 -->
+    <div class="feature-section">
+      <div>
+        <div class="badge badge-accent mb-md">Growth System</div>
+        <h2>Go-to-market, automated</h2>
+        <p style="color:var(--color-text-muted); margin-top:var(--space-sm);">Launch campaigns, content calendars, SEO strategies, and cold outreach — all generated by agents trained on what actually converts in your vertical.</p>
+        <div class="feature-list">
+          <div class="feature-list-item">Personalized outbound email sequences</div>
+          <div class="feature-list-item">SEO keyword strategy and content briefs</div>
+          <div class="feature-list-item">Launch day playbooks</div>
+          <div class="feature-list-item">Paid channel recommendations with budget splits</div>
+        </div>
+      </div>
+      <div class="feature-visual">
+        <div style="font-size:0.75rem; color:var(--color-text-subtle); font-family:var(--font-mono); margin-bottom:0.5rem;">OUTREACH CAMPAIGN · 3 variants</div>
+        <div class="visual-item visual-item-active">📧 Variant A: Problem-led (open rate: 34%)</div>
+        <div class="visual-item">📧 Variant B: Social proof (open rate: 28%)</div>
+        <div class="visual-item">📧 Variant C: ROI-focused (open rate: 31%)</div>
+        <div class="visual-item" style="margin-top:auto; background:rgba(52,211,153,0.06); border-color:rgba(52,211,153,0.2); color:var(--color-accent);">✦ Recommend: Variant A → 120 prospects</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Ready to experience it?</h2>
+      <p class="text-muted mt-md" style="max-width:40ch; margin-inline:auto;">30-day free trial on all paid plans. No credit card required.</p>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-lg mt-lg">Start building free →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a>
+        <p>The AI-native operating system for ambitious founders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="agents.html">Agents</a></li>
+          <li><a href="integrations.html">Integrations</a></li>
+          <li><a href="roadmap.html">Roadmap</a></li>
+          <li><a href="changelog.html">Changelog</a></li>
+          <li><a href="security.html">Security</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="../company/about.html">About</a></li>
+          <li><a href="../company/careers.html">Careers</a></li>
+          <li><a href="../company/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="../legal/privacy.html">Privacy</a></li>
+          <li><a href="../legal/terms.html">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

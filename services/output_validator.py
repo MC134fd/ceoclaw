@@ -18,8 +18,9 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 _MAX_SIZE = 1_000_000  # 1 MB
-_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg"}
-_ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts"}
+_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".jsx", ".ts", ".tsx", ".json", ".md", ".txt", ".svg", ".png", ".webp", ".jpg", ".jpeg"}
+_BINARY_EXTENSIONS = {".png", ".webp", ".jpg", ".jpeg", ".gif"}
+_ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts", "styles", "src"}
 
 # Remove <script src="https?://...">...</script>  (external scripts)
 _EXTERNAL_SCRIPT_RE = re.compile(
@@ -38,28 +39,40 @@ _MEDIA_BREAKPOINT_RE = re.compile(
 )
 
 
-def validate_files(files: dict[str, str]) -> tuple[dict[str, str], list[str]]:
+def validate_files(files: dict[str, str | bytes]) -> tuple[dict[str, str | bytes], list[str]]:
     """Validate and sanitize a files dict from LLM output.
 
     Accepts {relative_path: content} for any allowlisted extension.
+    Content may be str (text files) or bytes (binary images like .png/.webp).
     HTML files: run sanitization (remove external scripts, sanitize js: hrefs).
+    Binary files: size check only, no text-based validation.
     All files: enforce size limit.
     Returns (clean_files, warnings).
     """
     warnings: list[str] = []
-    clean: dict[str, str] = {}
+    clean: dict[str, str | bytes] = {}
 
     for raw_path, content in (files or {}).items():
-        # Path safety check
         path_err = _validate_path(raw_path)
         if path_err:
             warnings.append(f"Skipped {raw_path!r}: {path_err}")
             continue
 
-        # Use the safe name (last component) for display
         safe_name = PurePosixPath(raw_path).name
         ext = PurePosixPath(raw_path).suffix.lower()
 
+        # Binary image files: size check only
+        if ext in _BINARY_EXTENSIONS:
+            if not isinstance(content, bytes) or len(content) == 0:
+                warnings.append(f"Skipped empty binary content for {safe_name}")
+                continue
+            if len(content) > _MAX_SIZE:
+                warnings.append(f"Skipped {safe_name} — binary file exceeded 1 MB limit")
+                continue
+            clean[raw_path] = content
+            continue
+
+        # Text files below
         if not isinstance(content, str) or not content.strip():
             warnings.append(f"Skipped empty content for {safe_name}")
             continue
@@ -68,7 +81,6 @@ def validate_files(files: dict[str, str]) -> tuple[dict[str, str], list[str]]:
             warnings.append(f"Truncated {safe_name} — exceeded 1 MB limit")
             content = content[:_MAX_SIZE]
 
-        # Extension-specific validation and sanitization
         if ext == ".html":
             if not _looks_like_html(content):
                 warnings.append(f"Skipped {safe_name} — content does not look like HTML")
@@ -81,13 +93,12 @@ def validate_files(files: dict[str, str]) -> tuple[dict[str, str], list[str]]:
                 )
                 continue
             content = _sanitize_html(content, safe_name, warnings)
-            # Link quality check — warnings only, never rejects
             link_warnings = check_html_links(content, safe_name, set(files.keys()))
             warnings.extend(link_warnings)
         elif ext == ".svg":
             sanitized = _sanitize_svg(content, safe_name, warnings)
             if sanitized is None:
-                continue  # malformed or empty after sanitization — already warned
+                continue
             content = sanitized
 
         clean[raw_path] = content

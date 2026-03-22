@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .billing-toggle { display: flex; align-items: center; gap: var(--space-sm); justify-content: center; margin-bottom: var(--space-2xl); }
+    .toggle-label { font-size: 0.9rem; color: var(--color-text-muted); }
+    .toggle-switch {
+      position: relative; width: 52px; height: 28px; cursor: pointer;
+      background: var(--color-surface-soft); border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill); transition: all var(--transition);
+    }
+    .toggle-switch.annual { background: rgba(56,189,248,0.15); border-color: var(--color-primary); }
+    .toggle-knob {
+      position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+      background: var(--color-text-subtle); border-radius: 50%; transition: all var(--transition);
+    }
+    .toggle-switch.annual .toggle-knob { left: 27px; background: var(--color-primary); }
+    .annual-badge {
+      font-size: 0.7rem; background: rgba(52,211,153,0.12); color: var(--color-accent);
+      border: 1px solid rgba(52,211,153,0.2); border-radius: var(--radius-pill);
+      padding: 0.15rem 0.5rem; font-weight: 600;
+    }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); align-items: start; }
+    .plan-card { padding: var(--space-xl); }
+    .plan-name { font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-bottom: 0.35rem; }
+    .plan-tagline { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: var(--space-lg); }
+    .price-row { display: flex; align-items: flex-end; gap: 0.35rem; margin-bottom: var(--space-lg); }
+    .price-currency { font-size: 1.25rem; font-family: var(--font-display); font-weight: 700; padding-bottom: 0.3rem; }
+    .price-amount { font-family: var(--font-display); font-size: 3rem; font-weight: 800; line-height: 1; }
+    .price-period { color: var(--color-text-muted); font-size: 0.875rem; padding-bottom: 0.3rem; }
+    .plan-divider { height: 1px; background: var(--color-border); margin-block: var(--space-lg); }
+    .plan-feature { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 0.6rem; }
+    .plan-feature::before { content: '✓'; color: var(--color-accent); font-weight: 700; flex-shrink: 0; margin-top: 0.05rem; }
+    .plan-feature.limited { color: var(--color-text-subtle); }
+    .plan-feature.limited::before { content: '◦'; color: var(--color-text-subtle); }
+    .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--space-lg); }
+    .faq-item h4 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .faq-item p { font-size: 0.875rem; color: var(--color-text-muted); max-width: unset; }
+    .compare-note { text-align: center; margin-top: var(--space-2xl); }
+    .compare-note a { color: var(--color-primary); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo">
+      <div class="logo-mark">BF</div>
+      Buildflow
+    </a>
+    <div class="navbar-links">
+      <a href="../product/features.html">Product</a>
+      <a href="../resources/docs.html">Docs</a>
+      <a href="../company/about.html">About</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-primary mb-md">Pricing</div>
+      <h1>Simple, honest pricing</h1>
+      <p>Start free. Upgrade when you're ready. No lock-in, no surprises.</p>
+    </div>
+
+    <!-- Billing toggle -->
+    <div class="billing-toggle">
+      <span class="toggle-label">Monthly</span>
+      <div class="toggle-switch annual" onclick="toggleBilling(this)" id="billing-toggle">
+        <div class="toggle-knob"></div>
+      </div>
+      <span class="toggle-label">Annual</span>
+      <span class="annual-badge">Save 30%</span>
+    </div>
+
+    <!-- Pricing cards -->
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="card plan-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-tagline">Perfect for early ideation and validation.</div>
+        <div class="price-row">
+          <span class="price-currency">$</span>
+          <span class="price-amount">0</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <a href="auth.html#signup" class="btn btn-secondary w-full">Get started free</a>
+        <div class="plan-divider"></div>
+        <div class="plan-feature">3 AI agent runs / day</div>
+        <div class="plan-feature">1 active project</div>
+        <div class="plan-feature">Basic product + marketing agents</div>
+        <div class="plan-feature">Community support</div>
+        <div class="plan-feature limited">No integrations</div>
+        <div class="plan-feature limited">No history export</div>
+      </div>
+
+      <!-- Pro (featured) -->
+      <div class="card plan-card card-featured">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
+          <div class="plan-name">Pro</div>
+          <span class="badge badge-primary">Most popular</span>
+        </div>
+        <div class="plan-tagline">For founders building and shipping fast.</div>
+        <div class="price-row">
+          <span class="price-currency">$</span>
+          <span class="price-amount" id="pro-price">49</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <a href="auth.html#signup" class="btn btn-primary w-full">Start 30-day free trial</a>
+        <div class="plan-divider"></div>
+        <div class="plan-feature">Unlimited agent runs</div>
+        <div class="plan-feature">10 active projects</div>
+        <div class="plan-feature">All 6 AI agents</div>
+        <div class="plan-feature">Notion, Linear, GitHub integrations</div>
+        <div class="plan-feature">Version history (90 days)</div>
+        <div class="plan-feature">Priority email support</div>
+        <div class="plan-feature">Custom brand voice</div>
+      </div>
+
+      <!-- Scale -->
+      <div class="card plan-card">
+        <div class="plan-name">Scale</div>
+        <div class="plan-tagline">For growing teams moving at full speed.</div>
+        <div class="price-row">
+          <span class="price-currency">$</span>
+          <span class="price-amount" id="scale-price">149</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <a href="auth.html#signup" class="btn btn-secondary w-full">Start 30-day free trial</a>
+        <div class="plan-divider"></div>
+        <div class="plan-feature">Everything in Pro</div>
+        <div class="plan-feature">Unlimited projects</div>
+        <div class="plan-feature">Up to 5 team seats</div>
+        <div class="plan-feature">All 60+ integrations</div>
+        <div class="plan-feature">Unlimited history</div>
+        <div class="plan-feature">Dedicated Slack support</div>
+        <div class="plan-feature">Custom agent training</div>
+        <div class="plan-feature">Advanced analytics</div>
+      </div>
+    </div>
+
+    <div class="compare-note">
+      <a href="../product/features.html">Full feature comparison →</a>
+    </div>
+
+    <!-- Enterprise CTA -->
+    <div class="cta-section mt-xl">
+      <div class="badge badge-secondary mb-md">Enterprise</div>
+      <h3>Need something bigger?</h3>
+      <p class="text-muted mt-md" style="max-width:44ch; margin-inline:auto;">Custom AI agent training, SSO, dedicated infrastructure, SLA guarantees, and hands-on onboarding for your entire team.</p>
+      <a href="../company/contact.html" class="btn btn-secondary mt-lg">Talk to our team →</a>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-header mt-xl">
+      <h2>Frequently asked questions</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item card">
+        <h4>Is there a free trial?</h4>
+        <p>Yes — all paid plans include a 30-day free trial. No credit card required to start. You're billed only when your trial ends and you choose to continue.</p>
+      </div>
+      <div class="faq-item card">
+        <h4>Can I change plans anytime?</h4>
+        <p>Absolutely. Upgrade or downgrade whenever you like. If you upgrade mid-cycle, you'll be billed the prorated difference. Downgrades take effect at the next billing date.</p>
+      </div>
+      <div class="faq-item card">
+        <h4>What counts as an "agent run"?</h4>
+        <p>One agent run is a single task execution — generating a PRD, writing an email sequence, or running a market analysis. On Pro and Scale, runs are unlimited.</p>
+      </div>
+      <div class="faq-item card">
+        <h4>Are my ideas private?</h4>
+        <p>Yes, completely. Your data is end-to-end encrypted and never shared or used to train AI models. We're SOC 2 Type II certified.</p>
+      </div>
+      <div class="faq-item card">
+        <h4>Do you offer refunds?</h4>
+        <p>We offer a full refund within 14 days of your first paid charge if you're not satisfied. No questions asked.</p>
+      </div>
+      <div class="faq-item card">
+        <h4>What integrations are included?</h4>
+        <p>Pro includes Notion, Linear, and GitHub. Scale unlocks all 60+ integrations including Stripe, HubSpot, Salesforce, Jira, Figma, and more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="navbar-logo" style="display:inline-flex;">
+          <div class="logo-mark">BF</div>
+          Buildflow
+        </a>
+        <p>The AI-native operating system for ambitious founders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="../product/features.html">Features</a></li>
+          <li><a href="../product/agents.html">Agents</a></li>
+          <li><a href="../product/integrations.html">Integrations</a></li>
+          <li><a href="../product/roadmap.html">Roadmap</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="../resources/docs.html">Docs</a></li>
+          <li><a href="../resources/blog.html">Blog</a></li>
+          <li><a href="../resources/faq.html">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="../company/about.html">About</a></li>
+          <li><a href="../company/careers.html">Careers</a></li>
+          <li><a href="../company/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="../legal/privacy.html">Privacy</a></li>
+          <li><a href="../legal/terms.html">Terms</a></li>
+          <li><a href="../legal/cookies.html">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Buildflow, Inc. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  let isAnnual = true;
+  function toggleBilling(el) {
+    isAnnual = !isAnnual;
+    el.classList.toggle('annual', isAnnual);
+    document.getElementById('pro-price').textContent = isAnnual ? '34' : '49';
+    document.getElementById('scale-price').textContent = isAnnual ? '104' : '149';
+  }
+</script>
+
+</body>
+</html>

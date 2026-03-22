@@ -14,7 +14,7 @@
 
 **Command:**
 ```bash
-python main.py demo --cycles 8 --mock-model
+python main.py demo --cycles 8
 ```
 
 **What to capture:**
@@ -64,7 +64,7 @@ curl http://localhost:8000/summary/latest | python3 -m json.tool
 - `/health` response: `{"status": "ok", "app": "CEOClaw"}`
 - `/summary/latest` JSON — scroll slowly so judges can read:
   - `"status": "ok"` (never 500)
-  - `"model_mode": "mock"` (transparent)
+  - `"model_mode"` (transparent)
   - `"final_mrr"`, `"final_weighted_score"`
   - `"kpi_trend"` array (scroll through)
   - `"recent_artifacts"` list
@@ -92,7 +92,7 @@ python3 -m pytest tests/ -q
 
 Show in IDE (VS Code preferred):
 
-1. **`integrations/flock_client.py`** — `class FlockChatModel(BaseChatModel)` and the `_generate` method showing mock/live/fallback branches
+1. **`integrations/flock_client.py`** — `class FlockChatModel(BaseChatModel)` and the `_generate` method showing live/fallback branches
 2. **`core/prompts.py`** — `PLANNER_SYSTEM_PROMPT` with the stagnation alert section
 3. **`core/agent_loop.py`** — `build_graph()` function showing the 7-node topology, then `router_node` showing the circuit breaker logic
 4. **`agents/__init__.py`** — `CEOClawState` TypedDict with the `errors: Annotated[list, add]` reducer

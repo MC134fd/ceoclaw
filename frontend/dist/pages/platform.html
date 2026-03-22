@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Platform — CEOClaw</title>
+  <meta name="description" content="A deep look at how CEOClaw coordinates five AI operators to take you from idea to revenue without the sprawl." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #EDE3D3;
+      --color-bg-2: #E4D9C7;
+      --color-surface: rgba(250,246,238,0.72);
+      --color-surface-strong: rgba(250,246,238,0.92);
+      --color-text: #2E2A26;
+      --color-text-dim: rgba(46,42,38,0.58);
+      --color-primary: #C96A2B;
+      --color-secondary: #A86A3A;
+      --color-tertiary: #4FA3A5;
+      --color-accent: #4FA3A5;
+      --color-border: rgba(255,255,255,0.45);
+      --shadow-soft: 0 20px 60px rgba(46,42,38,0.12);
+      --shadow-card: 0 16px 40px rgba(46,42,38,0.10);
+      --accent-gradient: linear-gradient(120deg,#C96A2B 0%,#A86A3A 50%,#8A5530 100%);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --transition: 0.28s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(201,106,43,0.09) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(168,106,58,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 60% 80%, rgba(79,163,165,0.10) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    h1, h2, h3, h4 { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; line-height: 1.12; letter-spacing: 0.01em; }
+    .mono { font-family: 'IBM Plex Mono', monospace; }
+    .container {
+      width: min(100%, 1120px);
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 5vw, 3rem);
+      position: relative;
+      z-index: 1;
+    }
+    section { position: relative; z-index: 1; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      padding: 0.875rem 0;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    nav.scrolled {
+      background: rgba(246,248,255,0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 1px 0 rgba(201,106,43,0.12), 0 4px 24px rgba(46,42,38,0.08);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 1.25rem; letter-spacing: 0.01em;
+      color: var(--color-text); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo-mark {
+      width: 28px; height: 28px; background: var(--accent-gradient);
+      border-radius: 7px; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; align-items: center; }
+    .nav-links a {
+      padding: 0.5rem 0.875rem; border-radius: var(--radius-sm);
+      font-size: 0.9rem; font-weight: 500; color: var(--color-text-dim);
+      text-decoration: none; transition: color var(--transition), background var(--transition);
+      min-height: 44px; display: inline-flex; align-items: center;
+    }
+    .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--color-text); background: var(--color-surface); }
+    .nav-actions { display: flex; align-items: center; gap: 0.625rem; }
+    .btn-ghost {
+      padding: 0.5rem 1.125rem; border-radius: var(--radius-sm);
+      font-size: 0.875rem; font-weight: 500; color: var(--color-text-dim);
+      text-decoration: none; border: 1px solid transparent;
+      transition: all var(--transition); min-height: 44px;
+      display: inline-flex; align-items: center; cursor: pointer; background: none;
+    }
+    .btn-ghost:hover { color: var(--color-text); border-color: rgba(46,42,38,0.22); background: var(--color-surface); }
+    .btn-primary {
+      padding: 0.5rem 1.25rem; border-radius: var(--radius-sm);
+      font-size: 0.875rem; font-weight: 600; color: #fff;
+      background: var(--accent-gradient); text-decoration: none;
+      border: none; cursor: pointer;
+      transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+      min-height: 44px; display: inline-flex; align-items: center;
+      box-shadow: 0 4px 16px rgba(168,106,58,0.32);
+    }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(168,106,58,0.40); }
+    .btn-primary:focus-visible, .btn-ghost:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-logo:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+    .nav-hamburger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 0.5rem; min-height: 44px; min-width: 44px;
+      align-items: center; justify-content: center;
+      border-radius: var(--radius-sm); color: var(--color-text);
+    }
+    @media (max-width: 1023px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-mobile-open .nav-links {
+        display: flex; flex-direction: column;
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: rgba(246,248,255,0.96); backdrop-filter: blur(18px);
+        padding: 1rem 1.5rem 1.5rem;
+        border-top: 1px solid rgba(201,106,43,0.12);
+        box-shadow: 0 8px 32px rgba(46,42,38,0.1); gap: 0.25rem;
+      }
+      .nav-mobile-open .nav-links a { width: 100%; }
+    }
+
+    /* Page hero */
+    .page-hero {
+      padding: clamp(4rem, 10vw, 7rem) 0 clamp(2.5rem, 6vw, 4.5rem);
+    }
+    .breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; color: var(--color-text-dim);
+      margin-bottom: 1.5rem;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .breadcrumb a { color: var(--color-primary); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { opacity: 0.5; }
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem;
+      font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--color-primary); margin-bottom: 1rem;
+    }
+    .page-headline {
+      font-size: clamp(2rem, 5.5vw, 3.75rem); font-weight: 800;
+      letter-spacing: -0.025em; max-width: 780px;
+      margin-bottom: 1.25rem; line-height: 1.1;
+    }
+    .gradient-text {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .page-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem); color: var(--color-text-dim);
+      max-width: 580px; margin-bottom: 2.5rem;
+    }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .btn-secondary {
+      padding: 0.625rem 1.375rem; border-radius: var(--radius-sm);
+      font-size: 0.9rem; font-weight: 500; color: var(--color-text);
+      background: var(--color-surface-strong); text-decoration: none;
+      border: 1px solid rgba(201,106,43,0.2);
+      backdrop-filter: blur(8px); transition: all var(--transition);
+      min-height: 44px; display: inline-flex; align-items: center; gap: 0.375rem;
+    }
+    .btn-secondary:hover { border-color: rgba(201,106,43,0.4); background: #fff; transform: translateY(-1px); box-shadow: var(--shadow-card); }
+    .btn-secondary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+    /* Workflow diagram */
+    .workflow-section { padding: clamp(3rem, 8vw, 6rem) 0; }
+    .workflow-flow {
+      display: flex; align-items: center; gap: 0; overflow-x: auto;
+      padding: 0.5rem 0; margin-bottom: 3rem;
+      scrollbar-width: none;
+    }
+    .workflow-flow::-webkit-scrollbar { display: none; }
+    .wf-node {
+      flex-shrink: 0;
+      background: var(--color-surface-strong);
+      border: 1px solid rgba(201,106,43,0.18);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      text-align: center;
+      min-width: 130px;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .wf-node:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+    .wf-node-icon { font-size: 1.5rem; margin-bottom: 0.375rem; }
+    .wf-node-label { font-size: 0.78rem; font-weight: 600; font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; }
+    .wf-node-sub { font-size: 0.7rem; color: var(--color-text-dim); margin-top: 0.2rem; }
+    .wf-arrow {
+      flex-shrink: 0; padding: 0 0.5rem;
+      color: var(--color-primary); font-size: 1.1rem; opacity: 0.5;
+    }
+    .wf-node.active { border-color: var(--color-primary); background: rgba(201,106,43,0.06); }
+
+    /* Deep feature section */
+    .features-section { padding: clamp(3rem, 8vw, 6rem) 0; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--color-surface);
+      border: 1px solid rgba(201,106,43,0.14);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+    .feature-card.wide { grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.25rem;
+    }
+    .fc-1 .feature-icon { background: rgba(201,106,43,0.1); }
+    .fc-2 .feature-icon { background: rgba(168,106,58,0.1); }
+    .fc-3 .feature-icon { background: rgba(79,163,165,0.1); }
+    .fc-4 .feature-icon { background: rgba(79,163,165,0.1); }
+    .fc-5 .feature-icon { background: rgba(201,106,43,0.08); }
+    .feature-title { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 1.25rem; letter-spacing: 0.01em; margin-bottom: 0.625rem; }
+    .feature-desc { font-size: 0.9rem; color: var(--color-text-dim); line-height: 1.65; }
+    .feature-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .feature-tag {
+      padding: 0.25rem 0.625rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 500; font-family: 'IBM Plex Mono', monospace;
+      background: rgba(201,106,43,0.08); color: var(--color-primary);
+      border: 1px solid rgba(201,106,43,0.15);
+    }
+    @media (max-width: 1023px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card.wide { grid-column: span 1; grid-template-columns: 1fr; }
+    }
+
+    /* Audience section */
+    .audience-section { padding: clamp(3rem, 8vw, 6rem) 0; background: var(--color-bg-2); }
+    .audience-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+    .aud-card {
+      background: var(--color-surface-strong); border: 1px solid rgba(201,106,43,0.14);
+      border-radius: var(--radius-lg); padding: 1.75rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .aud-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+    .aud-icon { font-size: 1.75rem; margin-bottom: 1rem; }
+    .aud-title { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .aud-desc { font-size: 0.875rem; color: var(--color-text-dim); line-height: 1.6; }
+    @media (max-width: 1023px) { .audience-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 639px) { .audience-grid { grid-template-columns: 1fr; } }
+
+    /* Differentiator */
+    .pdiff-section { padding: clamp(3rem, 8vw, 6rem) 0; }
+    .pdiff-list { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; margin-top: 2.5rem; }
+    .pdiff-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      background: var(--color-surface); border: 1px solid rgba(201,106,43,0.12);
+      border-radius: var(--radius-md); padding: 1.5rem;
+    }
+    .pdiff-num {
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem;
+      font-weight: 500; color: var(--color-primary); opacity: 0.7;
+      padding-top: 2px; flex-shrink: 0;
+    }
+    .pdiff-text h4 { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.375rem; }
+    .pdiff-text p { font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; }
+    @media (max-width: 639px) { .pdiff-list { grid-template-columns: 1fr; } }
+
+    /* CTA strip */
+    .platform-cta { padding: clamp(3rem, 8vw, 6rem) 0; }
+    .platform-cta-inner {
+      background: var(--accent-gradient); border-radius: var(--radius-lg);
+      padding: clamp(2rem, 6vw, 4rem); text-align: center; position: relative; overflow: hidden;
+    }
+    .platform-cta-inner::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%);
+    }
+    .platform-cta-inner > * { position: relative; }
+    .cta-headline { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.875rem; }
+    .cta-sub { font-size: 1rem; color: rgba(255,255,255,0.82); margin-bottom: 1.75rem; }
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-white {
+      padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem;
+      font-weight: 600; color: var(--color-primary); background: #fff;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+      min-height: 44px; display: inline-flex; align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .btn-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .btn-outline-white {
+      padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem;
+      font-weight: 600; color: #fff; background: rgba(255,255,255,0.15);
+      text-decoration: none; border: 1px solid rgba(255,255,255,0.4); cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+      min-height: 44px; display: inline-flex; align-items: center; backdrop-filter: blur(6px);
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+    .btn-outline-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    /* Footer */
+    footer { padding: clamp(2rem, 5vw, 3.5rem) 0 2rem; border-top: 1px solid rgba(201,106,43,0.1); }
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.8rem; color: var(--color-text-dim); flex-wrap: wrap; gap: 0.75rem;
+    }
+    .footer-bottom-links { display: flex; gap: 1.5rem; }
+    .footer-bottom-links a { color: var(--color-text-dim); text-decoration: none; }
+    .footer-bottom-links a:hover { color: var(--color-text); }
+    .footer-nav-sm { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 1.5rem; }
+    .footer-nav-sm a { font-size: 0.875rem; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition); }
+    .footer-nav-sm a:hover { color: var(--color-text); }
+    .footer-nav-sm a:focus-visible,
+    .footer-bottom-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo" aria-label="CEOClaw home">
+        <span class="nav-logo-mark" aria-hidden="true">C</span>CEOClaw
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="platform.html" aria-current="page">Platform</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="docs.html">Docs</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="auth.html" class="btn-ghost">Sign In</a>
+        <a href="auth.html" class="btn-primary">Start Free</a>
+      </div>
+      <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect y="3" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="9" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="15" width="20" height="2" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+  <section class="page-hero" aria-labelledby="platform-headline">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Platform</span>
+      </nav>
+      <div class="reveal">
+        <p class="section-label">Platform overview</p>
+        <h1 class="page-headline" id="platform-headline">
+          Five operators.<br /><span class="gradient-text">One coherent system.</span>
+        </h1>
+        <p class="page-sub">CEOClaw doesn't give you another AI chat box. It gives you a coordinated execution layer — five operators that share context, compound actions, and route resources toward what matters most.</p>
+        <div class="hero-ctas">
+          <a href="auth.html" class="btn-primary">Start Free &rarr;</a>
+          <a href="landing.html" class="btn-secondary">View Product</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="workflow-section" aria-labelledby="workflow-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">How it flows</p>
+        <h2 id="workflow-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:0.75rem;">The execution loop, end to end.</h2>
+        <p style="font-size:0.95rem;color:var(--color-text-dim);max-width:540px;margin-bottom:2rem;">Every cycle starts with your goal and ends with a measurable output. The planner routes, the operators execute, the evaluator scores, and the loop continues.</p>
+      </div>
+      <div class="workflow-flow reveal" role="list" aria-label="CEOClaw execution workflow">
+        <div class="wf-node" role="listitem">
+          <div class="wf-node-icon" aria-hidden="true">🎯</div>
+          <div class="wf-node-label">Goal</div>
+          <div class="wf-node-sub">$100 MRR</div>
+        </div>
+        <div class="wf-arrow" aria-hidden="true">→</div>
+        <div class="wf-node" role="listitem">
+          <div class="wf-node-icon" aria-hidden="true">🧠</div>
+          <div class="wf-node-label">Planner</div>
+          <div class="wf-node-sub">Prioritize</div>
+        </div>
+        <div class="wf-arrow" aria-hidden="true">→</div>
+        <div class="wf-node active" role="listitem">
+          <div class="wf-node-icon" aria-hidden="true">⚡</div>
+          <div class="wf-node-label">Router</div>
+          <div class="wf-node-sub">Domain select</div>
+        </div>
+        <div class="wf-arrow" aria-hidden="true">→</div>
+        <div class="wf-node" role="listitem">
+          <div class="wf-node-icon" aria-hidden="true">🔬</div>
+          <div class="wf-node-label">Operators</div>
+          <div class="wf-node-sub">Execute</div>
+        </div>
+        <div class="wf-arrow" aria-hidden="true">→</div>
+        <div class="wf-node" role="listitem">
+          <div class="wf-node-icon" aria-hidden="true">📊</div>
+          <div class="wf-node-label">Evaluator</div>
+          <div class="wf-node-sub">Score output</div>
+        </div>
+        <div class="wf-arrow" aria-hidden="true">→</div>
+        <div class="wf-node" role="listitem">
+          <div class="wf-node-icon" aria-hidden="true">🔁</div>
+          <div class="wf-node-label">Loop</div>
+          <div class="wf-node-sub">Or complete</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features-section" aria-labelledby="features-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Core capabilities</p>
+        <h2 id="features-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:2.5rem;">What each operator does.</h2>
+      </div>
+      <div class="features-grid">
+        <article class="feature-card fc-1 reveal">
+          <div class="feature-icon" aria-hidden="true">🔬</div>
+          <h3 class="feature-title">Research Operator</h3>
+          <p class="feature-desc">Validates your idea before you build. Maps the competitor landscape, identifies demand signals, and surfaces the ICP most likely to convert — all grounded in real market context.</p>
+          <div class="feature-tags">
+            <span class="feature-tag">Idea validation</span>
+            <span class="feature-tag">Competitor mapping</span>
+            <span class="feature-tag">ICP definition</span>
+          </div>
+        </article>
+        <article class="feature-card fc-2 reveal">
+          <div class="feature-icon" aria-hidden="true">✦</div>
+          <h3 class="feature-title">Brand Operator</h3>
+          <p class="feature-desc">Generates naming options, positioning statements, messaging hierarchy, and design token seeds — all coherent with your target market and differentiation strategy.</p>
+          <div class="feature-tags">
+            <span class="feature-tag">Naming</span>
+            <span class="feature-tag">Positioning</span>
+            <span class="feature-tag">Design tokens</span>
+          </div>
+        </article>
+        <article class="feature-card fc-3 reveal">
+          <div class="feature-icon" aria-hidden="true">⬡</div>
+          <h3 class="feature-title">Website Operator</h3>
+          <p class="feature-desc">Builds conversion-optimized, multi-page sites from a single intent prompt. Output is production-ready HTML with semantic structure, accessibility basics, and responsive layout — not just a mockup.</p>
+          <div class="feature-tags">
+            <span class="feature-tag">Multi-page</span>
+            <span class="feature-tag">Responsive</span>
+            <span class="feature-tag">Accessible</span>
+          </div>
+        </article>
+        <article class="feature-card fc-4 reveal">
+          <div class="feature-icon" aria-hidden="true">◈</div>
+          <h3 class="feature-title">Outreach Operator</h3>
+          <p class="feature-desc">Writes cold outreach sequences, warm intro drafts, and follow-up cadences targeted to the ICP defined in research. Tone-matched to your brand and personalized for each segment.</p>
+          <div class="feature-tags">
+            <span class="feature-tag">Cold sequences</span>
+            <span class="feature-tag">ICP-targeted</span>
+            <span class="feature-tag">Brand-matched</span>
+          </div>
+        </article>
+        <article class="feature-card fc-5 wide reveal">
+          <div>
+            <div class="feature-icon" aria-hidden="true">◉</div>
+            <h3 class="feature-title">Analytics Operator</h3>
+            <p class="feature-desc">Tracks MRR progress against your target, identifies stagnation patterns before they compound, and generates next-best-action recommendations at each evaluation cycle.</p>
+            <div class="feature-tags">
+              <span class="feature-tag">MRR tracking</span>
+              <span class="feature-tag">Stagnation detection</span>
+              <span class="feature-tag">Action routing</span>
+            </div>
+          </div>
+          <div style="background:rgba(201,106,43,0.04);border:1px solid rgba(201,106,43,0.12);border-radius:var(--radius-md);padding:1.5rem;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--color-text-dim);margin-bottom:1rem;opacity:0.7;">// cycle evaluation output</div>
+            <div style="display:flex;flex-direction:column;gap:0.625rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.5rem 0;border-bottom:1px solid rgba(201,106,43,0.08);">
+                <span style="color:var(--color-text-dim);">Current MRR</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--color-accent);">$50.00</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.5rem 0;border-bottom:1px solid rgba(201,106,43,0.08);">
+                <span style="color:var(--color-text-dim);">Target MRR</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;">$100.00</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.5rem 0;border-bottom:1px solid rgba(201,106,43,0.08);">
+                <span style="color:var(--color-text-dim);">Trend direction</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--color-primary);">up ↑</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:0.5rem 0;">
+                <span style="color:var(--color-text-dim);">Recommended domain</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;">outreach</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="audience-section" aria-labelledby="audience-heading">
+    <div class="container">
+      <div class="reveal" style="margin-bottom:2.5rem;">
+        <p class="section-label">Who it serves</p>
+        <h2 id="audience-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;">The right tool for lean, fast operators.</h2>
+      </div>
+      <div class="audience-grid">
+        <article class="aud-card reveal">
+          <div class="aud-icon" aria-hidden="true">🚀</div>
+          <h3 class="aud-title">Solo Founders</h3>
+          <p class="aud-desc">Run all five functions — research, brand, website, outreach, analytics — without a team. CEOClaw is the bandwidth you didn't know you could have.</p>
+        </article>
+        <article class="aud-card reveal">
+          <div class="aud-icon" aria-hidden="true">⚡</div>
+          <h3 class="aud-title">Indie Hackers</h3>
+          <p class="aud-desc">Validate faster, ship earlier, iterate tighter. Spend your energy on the thing only you can do — let CEOClaw handle the structured execution work.</p>
+        </article>
+        <article class="aud-card reveal">
+          <div class="aud-icon" aria-hidden="true">◆</div>
+          <h3 class="aud-title">Lean Startup Teams</h3>
+          <p class="aud-desc">Stretch every person further. Give each teammate the operational leverage of a full function without the overhead of managing five separate tools or contractors.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="pdiff-section" aria-labelledby="pdiff-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Differentiators</p>
+        <h2 id="pdiff-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;max-width:560px;">Why CEOClaw outperforms point tools.</h2>
+      </div>
+      <div class="pdiff-list">
+        <div class="pdiff-item reveal">
+          <span class="pdiff-num">01</span>
+          <div class="pdiff-text">
+            <h4>Shared operator memory</h4>
+            <p>Every operator reads and writes to a shared session state. Brand context informs outreach. Research findings shape website copy. Actions compound.</p>
+          </div>
+        </div>
+        <div class="pdiff-item reveal">
+          <span class="pdiff-num">02</span>
+          <div class="pdiff-text">
+            <h4>Goal-driven routing</h4>
+            <p>The router doesn't follow a fixed script — it evaluates your MRR gap and routes the next cycle to the highest-leverage domain.</p>
+          </div>
+        </div>
+        <div class="pdiff-item reveal">
+          <span class="pdiff-num">03</span>
+          <div class="pdiff-text">
+            <h4>Evaluation baked in</h4>
+            <p>After every cycle, an evaluator scores the output against your goal. No manual check-ins. No status updates. The system knows where it stands.</p>
+          </div>
+        </div>
+        <div class="pdiff-item reveal">
+          <span class="pdiff-num">04</span>
+          <div class="pdiff-text">
+            <h4>Stagnation override</h4>
+            <p>If progress stalls, the planner rotates domains automatically — preventing you from getting stuck in a single operational mode that's no longer moving the needle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="platform-cta" aria-labelledby="platform-cta-heading">
+    <div class="container">
+      <div class="platform-cta-inner reveal">
+        <h2 class="cta-headline" id="platform-cta-heading">Ready to run the full system?</h2>
+        <p class="cta-sub">Start free. Your execution layer spins up in seconds.</p>
+        <div class="cta-buttons">
+          <a href="auth.html" class="btn-white">Start Free &rarr;</a>
+          <a href="landing.html" class="btn-outline-white">View Product</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-nav-sm" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="platform.html" aria-current="page">Platform</a>
+        <a href="about.html">About</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="docs.html">Docs</a>
+        <a href="auth.html">Sign Up</a>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CEOClaw. All rights reserved.</span>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      var nav=document.getElementById('main-nav');
+      if(!nav)return;
+      window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>12);},{passive:true});
+      var btn=nav.querySelector('.nav-hamburger');
+      if(btn){
+        btn.addEventListener('click',function(){
+          var open=nav.classList.toggle('nav-mobile-open');
+          btn.setAttribute('aria-expanded',String(open));
+        });
+        document.addEventListener('click',function(e){
+          if(nav.classList.contains('nav-mobile-open')&&!nav.contains(e.target)){
+            nav.classList.remove('nav-mobile-open');
+            btn.setAttribute('aria-expanded','false');
+          }
+        });
+      }
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible');});
+        return;
+      }
+      var obs=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+      },{threshold:0.1,rootMargin:'0px 0px -32px 0px'});
+      document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+    }());
+  </script>
+</body>
+</html>

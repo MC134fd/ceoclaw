@@ -200,6 +200,12 @@ def scaffold_missing_page(slug: str, page_rel_path: str) -> "FileChange":
 
 _NAV_RE = re.compile(r"(<nav\b[^>]*>)(.*?)(</nav>)", re.IGNORECASE | re.DOTALL)
 
+# Any link that resolves back to index from a pages/* file
+_BACK_LINK_RE = re.compile(
+    r'href=["\'](\.\./index\.html|\.\./?|index\.html)["\']',
+    re.IGNORECASE,
+)
+
 
 def _inject_nav_link(html: str, label: str, href: str) -> str:
     """Inject a nav link into the first <nav> element if not already present.
@@ -333,6 +339,25 @@ def run_link_wiring_pass(
                 summary=change.summary,
             )
             warnings.extend(fixes)
+
+    # ── Step 1b: Back-link check — every pages/*.html must have a return path ─
+    for i, change in enumerate(updated_changes):
+        rel_path = change.path.split(f"/{slug}/")[-1]
+        if not rel_path.startswith("pages/") or not rel_path.endswith(".html"):
+            continue
+        html = updated_changes[i].content
+        if not _BACK_LINK_RE.search(html):
+            warnings.append(
+                f"No return path on '{rel_path}' — injecting '← Home' nav link"
+            )
+            repaired = _inject_nav_link(html, "← Home", "../index.html")
+            if repaired != html:
+                updated_changes[i] = FileChange(
+                    path=change.path,
+                    action=change.action,
+                    content=repaired,
+                    summary=change.summary,
+                )
 
     # ── Step 2: Scaffold missing pages ──────────────────────────────────────
     if op_type in ("add_page", "cta_target_change", "update_nav"):

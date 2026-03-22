@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — Change Hero App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
+    :root{--accent-gradient:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 50%,#ec4899 100%);--color-bg:#f8fafc;--color-surface:#fff;--color-text:#0f172a;--color-muted:#64748b;--color-border:#e2e8f0;--color-primary:#3b82f6;--font-display:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;--radius-md:12px;--radius-lg:20px;--space-md:clamp(.75rem,1.5vw,1.25rem);--space-lg:clamp(1rem,2vw,1.75rem);--space-xl:clamp(1.5rem,3vw,2.5rem);}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--space-xl)}
+    .brand{font-family:var(--font-display);font-weight:700;font-size:1.3rem;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:var(--space-xl);text-align:center}
+    .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-xl);width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.07)}
+    h1{font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:.5rem}
+    .subtitle{color:var(--color-muted);font-size:.9rem;margin-bottom:var(--space-lg)}
+    label{display:block;font-size:.85rem;font-weight:500;margin-bottom:.35rem}
+    input{width:100%;padding:.625rem .875rem;border:1.5px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.9rem;transition:border-color .2s;min-height:44px}
+    input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+    .field{margin-bottom:var(--space-md)}
+    .btn{width:100%;min-height:44px;padding:.75rem;background:var(--accent-gradient);color:#fff;border:none;border-radius:var(--radius-md);font-family:var(--font-display);font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:var(--space-sm)}
+    .btn:hover{transform:scale(1.01);box-shadow:0 4px 20px rgba(139,92,246,.3)}
+    .footer-link{text-align:center;margin-top:var(--space-md);font-size:.85rem;color:var(--color-muted)}
+    .footer-link a{color:var(--color-primary);text-decoration:none;font-weight:500}
+  </style>
+</head>
+<body>
+  <div class="brand">Change Hero App</div>
+  <div class="card">
+    <h1>Create your account</h1>
+    <p class="subtitle">Start your free trial — no credit card required.</p>
+    <form id="signup-form" action="../app.html" method="get" onsubmit="return validateForm()">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" placeholder="Jane Smith" required aria-label="Full name">
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="jane@company.com" required aria-label="Email address">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Min. 8 characters" required minlength="8" aria-label="Password">
+      </div>
+      <button type="submit" class="btn">Create free account</button>
+    </form>
+    <p class="footer-link">Already have an account? <a href="../index.html">Sign in</a></p>
+  </div>
+  <script>
+    function validateForm(){
+      const e=document.getElementById('email'),p=document.getElementById('password');
+      if(!e.value.includes('@')){e.focus();return false;}
+      if(p.value.length<8){p.focus();return false;}
+      return true;
+    }
+  </script>
+</body>
+</html>

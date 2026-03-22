@@ -35,7 +35,6 @@ def planner_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
     Pydantic, then applies stagnation override if applicable.
     """
     cfg = config.get("configurable", {})
-    mock_mode: bool = cfg.get("mock_mode", False)
     stagnation_threshold: int = cfg.get("stagnation_threshold", 3)
     autonomy_mode: str = cfg.get("autonomy_mode", state.get("autonomy_mode", "A_AUTONOMOUS"))
     cycle_count: int = state.get("cycle_count", 0)
@@ -52,11 +51,11 @@ def planner_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
         run_id=state["run_id"],
         cycle_count=cycle_count,
         node_name="planner",
-        input_summary=f"cycle={cycle_count} stagnant={stagnant_cycles} mock={mock_mode} mem_keys={len(memory_context)}",
+        input_summary=f"cycle={cycle_count} stagnant={stagnant_cycles} mem_keys={len(memory_context)}",
     )
 
     try:
-        result = _run_planner(state, mock_mode, cycle_count, stagnant_cycles, stagnation_threshold, memory_context)
+        result = _run_planner(state, cycle_count, stagnant_cycles, stagnation_threshold, memory_context)
         budget = result.pop("_budget", {})
         log_node_finish(exec_id, output_summary=str(result.get("selected_action")))
         return {
@@ -91,13 +90,12 @@ def planner_node(state: CEOClawState, config: RunnableConfig) -> dict[str, Any]:
 
 def _run_planner(
     state: CEOClawState,
-    mock_mode: bool,
     cycle_count: int,
     stagnant_cycles: int,
     stagnation_threshold: int,
     memory_context: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    model = get_model(mock_mode=mock_mode, cycle_index=cycle_count)
+    model = get_model(cycle_index=cycle_count)
 
     prompt = build_planner_prompt(
         cycle_count=cycle_count,

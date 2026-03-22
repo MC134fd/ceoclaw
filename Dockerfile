@@ -28,7 +28,6 @@ RUN mkdir -p /data data/exports data/websites
 # Runtime configuration
 # ---------------------------------------------------------------------------
 ENV CEOCLAW_DATABASE_PATH=/data/ceoclaw.db \
-    FLOCK_MOCK_MODE=true \
     CEOCLAW_ENV=production
 
 EXPOSE 8000

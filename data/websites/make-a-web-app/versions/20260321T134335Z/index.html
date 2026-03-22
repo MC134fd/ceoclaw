@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make A Web App — Build interactive web apps quickly</title>
+  <meta name="description" content="Make A Web App helps anyone create, deploy, and manage web applications with a clear user dashboard, built-in data export, and focused core functionality." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #14b8a6;
+      --color-secondary: #06b6d4;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0a1628;
+      --color-surface: #0f2340;
+      --color-text: #e0f7f7;
+      --color-muted: #6b9aaa;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #14b8a6, #06b6d4);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background:linear-gradient(180deg, var(--color-bg) 0%, rgba(10,22,40,0.9) 60%), var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      -webkit-text-size-adjust:100%;
+      padding: clamp(16px, calc(8px + var(--spacing) * 4px), 32px);
+    }
+
+    a{color:inherit; text-decoration:none}
+    .container{
+      max-width:1200px;
+      margin:0 auto;
+      padding: clamp(16px, calc(6px + var(--spacing) * 6px), 36px);
+    }
+
+    /* Navbar */
+    .navbar{
+      position:sticky;
+      top:12px;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 14px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(15,35,64,0.55), rgba(10,22,40,0.35));
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(6px);
+      transition: all 220ms ease;
+    }
+    .navbar.scrolled{
+      transform: translateY(-2px);
+      background: linear-gradient(180deg, rgba(15,35,64,0.75), rgba(10,22,40,0.85));
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255,255,255,0.03);
+      top:8px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      font-family:var(--font-display);
+      box-shadow: var(--shadow-sm);
+      flex-shrink:0;
+    }
+    .brand h1{
+      font-family:var(--font-display);
+      font-size: clamp(18px, 2.6vw, 22px);
+      margin:0;
+      letter-spacing:0.2px;
+      color:var(--color-text);
+    }
+    .navlinks{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .navlinks a{
+      padding:8px 12px;
+      color:var(--color-muted);
+      border-radius:8px;
+      font-weight:500;
+      font-size:15px;
+    }
+    .navlinks a:hover{color:var(--color-text)}
+    .nav-actions{display:flex; gap:10px; align-items:center}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:10px;
+      border: none;
+      cursor:pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      font-weight:600;
+      font-family:var(--font-body);
+      text-decoration:none;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{
+      background:var(--accent-gradient);
+      color:white;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-outline{
+      background:transparent;
+      color:var(--color-text);
+      border:1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(4px);
+    }
+    .btn-primary:hover{box-shadow: var(--shadow-lg)}
+    .btn-outline:hover{background:rgba(255,255,255,0.02)}
+
+    /* Hero */
+    .hero{
+      margin-top:clamp(18px, calc(8px + var(--spacing) * 8px), 48px);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:clamp(18px, calc(8px + var(--spacing) * 6px), 36px);
+      align-items:center;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(16px, calc(6px + var(--spacing) * 6px), 28px);
+    }
+    .eyebrow{
+      color:var(--color-accent-pink);
+      font-weight:600;
+      letter-spacing:0.6px;
+      font-size:13px;
+    }
+    .hero h2{
+      font-family:var(--font-display);
+      font-weight:600;
+      font-size: clamp(28px, 4.8vw, 48px);
+      margin:0;
+      line-height:1.03;
+      color:var(--color-text);
+      text-wrap: balance;
+    }
+    .hero p.lead{
+      margin:0;
+      color:var(--color-muted);
+      font-size:16px;
+      max-width:72ch;
+    }
+    .hero-ctas{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* Bento Grid for key highlights (visual) */
+    .bento{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 1fr;
+      gap:12px;
+      margin-top: clamp(12px, calc(6px + var(--spacing) * 6px), 28px);
+    }
+    .bento > .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius-md);
+      padding:16px;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:88px;
+    }
+    .panel h3{margin:0; font-size:16px; color:var(--color-text)}
+    .panel p{margin:0; color:var(--color-muted); font-size:14px}
+
+    /* Features */
+    .features{
+      margin-top: clamp(22px, calc(10px + var(--spacing) * 8px), 48px);
+      display:grid;
+      gap:18px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .feature-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border-radius:var(--radius-md);
+      padding:18px;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .feature-icon{
+      width:56px;
+      height:56px;
+      flex-shrink:0;
+      border-radius:10px;
+      background:rgba(255,255,255,0.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--color-primary);
+      font-weight:700;
+      font-size:20px;
+      font-family:var(--font-display);
+      box-shadow:var(--shadow-sm);
+    }
+    .feature-body h4{margin:0; font-size:16px; color:var(--color-text)}
+    .feature-body p{margin:6px 0 0 0; color:var(--color-muted); font-size:14px}
+
+    /* Testimonials */
+    .testimonials{
+      margin-top: clamp(18px, calc(8px + var(--spacing) * 8px), 36px);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:14px;
+    }
+    .testimonial{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:16px;
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .testimonial p.quote{margin:0; color:var(--color-text); font-style:italic}
+    .testimonial p.meta{margin:10px 0 0 0; color:var(--color-muted); font-size:14px; font-weight:600}
+
+    /* Pricing */
+    .pricing{
+      margin-top: clamp(20px, calc(10px + var(--spacing) * 8px), 44px);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:18px;
+    }
+    .plan{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      padding:20px;
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-md);
+      border:1px solid rgba(255,255,255,0.03);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .plan .title{font-size:18px; font-weight:700; color:var(--color-text)}
+    .plan .price{font-size:22px; font-weight:700; color:var(--color-primary)}
+    .plan ul{margin:8px 0 0 0; padding-left:18px; color:var(--color-muted)}
+    .plan .plan-cta{margin-top:auto}
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top: clamp(20px, calc(10px + var(--spacing) * 10px), 56px);
+      padding:20px;
+      border-radius:var(--radius-lg);
+      background: linear-gradient(90deg, rgba(20,184,166,0.08), rgba(6,182,212,0.06));
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .prefooter h3{margin:0; font-size:20px; color:var(--color-text)}
+    .prefooter p{margin:0; color:var(--color-muted)}
+
+    /* Footer */
+    footer{
+      margin-top: clamp(20px, calc(10px + var(--spacing) * 10px), 64px);
+      padding-top:18px;
+      border-top:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      color:var(--color-muted);
+      flex-wrap:wrap;
+      font-size:14px;
+    }
+    footer .links{display:flex; gap:12px}
+    footer a{color:var(--color-muted)}
+
+    /* Reveal animations */
+    .reveal{opacity:0; transform:translateY(20px); transition: opacity 560ms cubic-bezier(.2,.9,.2,1), transform 560ms cubic-bezier(.2,.9,.2,1)}
+    .reveal.visible{opacity:1; transform:none}
+
+    /* Responsive adjustments */
+    @media (min-width:1024px){
+      .hero{grid-template-columns: 1fr 420px}
+      .hero-grid{grid-template-columns: 1fr}
+      .bento > .p1{grid-column: span 7}
+      .bento > .p2{grid-column: span 5}
+      .bento > .p3{grid-column: span 4}
+      .bento > .p4{grid-column: span 4}
+      .bento > .p5{grid-column: span 4}
+    }
+    @media (max-width:640px){
+      .navbar{padding:8px}
+      .brand h1{font-size:18px}
+      .bento{grid-template-columns: repeat(6,1fr)}
+      .bento > .panel{padding:12px}
+      .hero{margin-top:12px}
+    }
+
+    /* Small helpers */
+    .muted{color:var(--color-muted)}
+    .small{font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="navbar" id="navbar">
+      <div class="brand" aria-label="Make A Web App">
+        <div class="logo">MWA</div>
+        <div>
+          <h1>Make A Web App</h1>
+          <div class="small muted">Turn ideas into interactive apps</div>
+        </div>
+      </div>
+
+      <nav class="navlinks" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="app.html">App</a>
+        <a href="pages/signup.html" class="muted">Sign Up</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-outline" href="app.html">Open app</a>
+        <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="hero-grid">
+          <div class="eyebrow reveal">Core functionality that gets you live</div>
+          <h2 id="hero-heading" class="reveal">Build, manage, and ship a web app without the complexity</h2>
+          <p class="lead reveal">Make A Web App guides you from concept to a functioning web application. Use a clear user dashboard to manage features, connect data sources, and export results with built-in data export tools. We focus on the essentials so you move faster.</p>
+          <div class="hero-ctas reveal">
+            <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+            <a class="btn btn-outline" href="app.html">Try the demo app</a>
+          </div>
+
+          <div class="bento reveal" aria-hidden="false">
+            <div class="panel p1">
+              <h3>Intuitive user dashboard</h3>
+              <p>Monitor active users, track workflows, and configure your app from a single dashboard designed for clarity.</p>
+            </div>
+            <div class="panel p2">
+              <h3>One-click deployment</h3>
+              <p>Push your app live with a single action. Deployments include performance checks and a rollback option.</p>
+            </div>
+            <div class="panel p3">
+              <h3>Secure data export</h3>
+              <p>Export datasets and reports in CSV or JSON formats for analytics or backups.</p>
+            </div>
+            <div class="panel p4">
+              <h3>Customizable components</h3>
+              <p>Drag, drop, and configure UI components to match your workflow without coding every element.</p>
+            </div>
+            <div class="panel p5">
+              <h3>Permissions & audit logs</h3>
+              <p>Role-based access and full audit logs help teams stay compliant and accountable.</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="reveal" aria-label="Quick app snapshot" style="background:linear-gradient(135deg, rgba(20,184,166,0.06), rgba(6,182,212,0.04)); padding:18px; border-radius:var(--radius-md); box-shadow:var(--shadow-sm); border:1px solid rgba(255,255,255,0.02);">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div style="flex:1">
+              <div style="color:var(--color-muted); font-size:13px;">Live app</div>
+              <div style="font-weight:700; color:var(--color-text); font-size:16px;">"Project Atlas" — production in under 48 hours</div>
+              <div style="color:var(--color-muted); font-size:13px; margin-top:8px;">Includes analytics, user dashboard, and scheduled data export to CSV.</div>
+            </div>
+            <div>
+              <a class="btn btn-primary" href="pages/signup.html">Start this workflow</a>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="features" aria-labelledby="features-heading">
+        <h2 id="features-heading" class="reveal" style="font-family:var(--font-display); font-size:22px; margin:0 0 6px 0;">Features that guide every step</h2>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">⛰️</div>
+          <div class="feature-body">
+            <h4>Focused core functionality</h4>
+            <p>We surface the features teams actually use: forms, auth, realtime updates, and integrated data export — no clutter.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">📊</div>
+          <div class="feature-body">
+            <h4>User dashboard & insights</h4>
+            <p>A central dashboard organizes metrics, activity streams, and configuration so you manage growth without guesswork.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">🔒</div>
+          <div class="feature-body">
+            <h4>Enterprise-grade security</h4>
+            <p>Role-based access, audit trails, and encrypted storage ensure your app and exports meet compliance needs.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">🔁</div>
+          <div class="feature-body">
+            <h4>Automated data export</h4>
+            <p>Schedule exports or trigger them from the dashboard. Download CSV or JSON for analysis or archival workflows.</p>
+          </div>
+        </article>
+
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">⚙️</div>
+          <div class="feature-body">
+            <h4>Extendable integrations</h4>
+            <p>Connect to storage, webhook endpoints, and analytics platforms to extend the app with your toolbox.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="testimonials" aria-labelledby="testimonials-heading">
+        <h2 id="testimonials-heading" class="reveal" style="font-family:var(--font-display); font-size:20px; margin:0 0 6px 0;">What builders say</h2>
+
+        <div class="testimonial reveal">
+          <p class="quote">"We moved from a spreadsheet prototype to a shared web app using Make A Web App. The user dashboard made onboarding the team effortless and the scheduled data export saved hours each week."</p>
+          <p class="meta">— Lina Gomez, Product Lead</p>
+        </div>
+
+        <div class="testimonial reveal">
+          <p class="quote">"The core functionality is focused. We delivered a client-facing tool in two sprints and used the built-in data export to feed our analytics pipeline."</p>
+          <p class="meta">— Marcus Hale, CTO at Finch Studio</p>
+        </div>
+
+        <div class="testimonial reveal">
+          <p class="quote">"Permissions and audit logging gave us the confidence to deploy across departments. Support helped map our workflow into the platform quickly."</p>
+          <p class="meta">— Priya Patel, Operations Manager</p>
+        </div>
+      </section>
+
+      <!-- PRICING -->
+      <section class="pricing" aria-labelledby="pricing-heading">
+        <h2 id="pricing-heading" class="reveal" style="font-family:var(--font-display); font-size:20px; margin:0 0 6px 0;">Pricing for projects of every scale</h2>
+
+        <div class="plan reveal" aria-hidden="false">
+          <div class="title">Free</div>
+          <div class="price">Free</div>
+          <div class="small muted">Perfect for prototypes and testing core functionality</div>
+          <ul>
+            <li>Single project</li>
+            <li>Basic user dashboard</li>
+            <li>Manual data export</li>
+            <li>Community support</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-primary" href="pages/signup.html">Get Started — Free</a>
+          </div>
+        </div>
+
+        <div class="plan reveal">
+          <div class="title">Pro</div>
+          <div class="price">$29 / month</div>
+          <div class="small muted">For growing teams building production apps</div>
+          <ul>
+            <li>Unlimited projects</li>
+            <li>Advanced user dashboard & roles</li>
+            <li>Scheduled data export (CSV/JSON)</li>
+            <li>Email support</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-primary" href="pages/signup.html">Start Pro — 14-day trial</a>
+          </div>
+        </div>
+
+        <div class="plan reveal">
+          <div class="title">Enterprise</div>
+          <div class="price">Custom</div>
+          <div class="small muted">Tailored for large organizations and security needs</div>
+          <ul>
+            <li>SSO & advanced permissions</li>
+            <li>Priority support and onboarding</li>
+            <li>Dedicated data export endpoints & retention</li>
+            <li>Service-level agreement</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-outline" href="pages/signup.html">Contact Sales</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRE-FOOTER CTA -->
+      <section class="prefooter reveal" aria-labelledby="prefooter-heading">
+        <div>
+          <h3 id="prefooter-heading">Ready to make your web app a reality?</h3>
+          <p>Join teams who ship faster with a clear dashboard, reliable exports, and practical core functionality.</p>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+          <a class="btn btn-outline" href="app.html">Explore the demo</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="logo" style="width:38px; height:38px; border-radius:8px; font-size:13px;">MWA</div>
+          <div>
+            <div style="font-weight:700">Make A Web App</div>
+            <div class="muted small">Tools for building meaningful web applications</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="app.html">App</a>
+        <a href="pages/signup.html">Sign Up</a>
+        <span class="muted">© <span id="year"></span> Make A Web App</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Update copyright year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sticky navbar class on scroll
+    (function(){
+      const navbar = document.getElementById('navbar');
+      function onScroll(){
+        if(window.scrollY > 14){
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Reveal on scroll - IntersectionObserver
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('visible');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, {threshold: 0.12});
+        reveals.forEach(r => io.observe(r));
+      } else {
+        // fallback
+        reveals.forEach(r => r.classList.add('visible'));
+      }
+    })();
+  </script>
+</body>
+</html>

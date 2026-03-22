@@ -1,0 +1,158 @@
+{
+  "site": {
+    "title": "Change Hero App",
+    "description": "Change Hero App — change the hero color",
+    "theme": "light",
+    "primaryColor": "#3b82f6",
+    "secondaryColor": "#8b5cf6",
+    "accentColor": "#ec4899",
+    "bgColor": "#f8fafc",
+    "surfaceColor": "#ffffff",
+    "textColor": "#0f172a",
+    "mutedColor": "#64748b",
+    "borderColor": "#e2e8f0",
+    "displayFont": "Space Grotesk",
+    "bodyFont": "Inter",
+    "logoText": "Change Hero App"
+  },
+  "navigation": {
+    "links": [
+      {
+        "label": "Features",
+        "href": "#features"
+      },
+      {
+        "label": "Pricing",
+        "href": "#pricing"
+      }
+    ],
+    "ctaButton": {
+      "label": "Get Started",
+      "href": "pages/signup.html"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "Change Hero App",
+      "type": "landing",
+      "sections": [
+        {
+          "type": "hero",
+          "props": {
+            "headline": "Welcome to Change Hero App",
+            "subheadline": "change the hero color",
+            "ctaText": "Get Started",
+            "ctaHref": "pages/signup.html",
+            "secondaryCtaText": "Learn More",
+            "secondaryCtaHref": "#features"
+          }
+        },
+        {
+          "type": "features",
+          "props": {
+            "heading": "Why Change Hero App?",
+            "subheading": "",
+            "items": [
+              {
+                "icon": "🚀",
+                "title": "Fast Setup",
+                "description": "Get started in minutes, not hours."
+              },
+              {
+                "icon": "🔒",
+                "title": "Secure",
+                "description": "Enterprise-grade security built in."
+              },
+              {
+                "icon": "📊",
+                "title": "Analytics",
+                "description": "Real-time insights at your fingertips."
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta",
+          "props": {
+            "heading": "Ready to try Change Hero App?",
+            "description": "Start your free trial today.",
+            "buttonText": "Get Started Free",
+            "buttonHref": "pages/signup.html"
+          }
+        },
+        {
+          "type": "footer",
+          "props": {
+            "brand": "Change Hero App",
+            "tagline": "",
+            "links": [],
+            "copyright": "© 2026 Change Hero App. All rights reserved."
+          }
+        }
+      ],
+      "props": {}
+    },
+    {
+      "path": "pages/signup.html",
+      "title": "Sign Up",
+      "type": "auth",
+      "sections": [],
+      "props": {
+        "formType": "signup",
+        "heading": "Create your account",
+        "fields": [
+          "name",
+          "email",
+          "password"
+        ],
+        "submitText": "Get Started",
+        "altLinkText": "Already have an account? Sign in",
+        "altLinkHref": "../index.html"
+      }
+    },
+    {
+      "path": "app.html",
+      "title": "Dashboard",
+      "type": "dashboard",
+      "sections": [],
+      "props": {
+        "welcomeHeading": "Welcome to Change Hero App",
+        "metrics": [
+          {
+            "label": "Users",
+            "value": "0",
+            "icon": "👥"
+          },
+          {
+            "label": "Revenue",
+            "value": "$0",
+            "icon": "💰"
+          },
+          {
+            "label": "Growth",
+            "value": "0%",
+            "icon": "📈"
+          },
+          {
+            "label": "Rating",
+            "value": "5.0",
+            "icon": "⭐"
+          }
+        ],
+        "sidebarLinks": [
+          {
+            "label": "Dashboard",
+            "href": "#",
+            "icon": "📊"
+          },
+          {
+            "label": "Settings",
+            "href": "#",
+            "icon": "⚙️"
+          }
+        ]
+      }
+    }
+  ]
+}

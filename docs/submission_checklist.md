@@ -5,7 +5,7 @@
 | Requirement | Status | File Evidence | Command to Verify |
 |-------------|--------|--------------|-------------------|
 | Build on OpenClaw | Met | `integrations/flock_client.py:122` — `class FlockChatModel(BaseChatModel)` | `pytest tests/test_chat_api.py::test_flockchatmodel_is_basechatmodel` |
-| Founder-oriented use case | Met | README §2 — 14 extensions | `python main.py demo --cycles 4 --mock-model` |
+| Founder-oriented use case | Met | README §2 — 14 extensions | `python main.py demo --cycles 4` |
 | Multi-step business loop | Met | `core/agent_loop.py` — 7-node LangGraph | `pytest tests/test_agent_loop.py` |
 | Product domain | Met | `agents/product_agent.py` + `tools/website_builder.py` | `pytest tests/test_tools.py::test_website_builder_creates_file` |
 | Marketing domain | Met | `agents/marketing_agent.py` + research + social | `pytest tests/test_research.py` |

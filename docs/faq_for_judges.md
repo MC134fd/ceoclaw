@@ -2,7 +2,7 @@
 
 ### Q: Does this actually use the FLock/OpenClaw API?
 
-Yes. `integrations/flock_client.py` wraps the FLock HTTP endpoint as a LangChain `BaseChatModel`. When `FLOCK_ENDPOINT` and `FLOCK_API_KEY` are set, every `PlannerNode` and `EvaluatorNode` call sends a real HTTP request to the FLock endpoint. Run with `--mock-model` (or `FLOCK_MOCK_MODE=true`) for a fully deterministic demo that requires no credentials.
+Yes. `integrations/flock_client.py` wraps the FLock HTTP endpoint as a LangChain `BaseChatModel`. When `FLOCK_ENDPOINT` and `FLOCK_API_KEY` are set, every `PlannerNode` and `EvaluatorNode` call sends a real HTTP request to the FLock endpoint.
 
 ### Q: What is `integrations/openclaw_adapter.py` and why is it marked DEPRECATED?
 
@@ -16,15 +16,15 @@ No — MRR is simulated. The `analytics_tool` reads from a SQLite `metrics` tabl
 
 No — `outreach_tool` generates and persists outreach records to the `outreach_attempts` table with `status='pending'`. In production, you would wire SendGrid / LinkedIn / Twitter API to send them. The records are fully formed messages with personalized content.
 
-### Q: How is mock mode different from fallback mode?
+### Q: How is live mode different from fallback mode?
 
-| | Mock mode | Fallback mode |
+| | Live mode | Fallback mode |
 |-|-----------|---------------|
-| Activation | `--mock-model` flag / `FLOCK_MOCK_MODE=true` | Live mode + all retries fail |
-| Indication | `Mode: mock (deterministic)` in CLI | `[FALLBACK]` prefix in response content + WARNING log |
-| `model_mode` field | `"mock"` | `"fallback"` |
-| `fallback_count` | 0 | +1 per call that fell back |
-| Intended use | Demo, testing | Production self-healing |
+| Activation | Valid `FLOCK_ENDPOINT` + `FLOCK_API_KEY` | Live mode + all retries fail |
+| Indication | Normal model response | `[FALLBACK]` prefix in response content + WARNING log |
+| `model_mode` field | `"live"` | `"fallback"` |
+| `fallback_count` | 0 (unless failures occur) | +1 per call that fell back |
+| Intended use | Normal runtime | Production self-healing |
 
 ### Q: Can I run this with my own FLock key right now?
 
@@ -60,7 +60,7 @@ If any executor node (product/marketing/sales/ops) fails 3 consecutive times, `R
 
 ### Q: Are there any external dependencies beyond Python packages?
 
-No. SQLite is bundled with Python. All Python packages are in `requirements.txt` / `pyproject.toml`. The only optional external dependency is the FLock API endpoint (which you can skip with `--mock-model`).
+No. SQLite is bundled with Python. All Python packages are in `requirements.txt` / `pyproject.toml`. The only optional external dependency is the FLock API endpoint.
 
 ### Q: How does stagnation detection work?
 

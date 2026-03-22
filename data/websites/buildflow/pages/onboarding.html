@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Started — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .onboarding-shell { flex: 1; display: flex; flex-direction: column; align-items: center; padding: var(--space-3xl) var(--space-md); }
+    .onboarding-progress { width: 100%; max-width: 560px; margin-bottom: var(--space-2xl); }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); font-size: 0.8rem; color: var(--color-text-subtle); }
+    .progress-steps { display: flex; gap: 0.35rem; }
+    .progress-step { flex: 1; height: 4px; border-radius: 2px; background: var(--color-border); transition: background 0.3s; }
+    .progress-step.done { background: var(--accent-gradient); }
+    .progress-step.active { background: var(--color-primary); }
+    .onboarding-card { width: 100%; max-width: 560px; }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .step-header { margin-bottom: var(--space-xl); }
+    .step-number { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-primary); margin-bottom: var(--space-xs); }
+    .step-header h2 { font-size: 1.75rem; }
+    .step-header p { color: var(--color-text-muted); margin-top: 0.5rem; font-size: 0.95rem; }
+    /* Option buttons */
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-xl); }
+    .option-btn {
+      padding: var(--space-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: var(--color-surface-soft);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-align: left;
+    }
+    .option-btn:hover { border-color: var(--color-primary); }
+    .option-btn.selected { border-color: var(--color-primary); background: rgba(56,189,248,0.06); }
+    .option-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .option-label { font-family: var(--font-display); font-weight: 600; font-size: 0.875rem; color: var(--color-text); }
+    .option-sublabel { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.2rem; }
+    /* Form */
+    .onboarding-form { display: flex; flex-direction: column; gap: var(--space-md); margin-bottom: var(--space-xl); }
+    /* Actions */
+    .step-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+    .skip-link { font-size: 0.8rem; color: var(--color-text-subtle); cursor: pointer; }
+    .skip-link:hover { color: var(--color-text-muted); }
+    /* Agent selection */
+    .agent-options { display: flex; flex-direction: column; gap: var(--space-sm); margin-bottom: var(--space-xl); }
+    .agent-option {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: var(--color-surface-soft);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .agent-option:hover { border-color: var(--color-primary); }
+    .agent-option.selected { border-color: var(--color-primary); background: rgba(56,189,248,0.06); }
+    .agent-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--color-primary); flex-shrink: 0; }
+    .agent-info h4 { font-size: 0.9rem; margin-bottom: 0.1rem; }
+    .agent-info p { font-size: 0.75rem; color: var(--color-text-muted); max-width: unset; }
+    /* Integrations */
+    .integration-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); margin-bottom: var(--space-xl); }
+    .integration-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: var(--space-md) var(--space-sm);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: var(--color-surface-soft);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+    .integration-btn:hover { border-color: var(--color-primary); color: var(--color-text); }
+    .integration-btn.connected { border-color: var(--color-accent); background: rgba(52,211,153,0.06); color: var(--color-accent); }
+    .integration-icon { font-size: 1.5rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo">
+      <div class="logo-mark">BF</div>
+      Buildflow
+    </a>
+    <span style="font-size:0.8rem; color:var(--color-text-subtle);">Setting up your workspace…</span>
+  </div>
+</nav>
+
+<div class="onboarding-shell">
+  <!-- Progress -->
+  <div class="onboarding-progress">
+    <div class="progress-header">
+      <span id="progress-label">Step 1 of 4</span>
+      <span id="progress-pct">25%</span>
+    </div>
+    <div class="progress-steps">
+      <div class="progress-step active" id="ps-1"></div>
+      <div class="progress-step" id="ps-2"></div>
+      <div class="progress-step" id="ps-3"></div>
+      <div class="progress-step" id="ps-4"></div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="onboarding-card">
+    <!-- Step 1: What are you building? -->
+    <div class="step-panel active" id="step-1">
+      <div class="step-header">
+        <div class="step-number">01 / 04</div>
+        <h2>What are you building?</h2>
+        <p>Help us personalize your AI agents and workspace for your specific type of startup.</p>
+      </div>
+      <div class="option-grid">
+        <button class="option-btn" onclick="selectOption(this)">
+          <div class="option-icon">⚙️</div>
+          <div class="option-label">SaaS Product</div>
+          <div class="option-sublabel">Subscription software</div>
+        </button>
+        <button class="option-btn selected" onclick="selectOption(this)">
+          <div class="option-icon">📱</div>
+          <div class="option-label">Mobile App</div>
+          <div class="option-sublabel">iOS / Android</div>
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          <div class="option-icon">🛒</div>
+          <div class="option-label">Marketplace</div>
+          <div class="option-sublabel">Two-sided platform</div>
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          <div class="option-icon">🏢</div>
+          <div class="option-label">Agency / Services</div>
+          <div class="option-sublabel">Client-based business</div>
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          <div class="option-icon">🧪</div>
+          <div class="option-label">Deep Tech / AI</div>
+          <div class="option-sublabel">Research-driven product</div>
+        </button>
+        <button class="option-btn" onclick="selectOption(this)">
+          <div class="option-icon">✦</div>
+          <div class="option-label">Something else</div>
+          <div class="option-sublabel">Other type of startup</div>
+        </button>
+      </div>
+      <div class="step-actions">
+        <span></span>
+        <button class="btn btn-primary" onclick="goStep(2)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Tell us about it -->
+    <div class="step-panel" id="step-2">
+      <div class="step-header">
+        <div class="step-number">02 / 04</div>
+        <h2>Tell us about your startup</h2>
+        <p>A few details help your AI agents give you sharper, more relevant output from day one.</p>
+      </div>
+      <div class="onboarding-form">
+        <div class="form-group">
+          <label class="form-label">Startup name</label>
+          <input type="text" placeholder="e.g. Acme AI" value="">
+        </div>
+        <div class="form-group">
+          <label class="form-label">One-line description</label>
+          <input type="text" placeholder="e.g. AI-powered CRM for solopreneurs">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target customer</label>
+          <input type="text" placeholder="e.g. B2B SaaS founders with &lt;10 employees">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current stage</label>
+          <select>
+            <option value="">Select your stage…</option>
+            <option>Idea / Validation</option>
+            <option>MVP building</option>
+            <option selected>Post-launch, pre-revenue</option>
+            <option>Early traction ($1k–$10k MRR)</option>
+            <option>Growth ($10k+ MRR)</option>
+          </select>
+        </div>
+      </div>
+      <div class="step-actions">
+        <button class="btn btn-secondary btn-sm" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goStep(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Choose your agents -->
+    <div class="step-panel" id="step-3">
+      <div class="step-header">
+        <div class="step-number">03 / 04</div>
+        <h2>Activate your agents</h2>
+        <p>Select which AI agents to enable. You can add or remove them anytime from your workspace.</p>
+      </div>
+      <div class="agent-options">
+        <label class="agent-option selected">
+          <input type="checkbox" checked>
+          <div style="font-size:1.25rem;">🧠</div>
+          <div class="agent-info">
+            <h4>Product Agent</h4>
+            <p>PRDs, roadmaps, feature prioritization, user stories</p>
+          </div>
+        </label>
+        <label class="agent-option selected">
+          <input type="checkbox" checked>
+          <div style="font-size:1.25rem;">🚀</div>
+          <div class="agent-info">
+            <h4>Marketing Agent</h4>
+            <p>Content, SEO, cold outreach, launch campaigns</p>
+          </div>
+        </label>
+        <label class="agent-option selected">
+          <input type="checkbox" checked>
+          <div style="font-size:1.25rem;">🎯</div>
+          <div class="agent-info">
+            <h4>Sales Agent</h4>
+            <p>Lead qualification, pipeline management, proposals</p>
+          </div>
+        </label>
+        <label class="agent-option">
+          <input type="checkbox">
+          <div style="font-size:1.25rem;">💰</div>
+          <div class="agent-info">
+            <h4>Finance Agent</h4>
+            <p>Revenue modeling, runway, investor reports</p>
+          </div>
+        </label>
+        <label class="agent-option">
+          <input type="checkbox">
+          <div style="font-size:1.25rem;">⚙️</div>
+          <div class="agent-info">
+            <h4>Tech Agent</h4>
+            <p>Architecture, stack decisions, code scaffolding</p>
+          </div>
+        </label>
+      </div>
+      <div class="step-actions">
+        <button class="btn btn-secondary btn-sm" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="goStep(4)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Connect tools -->
+    <div class="step-panel" id="step-4">
+      <div class="step-header">
+        <div class="step-number">04 / 04</div>
+        <h2>Connect your tools</h2>
+        <p>Buildflow works best connected to your existing stack. Skip this — you can connect anytime from Settings.</p>
+      </div>
+      <div class="integration-grid">
+        <button class="integration-btn connected" onclick="toggleIntegration(this)">
+          <span class="integration-icon">📊</span>
+          <span>Notion</span>
+        </button>
+        <button class="integration-btn" onclick="toggleIntegration(this)">
+          <span class="integration-icon">⚡</span>
+          <span>Linear</span>
+        </button>
+        <button class="integration-btn" onclick="toggleIntegration(this)">
+          <span class="integration-icon">🐙</span>
+          <span>GitHub</span>
+        </button>
+        <button class="integration-btn" onclick="toggleIntegration(this)">
+          <span class="integration-icon">💳</span>
+          <span>Stripe</span>
+        </button>
+        <button class="integration-btn" onclick="toggleIntegration(this)">
+          <span class="integration-icon">💬</span>
+          <span>Slack</span>
+        </button>
+        <button class="integration-btn" onclick="toggleIntegration(this)">
+          <span class="integration-icon">📧</span>
+          <span>HubSpot</span>
+        </button>
+      </div>
+      <div class="step-actions">
+        <button class="btn btn-ghost btn-sm skip-link" onclick="finish()">Skip for now</button>
+        <button class="btn btn-primary" onclick="finish()">Launch my workspace →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 4;
+  function goStep(n) {
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    document.getElementById(`ps-${currentStep}`).classList.remove('active');
+    document.getElementById(`ps-${currentStep}`).classList.add('done');
+    currentStep = n;
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    document.getElementById(`ps-${currentStep}`).classList.add('active');
+    document.getElementById('progress-label').textContent = `Step ${n} of ${totalSteps}`;
+    document.getElementById('progress-pct').textContent = `${Math.round((n / totalSteps) * 100)}%`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function selectOption(el) {
+    el.closest('.option-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function toggleIntegration(el) {
+    el.classList.toggle('connected');
+  }
+  function finish() {
+    window.location.href = '../app.html';
+  }
+</script>
+
+</body>
+</html>

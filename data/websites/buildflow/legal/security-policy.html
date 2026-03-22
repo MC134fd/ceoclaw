@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Policy — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-secondary mb-md">Legal</div>
+    <h1>Security Policy</h1>
+    <p>Last updated: March 1, 2026</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="prose">
+      <p>Buildflow takes security seriously. This policy describes our security practices, infrastructure, and responsible disclosure program.</p>
+      <h2>Infrastructure security</h2>
+      <p>Buildflow runs on Amazon Web Services (AWS) across two regions (us-east-1 and eu-west-1) with automatic failover. All infrastructure is managed as code and deployed via CI/CD pipelines with automated security scanning.</p>
+      <ul>
+        <li>Data encrypted at rest with AES-256</li>
+        <li>Data encrypted in transit with TLS 1.3</li>
+        <li>Network access controlled via VPC and security groups</li>
+        <li>Regular penetration testing by independent third parties</li>
+      </ul>
+      <h2>Application security</h2>
+      <ul>
+        <li>Passwords hashed with bcrypt (cost factor 12)</li>
+        <li>JWT tokens with short expiry + refresh token rotation</li>
+        <li>CSRF protection on all state-changing endpoints</li>
+        <li>Rate limiting and abuse detection on all API endpoints</li>
+        <li>Dependency scanning in CI/CD pipeline (Dependabot + Snyk)</li>
+      </ul>
+      <h2>Access controls</h2>
+      <p>Internal access to customer data is strictly limited on a need-to-know basis with MFA required for all staff. All access is logged and reviewed monthly. We do not access customer startup data unless explicitly requested for support purposes and authorized by you.</p>
+      <h2>Compliance</h2>
+      <ul>
+        <li>SOC 2 Type II certified (annual audit)</li>
+        <li>GDPR compliant</li>
+        <li>CCPA compliant</li>
+        <li>HIPAA not applicable — Buildflow does not process health information</li>
+      </ul>
+      <h2>Incident response</h2>
+      <p>In the event of a data breach, we will notify affected users within 72 hours as required by GDPR, and within the timeframes required by applicable law. We maintain a formal incident response plan that is tested quarterly.</p>
+      <h2>Responsible disclosure</h2>
+      <p>If you discover a security vulnerability in Buildflow, please report it to <a href="mailto:security@buildflow.app">security@buildflow.app</a>. Include a detailed description of the issue, steps to reproduce, and the potential impact. We will:</p>
+      <ul>
+        <li>Acknowledge receipt within 24 hours</li>
+        <li>Provide an initial assessment within 72 hours</li>
+        <li>Work with you on a coordinated disclosure timeline</li>
+        <li>Credit you in our security acknowledgements (if desired)</li>
+      </ul>
+      <p>We do not pursue legal action against researchers acting in good faith under this policy.</p>
+    </div>
+    <div class="mt-xl">
+      <a href="../product/security.html" class="btn btn-secondary">Security overview page →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms of Service</a></li><li><a href="cookies.html">Cookies</a></li><li><a href="security-policy.html">Security Policy</a></li><li><a href="acceptable-use.html">Acceptable Use</a></li><li><a href="accessibility.html">Accessibility</a></li></ul></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="../product/features.html">Features</a></li><li><a href="../product/security.html">Security</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="../company/about.html">About</a></li><li><a href="../company/contact.html">Contact</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

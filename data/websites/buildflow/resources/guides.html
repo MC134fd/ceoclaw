@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guides — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .guides-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-lg); }
+    .guide-card { padding: var(--space-lg); }
+    .guide-icon { font-size: 2rem; margin-bottom: var(--space-sm); }
+    .guide-tag { font-size: 0.7rem; color: var(--color-text-subtle); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .guide-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .guide-desc { font-size: 0.85rem; color: var(--color-text-muted); max-width: unset; }
+    .guide-meta { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-sm); font-size: 0.75rem; color: var(--color-text-subtle); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-accent mb-md">Guides</div>
+    <h1>Step-by-step guides<br>for every stage.</h1>
+    <p>Practical, actionable walkthroughs to help you get the most out of Buildflow — from setup to advanced workflows.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="guides-grid">
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">⚡</div>
+        <div class="guide-tag">Beginner · 10 min</div>
+        <div class="guide-title">Setting up your first Buildflow project</div>
+        <div class="guide-desc">Create a project, define your startup context, and activate your first agents in under 10 minutes.</div>
+        <div class="guide-meta"><span>⭐ Most popular</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">🧠</div>
+        <div class="guide-tag">Beginner · 15 min</div>
+        <div class="guide-title">Writing your first PRD with the Product Agent</div>
+        <div class="guide-desc">Go from a rough feature idea to a fully structured Product Requirements Document with acceptance criteria.</div>
+        <div class="guide-meta"><span>5 steps</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">🚀</div>
+        <div class="guide-tag">Intermediate · 20 min</div>
+        <div class="guide-title">Building a full GTM plan in one session</div>
+        <div class="guide-desc">Use the Marketing Agent to generate positioning, ICP definition, channel strategy, and first-month content calendar.</div>
+        <div class="guide-meta"><span>7 steps</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">🔗</div>
+        <div class="guide-tag">Beginner · 5 min</div>
+        <div class="guide-title">Connecting Notion to Buildflow</div>
+        <div class="guide-desc">Sync your Notion workspace bidirectionally in under 5 minutes. Push agent output to pages automatically.</div>
+        <div class="guide-meta"><span>3 steps</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">🎯</div>
+        <div class="guide-tag">Intermediate · 25 min</div>
+        <div class="guide-title">Running a cold outreach campaign with the Sales Agent</div>
+        <div class="guide-desc">From prospect list to sent emails — the Sales Agent handles qualification, variant generation, and follow-up scheduling.</div>
+        <div class="guide-meta"><span>8 steps</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">💰</div>
+        <div class="guide-tag">Advanced · 30 min</div>
+        <div class="guide-title">Building a 3-scenario financial model</div>
+        <div class="guide-desc">Use the Finance Agent to build base, optimistic, and pessimistic revenue models with automatic Stripe data import.</div>
+        <div class="guide-meta"><span>10 steps</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">🎨</div>
+        <div class="guide-tag">Intermediate · 15 min</div>
+        <div class="guide-title">Training your brand voice</div>
+        <div class="guide-desc">Upload writing samples and configure tone preferences so every agent output sounds authentically like you.</div>
+        <div class="guide-meta"><span>5 steps</span></div>
+      </a>
+      <a href="#" class="card guide-card" style="text-decoration:none;color:inherit;">
+        <div class="guide-icon">📊</div>
+        <div class="guide-tag">Advanced · 20 min</div>
+        <div class="guide-title">Sprint planning with the Product Agent</div>
+        <div class="guide-desc">Auto-generate full sprint plans from your roadmap with time estimates, dependencies, and RICE scores.</div>
+        <div class="guide-meta"><span>6 steps</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Resources</h4><ul><li><a href="docs.html">Docs</a></li><li><a href="blog.html">Blog</a></li><li><a href="guides.html">Guides</a></li><li><a href="faq.html">FAQ</a></li></ul></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="../product/features.html">Features</a></li><li><a href="../product/agents.html">Agents</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

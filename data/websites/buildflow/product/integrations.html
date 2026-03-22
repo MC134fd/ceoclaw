@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .integration-grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-md); }
+    .integration-card { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-sm); padding: var(--space-lg); }
+    .integration-logo { width: 56px; height: 56px; border-radius: var(--radius); background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; }
+    .integration-name { font-weight: 600; font-size: 0.9rem; }
+    .integration-desc { font-size: 0.8rem; color: var(--color-text-muted); max-width: unset; }
+    .plan-chip { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-pill); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .chip-pro { background: rgba(56,189,248,0.1); color: var(--color-primary); border: 1px solid rgba(56,189,248,0.2); }
+    .chip-scale { background: rgba(167,139,250,0.1); color: var(--color-secondary); border: 1px solid rgba(167,139,250,0.2); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-links">
+      <a href="features.html">Features</a>
+      <a href="agents.html">Agents</a>
+      <a href="../pages/pricing.html">Pricing</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">Integrations</div>
+    <h1>Connects with everything<br>you already use.</h1>
+    <p>60+ native integrations so Buildflow slots right into your workflow — not the other way around.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-accent mb-md">Pro plan</div>
+      <h2>Included on Pro</h2>
+    </div>
+    <div class="integration-grid-full mb-xl">
+      <div class="card integration-card"><div class="integration-logo">📊</div><div class="integration-name">Notion</div><div class="integration-desc">Sync pages, databases, and tasks bidirectionally</div><span class="plan-chip chip-pro">Pro</span></div>
+      <div class="card integration-card"><div class="integration-logo">⚡</div><div class="integration-name">Linear</div><div class="integration-desc">Push issues, cycles, and project updates</div><span class="plan-chip chip-pro">Pro</span></div>
+      <div class="card integration-card"><div class="integration-logo">🐙</div><div class="integration-name">GitHub</div><div class="integration-desc">Link issues to PRs, track velocity</div><span class="plan-chip chip-pro">Pro</span></div>
+      <div class="card integration-card"><div class="integration-logo">✉️</div><div class="integration-name">Gmail</div><div class="integration-desc">Send agent-drafted outreach directly</div><span class="plan-chip chip-pro">Pro</span></div>
+      <div class="card integration-card"><div class="integration-logo">📅</div><div class="integration-name">Google Calendar</div><div class="integration-desc">Block time for sprint tasks automatically</div><span class="plan-chip chip-pro">Pro</span></div>
+      <div class="card integration-card"><div class="integration-logo">💬</div><div class="integration-name">Slack</div><div class="integration-desc">Daily digests and agent alerts in channels</div><span class="plan-chip chip-pro">Pro</span></div>
+    </div>
+    <div class="section-header">
+      <div class="badge badge-secondary mb-md">Scale plan</div>
+      <h2>Unlock on Scale</h2>
+    </div>
+    <div class="integration-grid-full">
+      <div class="card integration-card"><div class="integration-logo">💳</div><div class="integration-name">Stripe</div><div class="integration-desc">Revenue metrics pulled automatically</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">🎯</div><div class="integration-name">HubSpot</div><div class="integration-desc">Full CRM sync with sales agent</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">☁️</div><div class="integration-name">Salesforce</div><div class="integration-desc">Enterprise CRM bidirectional sync</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">🎨</div><div class="integration-name">Figma</div><div class="integration-desc">Pull design components into PRDs</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">📋</div><div class="integration-name">Jira</div><div class="integration-desc">Sync sprints and epics with Buildflow plans</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">📈</div><div class="integration-name">Mixpanel</div><div class="integration-desc">Product analytics fed to growth agent</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">🔍</div><div class="integration-name">Intercom</div><div class="integration-desc">Customer data feeds ICP refinement</div><span class="plan-chip chip-scale">Scale</span></div>
+      <div class="card integration-card"><div class="integration-logo">📝</div><div class="integration-name">Airtable</div><div class="integration-desc">Sync databases and operations data</div><span class="plan-chip chip-scale">Scale</span></div>
+    </div>
+    <div class="text-center mt-xl">
+      <p style="color:var(--color-text-muted); font-size:0.9rem;">Don't see what you need? <a href="../company/contact.html">Request an integration →</a></p>
+    </div>
+  </div>
+</section>
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Connect your stack. Ship faster.</h2>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-lg mt-lg">Start for free →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="features.html">Features</a></li><li><a href="agents.html">Agents</a></li><li><a href="integrations.html">Integrations</a></li><li><a href="roadmap.html">Roadmap</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="../company/about.html">About</a></li><li><a href="../company/contact.html">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

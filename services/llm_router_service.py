@@ -51,7 +51,7 @@ def check_provider_health() -> dict[str, Any]:
         {
             "flock": {"configured": False, "reachable": False, "error": "disabled"},
             "openai": {"configured": bool, "reachable": bool, "error": str | None},
-            "active_provider": "openai" | "mock",
+            "active_provider": "openai" | "unavailable",
         }
     """
     reload_fn = getattr(settings, "reload", None)
@@ -96,11 +96,11 @@ def check_provider_health() -> dict[str, Any]:
     else:
         openai_error = "not_configured"
 
-    # --- Active provider — only openai or mock ---
+    # --- Active provider ---
     if openai_configured and openai_reachable:
         active_provider = "openai"
     else:
-        active_provider = "mock"
+        active_provider = "unavailable"
 
     result = {
         "flock": flock_status,

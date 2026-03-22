@@ -2,7 +2,7 @@
 # run_local.sh  –  CEOClaw local launcher and API smoke-check
 #
 # Usage:
-#   ./scripts/run_local.sh demo             # 8-cycle mock demo run
+#   ./scripts/run_local.sh demo             # 8-cycle demo run
 #   ./scripts/run_local.sh demo --cycles 5  # custom cycle count
 #   ./scripts/run_local.sh smoke            # start server, seed data, hit endpoints, stop
 #   ./scripts/run_local.sh smoke --port 8765
@@ -70,7 +70,7 @@ _cmd_demo() {
         esac
     done
 
-    "$PYTHON" main.py demo --cycles "$cycles" --mock-model "${extra_args[@]+"${extra_args[@]}"}"
+    "$PYTHON" main.py demo --cycles "$cycles" "${extra_args[@]+"${extra_args[@]}"}"
 }
 
 # ---------------------------------------------------------------------------
@@ -111,9 +111,9 @@ _cmd_smoke() {
         exit 1
     fi
 
-    # 1. Run 3 mock cycles to seed the database
-    _header "Seeding database (3-cycle mock run)"
-    "$PYTHON" main.py run --cycles 3 --mock-model --goal-mrr 100 2>/dev/null
+    # 1. Run 3 cycles to seed the database
+    _header "Seeding database (3-cycle run)"
+    "$PYTHON" main.py run --cycles 3 --goal-mrr 100 2>/dev/null
 
     # 2. Start API server in background (kill any stale process on that port first)
     _header "Starting API server on port $PORT"
@@ -178,7 +178,7 @@ case "$CMD" in
     smoke) _cmd_smoke "$@" ;;
     *)
         echo "Usage: $0 [demo|smoke] [options]"
-        echo "  demo  [--cycles N]   Run 8-cycle mock demo (default: 8 cycles)"
+        echo "  demo  [--cycles N]   Run 8-cycle demo (default: 8 cycles)"
         echo "  smoke [--port N]     API smoke-check against a fresh server"
         exit 1
         ;;

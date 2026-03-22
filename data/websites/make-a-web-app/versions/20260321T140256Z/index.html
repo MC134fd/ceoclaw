@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Banana Barn — Fresh bananas delivered</title>
+  <meta name="description" content="Banana Barn sells fresh, perfectly ripe bananas with fast delivery. Choose from multiple varieties, subscribe for regular shipments, and enjoy farm-fresh fruit at home." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #FFD54F;
+      --color-secondary: #FFB74D;
+      --color-accent-pink: #F59E0B;
+      --color-bg: #fffbea;
+      --color-surface: #fff3cd;
+      --color-text: #3b2f00;
+      --color-muted: #6b5b3a;
+      --color-border: #f0e6b6;
+      --accent-gradient: linear-gradient(135deg, #FFD54F, #FFB300);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.02);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.03);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background:linear-gradient(180deg, var(--color-bg) 0%, rgba(255,251,224,0.9) 60%), var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      -webkit-text-size-adjust:100%;
+      padding: clamp(16px, calc(8px + var(--spacing) * 4px), 32px);
+    }
+
+    a{color:inherit; text-decoration:none}
+    .container{
+      max-width:1200px;
+      margin:0 auto;
+      padding: clamp(16px, calc(6px + var(--spacing) * 6px), 36px);
+    }
+
+    /* Navbar */
+    .navbar{
+      position:sticky;
+      top:12px;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 14px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,249,230,0.95), rgba(255,247,220,0.85));
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(6px);
+      transition: all 220ms ease;
+    }
+    .navbar.scrolled{
+      transform: translateY(-2px);
+      background: linear-gradient(180deg, rgba(255,247,220,0.98), rgba(255,245,210,0.99));
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(0,0,0,0.02);
+      top:8px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#2b1800;
+      font-weight:700;
+      font-family:var(--font-display);
+      box-shadow: var(--shadow-sm);
+      flex-shrink:0;
+      font-size:20px;
+    }
+    .brand h1{
+      font-family:var(--font-display);
+      font-size: clamp(18px, 2.6vw, 22px);
+      margin:0;
+      letter-spacing:0.2px;
+      color:var(--color-text);
+    }
+    .navlinks{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .navlinks a{
+      padding:8px 12px;
+      color:var(--color-muted);
+      border-radius:8px;
+      font-weight:500;
+      font-size:15px;
+    }
+    .navlinks a:hover{color:var(--color-text)}
+    .nav-actions{display:flex; gap:10px; align-items:center}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:0 14px;
+      border-radius:10px;
+      border: none;
+      cursor:pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      font-weight:600;
+      font-family:var(--font-body);
+      text-decoration:none;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{
+      background:var(--accent-gradient);
+      color:#2b1800;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-outline{
+      background:transparent;
+      color:var(--color-text);
+      border:1px solid rgba(0,0,0,0.04);
+      backdrop-filter: blur(4px);
+    }
+    .btn-primary:hover{box-shadow: var(--shadow-lg)}
+    .btn-outline:hover{background:rgba(0,0,0,0.02)}
+
+    /* Hero */
+    .hero{
+      margin-top:clamp(18px, calc(8px + var(--spacing) * 8px), 48px);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:clamp(18px, calc(8px + var(--spacing) * 6px), 36px);
+      align-items:center;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(16px, calc(6px + var(--spacing) * 6px), 28px);
+    }
+    .eyebrow{
+      color:var(--color-accent-pink);
+      font-weight:600;
+      letter-spacing:0.6px;
+      font-size:13px;
+    }
+    .hero h2{
+      font-family:var(--font-display);
+      font-weight:600;
+      font-size: clamp(28px, 4.8vw, 48px);
+      margin:0;
+      line-height:1.03;
+      color:var(--color-text);
+      text-wrap: balance;
+    }
+    .hero p.lead{
+      margin:0;
+      color:var(--color-muted);
+      font-size:16px;
+      max-width:72ch;
+    }
+    .hero-ctas{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* Bento Grid for key highlights (visual) */
+    .bento{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 1fr;
+      gap:12px;
+      margin-top: clamp(12px, calc(6px + var(--spacing) * 6px), 28px);
+    }
+    .bento > .panel{
+      background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
+      border-radius:var(--radius-md);
+      padding:16px;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(0,0,0,0.02);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:88px;
+    }
+    .panel h3{margin:0; font-size:16px; color:var(--color-text)}
+    .panel p{margin:0; color:var(--color-muted); font-size:14px}
+
+    /* Features */
+    .features{
+      margin-top: clamp(22px, calc(10px + var(--spacing) * 8px), 48px);
+      display:grid;
+      gap:18px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .feature-card{
+      background: linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.00));
+      border-radius:var(--radius-md);
+      padding:18px;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(0,0,0,0.02);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .feature-icon{
+      width:56px;
+      height:56px;
+      flex-shrink:0;
+      border-radius:10px;
+      background:rgba(0,0,0,0.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--color-primary);
+      font-weight:700;
+      font-size:20px;
+      font-family:var(--font-display);
+      box-shadow:var(--shadow-sm);
+    }
+    .feature-body h4{margin:0; font-size:16px; color:var(--color-text)}
+    .feature-body p{margin:6px 0 0 0; color:var(--color-muted); font-size:14px}
+
+    /* Testimonials */
+    .testimonials{
+      margin-top: clamp(18px, calc(8px + var(--spacing) * 8px), 36px);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:14px;
+    }
+    .testimonial{
+      background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
+      padding:16px;
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(0,0,0,0.02);
+    }
+    .testimonial p.quote{margin:0; color:var(--color-text); font-style:italic}
+    .testimonial p.meta{margin:10px 0 0 0; color:var(--color-muted); font-size:14px; font-weight:600}
+
+    /* Pricing */
+    .pricing{
+      margin-top: clamp(20px, calc(10px + var(--spacing) * 8px), 44px);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:18px;
+    }
+    .plan{
+      background: linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.00));
+      padding:20px;
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-md);
+      border:1px solid rgba(0,0,0,0.03);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .plan .title{font-size:18px; font-weight:700; color:var(--color-text)}
+    .plan .price{font-size:22px; font-weight:700; color:var(--color-primary)}
+    .plan ul{margin:8px 0 0 0; padding-left:18px; color:var(--color-muted)}
+    .plan .plan-cta{margin-top:auto}
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top: clamp(20px, calc(10px + var(--spacing) * 10px), 56px);
+      padding:20px;
+      border-radius:var(--radius-lg);
+      background: linear-gradient(90deg, rgba(255,213,79,0.08), rgba(255,183,77,0.06));
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(0,0,0,0.02);
+    }
+    .prefooter h3{margin:0; font-size:20px; color:var(--color-text)}
+    .prefooter p{margin:0; color:var(--color-muted)}
+
+    /* Footer */
+    footer{
+      margin-top: clamp(20px, calc(10px + var(--spacing) * 10px), 64px);
+      padding-top:18px;
+      border-top:1px solid rgba(0,0,0,0.02);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      color:var(--color-muted);
+      flex-wrap:wrap;
+      font-size:14px;
+    }
+    footer .links{display:flex; gap:12px}
+    footer a{color:var(--color-muted)}
+
+    /* Reveal animations */
+    .reveal{opacity:0; transform:translateY(20px); transition: opacity 560ms cubic-bezier(.2,.9,.2,1), transform 560ms cubic-bezier(.2,.9,.2,1)}
+    .reveal.visible{opacity:1; transform:none}
+
+    /* Responsive adjustments */
+    @media (min-width:1024px){
+      .hero{grid-template-columns: 1fr 420px}
+      .hero-grid{grid-template-columns: 1fr}
+      .bento > .p1{grid-column: span 7}
+      .bento > .p2{grid-column: span 5}
+      .bento > .p3{grid-column: span 4}
+      .bento > .p4{grid-column: span 4}
+      .bento > .p5{grid-column: span 4}
+    }
+    @media (max-width:640px){
+      .navbar{padding:8px}
+      .brand h1{font-size:18px}
+      .bento{grid-template-columns: repeat(6,1fr)}
+      .bento > .panel{padding:12px}
+      .hero{margin-top:12px}
+    }
+
+    /* Small helpers */
+    .muted{color:var(--color-muted)}
+    .small{font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="navbar" id="navbar">
+      <div class="brand" aria-label="Banana Barn">
+        <div class="logo">🍌</div>
+        <div>
+          <h1>Banana Barn</h1>
+          <div class="small muted">Fresh bananas, delivered</div>
+        </div>
+      </div>
+
+      <nav class="navlinks" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="app.html">Shop</a>
+        <a href="pages/signup.html" class="muted">Order</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-outline" href="app.html">Shop Now</a>
+        <a class="btn btn-primary" href="pages/signup.html">Order Now</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="hero-grid">
+          <div class="eyebrow reveal">Fresh from the plantation</div>
+          <h2 id="hero-heading" class="reveal">Delicious bananas, ripe and ready — delivered to your door</h2>
+          <p class="lead reveal">At Banana Barn we source the tastiest bananas and ship them fast. Choose your variety, select your ripeness, and get farm-fresh fruit on a schedule that fits your home or business.</p>
+          <div class="hero-ctas reveal">
+            <a class="btn btn-primary" href="pages/signup.html">Order Fresh Bananas</a>
+            <a class="btn btn-outline" href="app.html">Browse Varieties</a>
+          </div>
+        </div>
+
+        <aside aria-hidden="true" class="reveal" style="border-radius:12px;padding:18px;background:linear-gradient(180deg,rgba(255,242,199,0.8), rgba(255,239,185,0.6));box-shadow:var(--shadow-sm);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:72px;height:72px;border-radius:12px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:28px;color:#2b1800;font-family:var(--font-display);box-shadow:var(--shadow-sm);">🍌</div>
+            <div>
+              <div style="font-weight:700;color:var(--color-text)">Hand-picked & packed</div>
+              <div class="muted small">Ripe on arrival. Sustainable sourcing.</div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- BENTO -->
+      <section class="bento" aria-label="Highlights">
+        <div class="panel p1 reveal">
+          <h3>Ripe to order</h3>
+          <p>Choose how ripe you want your bananas — green, yellow, or spotted.</p>
+        </div>
+        <div class="panel p2 reveal">
+          <h3>Variety selection</h3>
+          <p>Cavendish, Plantain, Red bananas, and specialty heirloom varieties.</p>
+        </div>
+        <div class="panel p3 reveal">
+          <h3>Subscription plans</h3>
+          <p>Weekly or monthly deliveries so you never run out.</p>
+        </div>
+        <div class="panel p4 reveal">
+          <h3>Sustainably sourced</h3>
+          <p>Partner farms use responsible growing and fair labor practices.</p>
+        </div>
+        <div class="panel p5 reveal">
+          <h3>Freshness guaranteed</h3>
+          <p>If they're not perfect, we'll make it right.</p>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="features" aria-label="Features">
+        <div class="feature-card reveal">
+          <div class="feature-icon">B</div>
+          <div class="feature-body">
+            <h4>Choose ripeness</h4>
+            <p>Specify the ripeness level and get bananas at the perfect stage for your needs.</p>
+          </div>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">V</div>
+          <div class="feature-body">
+            <h4>Multiple varieties</h4>
+            <p>From sweet Cavendish to hearty plantains — find the banana for every recipe.</p>
+          </div>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">S</div>
+          <div class="feature-body">
+            <h4>Subscription boxes</h4>
+            <p>Automatic deliveries with flexible frequency and easy pauses or changes.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="testimonials" aria-label="Customer testimonials">
+        <div class="testimonial reveal">
+          <p class="quote">"Best bananas we've ever had — sweet and perfectly ripe every time."</p>
+          <p class="meta">— Jamie R., Austin</p>
+        </div>
+        <div class="testimonial reveal">
+          <p class="quote">"The subscription makes life so easy. No more overripe fruit."</p>
+          <p class="meta">— Priya S., San Francisco</p>
+        </div>
+        <div class="testimonial reveal">
+          <p class="quote">"Great variety and fast delivery. Our smoothies have never tasted better."</p>
+          <p class="meta">— Marcus L., Miami</p>
+        </div>
+      </section>
+
+      <!-- PRICING -->
+      <section class="pricing" aria-label="Pricing plans">
+        <div class="plan reveal">
+          <div class="title">Single Order</div>
+          <div class="price">$8.99 / box</div>
+          <p class="muted">A one-time box of 6–8 bananas, choose ripeness.</p>
+          <ul>
+            <li>Choose variety</li>
+            <li>Choose ripeness</li>
+            <li>Standard delivery</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-primary" href="pages/signup.html">Order Single Box</a>
+          </div>
+        </div>
+
+        <div class="plan reveal">
+          <div class="title">Weekly Subscription</div>
+          <div class="price">$7.49 / box</div>
+          <p class="muted">Delivered weekly — perfect for regular fruit lovers.</p>
+          <ul>
+            <li>Discounted price</li>
+            <li>Flexible pause & cancel</li>
+            <li>Priority shipping</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-primary" href="pages/signup.html">Subscribe Weekly</a>
+          </div>
+        </div>
+
+        <div class="plan reveal">
+          <div class="title">Monthly Subscription</div>
+          <div class="price">$24.99 / month</div>
+          <p class="muted">Monthly box with 4 shipments of fresh bananas.</p>
+          <ul>
+            <li>Save on delivery</li>
+            <li>Custom ripeness per shipment</li>
+            <li>Priority support</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-primary" href="pages/signup.html">Subscribe Monthly</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- PREFOOTER CTA -->
+      <section class="prefooter reveal" aria-label="Call to action">
+        <div>
+          <h3>Ready for farm-fresh bananas?</h3>
+          <p class="muted">Order now and get your first box delivered in as little as 2 days.</p>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <a class="btn btn-outline" href="app.html">Browse Varieties</a>
+          <a class="btn btn-primary" href="pages/signup.html">Order Fresh Bananas</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:10px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;color:#2b1800;font-weight:700;font-family:var(--font-display)">🍌</div>
+        <div>
+          <div style="font-weight:700;color:var(--color-text)">Banana Barn</div>
+          <div class="small muted">Fresh bananas, delivered</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:18px;align-items:center">
+        <div class="links">
+          <a href="index.html">Home</a>
+          <a href="app.html">Shop</a>
+          <a href="pages/signup.html">Order</a>
+        </div>
+        <div class="small muted">© <span id="year"></span> Banana Barn — All rights reserved</div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Navbar shrink on scroll
+    const navbar = document.getElementById('navbar');
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const sc = window.scrollY;
+      if (sc > 20) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+      lastScroll = sc;
+    });
+  </script>
+</body>
+</html>

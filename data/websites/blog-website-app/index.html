@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog Website App — Publish, Manage, Export</title>
+  <meta name="description" content="Blog Website App centralizes core functionality for writers and teams: publish posts, manage from a user dashboard, and run reliable data export. Get started today." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+--color-primary: #94a3b8;
+  --color-secondary: #cbd5e1;
+  --color-accent-pink: #ec4899;
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+  --accent-gradient: linear-gradient(135deg, #94a3b8, #cbd5e1);
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+  --spacing: 1.5;
+    }
+
+    /* Base reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(148,163,184,0.06), transparent), var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding: clamp(16px, calc(1rem + 1vw), 28px);
+    }
+
+    a{color:inherit; text-decoration:none}
+    .container{max-width:1200px; margin:0 auto;}
+
+    /* Navbar */
+    .navbar{
+      position:sticky;
+      top:12px;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      gap: clamp(10px, 2vw, 20px);
+      justify-content:space-between;
+      padding: clamp(10px, 1.4vw, 16px);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: var(--shadow-sm);
+      transition: all .28s ease;
+    }
+    .navbar.scrolled{
+      background: linear-gradient(180deg, rgba(18,24,36,0.55), rgba(18,24,36,0.45));
+      border:1px solid rgba(226,232,240,0.06);
+      box-shadow: var(--shadow-md);
+      transform: translateY(0);
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;color:var(--color-text)}
+    .brand .logo{
+      width:40px;height:40px;border-radius:10px;
+      background:var(--accent-gradient);
+      display:inline-grid;place-items:center;color:var(--color-bg);
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+    }
+    nav ul{display:flex;gap:18px;align-items:center;margin:0;padding:0;list-style:none}
+    .nav-link{color:var(--color-secondary);font-weight:500;font-size:0.95rem}
+    .nav-actions{display:flex;gap:10px;align-items:center}
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      gap:10px;padding:0 14px;
+      min-height:44px;
+      border-radius:10px;
+      font-weight:600;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      border:none;
+      text-decoration:none;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn:focus{outline:2px solid rgba(236,72,153,0.18);outline-offset:3px}
+    .btn-primary{
+      background: var(--accent-gradient);
+      color: var(--color-bg);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-ghost{
+      background:transparent;
+      color:var(--color-secondary);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(18px, calc(1.6vw), 28px);
+      align-items:center;
+      margin-top: clamp(18px, 2.6vw, 36px);
+    }
+    .hero-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius-lg);
+      padding: clamp(18px, 3vw, 36px);
+      border:1px solid rgba(255,255,255,0.03);
+      display:flex;gap:20px;align-items:center;box-shadow:var(--shadow-md);
+      backdrop-filter: blur(10px);
+    }
+    .hero-copy{flex:1}
+    h1{
+      font-family:var(--font-display);
+      font-weight:700;
+      margin:0 0 8px 0;
+      color:var(--color-text);
+      font-size: clamp(1.8rem, calc(1.1rem + 3.6vw), 3.2rem);
+      line-height:1.02;
+      letter-spacing:-0.02em;
+    }
+    p.lead{
+      margin:0 0 18px 0;
+      color:var(--color-secondary);
+      font-size: clamp(1rem, 0.9rem + .6vw, 1.1rem);
+    }
+    .hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+
+    /* Feature grid */
+    .grid{
+      display:grid;
+      gap:18px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius-md);
+      padding: clamp(14px, 2.2vw, 22px);
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(6px);
+    }
+    .feature-icon{
+      width:48px;height:48px;border-radius:10px;
+      display:inline-grid;place-items:center;margin-bottom:12px;
+      background: linear-gradient(135deg, rgba(236,72,153,0.14), rgba(148,163,184,0.06));
+      color:var(--color-accent-pink);
+      flex-shrink:0;
+    }
+    .feature-title{font-weight:700;margin:0 0 8px 0;color:var(--color-text)}
+    .feature-desc{margin:0;color:var(--color-secondary);font-size:0.95rem}
+
+    /* Testimonials */
+    .testimonials{display:grid;gap:14px}
+    .testimonial{
+      display:flex;gap:14px;align-items:flex-start;
+      padding:16px;border-radius:var(--radius-sm);
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .avatar{width:48px;height:48px;border-radius:12px;background:var(--color-surface);display:inline-grid;place-items:center;color:var(--color-secondary);font-weight:600}
+    .quote{color:var(--color-secondary);margin:0}
+    .author{color:var(--color-text);font-weight:600;font-size:0.95rem;margin-top:6px}
+
+    /* Pricing */
+    .pricing{
+      display:grid;
+      gap:16px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      align-items:start;
+    }
+    .plan{
+      padding:18px;border-radius:var(--radius-md);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .plan .price{font-size:1.4rem;font-weight:700;color:var(--color-text)}
+    .plan-features{margin-top:12px;color:var(--color-secondary);font-size:0.95rem;display:flex;flex-direction:column;gap:8px}
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top:18px;padding:20px;border-radius:var(--radius-lg);
+      background: linear-gradient(90deg, rgba(148,163,184,0.06), rgba(236,72,153,0.03));
+      border:1px solid rgba(255,255,255,0.03);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* Footer */
+    footer{margin-top:24px;color:var(--color-muted);font-size:0.95rem}
+    footer .f-links{display:flex;gap:12px;flex-wrap:wrap}
+    small{display:block;margin-top:12px;color:var(--color-muted)}
+
+    /* Reveal animations */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* Responsive */
+    @media (min-width:1024px){
+      .hero{grid-template-columns: 1fr 420px}
+      nav ul{gap:22px}
+    }
+    @media (max-width:640px){
+      .navbar{padding:10px}
+      .brand .logo{width:36px;height:36px}
+      .hero-card{flex-direction:column;align-items:flex-start}
+      .hero{gap:12px}
+      .nav-actions{display:flex;gap:8px}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="navbar" id="navbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">B</span>
+        <div>
+          <div style="font-size:0.95rem">Blog Website App</div>
+          <div style="font-size:0.72rem;color:var(--color-secondary);margin-top:2px">Publish • Manage • Export</div>
+        </div>
+      </div>
+
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a class="nav-link" href="index.html">Home</a></li>
+          <li><a class="nav-link" href="app.html">Open App</a></li>
+          <li><a class="nav-link" href="pages/signup.html">Sign Up</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-ghost nav-link" href="app.html">App</a>
+        <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="hero-card reveal">
+          <div class="hero-copy">
+            <h1 id="hero-heading">The Blog Website App built for creators and teams</h1>
+            <p class="lead">A streamlined platform that bundles core functionality — editor, scheduler, SEO, analytics — into one glass-smooth experience. Manage everything from a focused user dashboard and run reliable data export when you need full control.</p>
+            <div class="hero-ctas">
+              <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+              <a class="btn btn-ghost" href="app.html">Open App</a>
+            </div>
+          </div>
+
+          <aside style="width:360px;max-width:42%;" aria-hidden="true">
+            <div style="padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.016), rgba(255,255,255,0.008));border:1px solid rgba(255,255,255,0.02);box-shadow:var(--shadow-sm);backdrop-filter:blur(6px)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-weight:700">Your dashboard</div>
+                <div style="color:var(--color-secondary);font-size:0.9rem">Live / Organized</div>
+              </div>
+              <div style="display:grid;gap:8px">
+                <div style="display:flex;justify-content:space-between;color:var(--color-secondary)"><div>Drafts</div><div>8</div></div>
+                <div style="display:flex;justify-content:space-between;color:var(--color-secondary)"><div>Scheduled</div><div>3</div></div>
+                <div style="display:flex;justify-content:space-between;color:var(--color-secondary)"><div>Subscribers</div><div>1.2k</div></div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <a class="btn btn-primary" href="pages/signup.html" style="flex:1">Create post</a>
+                <a class="btn btn-ghost" href="app.html" style="flex:1">Export</a>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section style="margin-top: clamp(18px, 2.4vw, 34px);">
+        <h2 style="font-family:var(--font-display);font-size:1.2rem;margin:0 0 12px 0">Core capabilities</h2>
+        <p style="margin:0 0 18px 0;color:var(--color-secondary)">Everything a modern blog needs: fast publishing, a user dashboard that surfaces what matters, and reliable data export for backups or migrations.</p>
+
+        <div class="grid">
+          <article class="card reveal">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h12M4 18h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="feature-title">WYSIWYG Editor & Markdown</h3>
+            <p class="feature-desc">Compose with a powerful editor that supports rich media, embedded cards, and markdown import — publish quickly without losing formatting control.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="feature-title">Publish Scheduling & SEO</h3>
+            <p class="feature-desc">Queue posts with fine-grained scheduling, set meta tags, and use integrated SEO hints so each article reaches the right audience.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h18M6 11h12M10 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="feature-title">User Dashboard & Analytics</h3>
+            <p class="feature-desc">A user dashboard surfaces performance, engagement, and content health so you can iterate faster. Track clicks, reads, and conversion metrics in one place.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="feature-title">Data Export & Backups</h3>
+            <p class="feature-desc">Export posts, metadata, and subscribers on demand. CSV and JSON exports are built-in so migrations and backups are fast and reliable.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 7h10v10H7z" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <h3 class="feature-title">Adaptive Themes & Multi-device</h3>
+            <p class="feature-desc">Choose responsive themes that preserve readability and style across devices. Instant previews let you validate layout and typography before publishing.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section style="margin-top: clamp(18px, 2.4vw, 34px);">
+        <h2 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 12px 0">Trusted by writers and teams</h2>
+        <p style="margin:0 0 18px 0;color:var(--color-secondary)">Real feedback from users who rely on the Blog Website App for workflows, the user dashboard, and dependable data export.</p>
+
+        <div class="grid testimonials">
+          <div class="testimonial reveal">
+            <div class="avatar" aria-hidden="true">AL</div>
+            <div>
+              <p class="quote">“The user dashboard gave our editorial team instant clarity. Scheduling and analytics finally live together — our publishing cadence improved overnight.”</p>
+              <div class="author">Alicia Reed — Content Lead</div>
+            </div>
+          </div>
+
+          <div class="testimonial reveal">
+            <div class="avatar" aria-hidden="true">MK</div>
+            <div>
+              <p class="quote">“Data export saved us during a platform migration. Exports were complete, fast, and easy to import — exactly what we needed for compliance.”</p>
+              <div class="author">Marcus Kline — CTO, SmallPress</div>
+            </div>
+          </div>
+
+          <div class="testimonial reveal">
+            <div class="avatar" aria-hidden="true">SB</div>
+            <div>
+              <p class="quote">“Core functionality is thoughtful. From editor to SEO hints, everything feels polished and purpose-built for serious bloggers.”</p>
+              <div class="author">Sara Bennett — Independent Writer</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRICING -->
+      <section style="margin-top: clamp(18px, 2.4vw, 34px);">
+        <h2 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 12px 0">Pricing</h2>
+        <p style="margin:0 0 18px 0;color:var(--color-secondary)">Transparent plans for individuals and teams. Upgrade anytime to unlock advanced analytics and full data export.</p>
+
+        <div class="pricing">
+          <div class="plan reveal" aria-labelledby="plan-free">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div id="plan-free" style="font-weight:700;color:var(--color-text)">Free</div>
+                <div class="price" style="color:var(--color-secondary)">$0<span style="font-weight:500;color:var(--color-muted)">/month</span></div>
+              </div>
+              <div style="color:var(--color-accent-pink);font-weight:700">Starter</div>
+            </div>
+
+            <div class="plan-features">
+              <div>Up to 3 published posts per month</div>
+              <div>Basic user dashboard</div>
+              <div>Limited CSV export</div>
+              <div>Community support</div>
+            </div>
+
+            <div style="margin-top:12px">
+              <a class="btn btn-primary" href="pages/signup.html">Get Started — Free</a>
+            </div>
+          </div>
+
+          <div class="plan reveal" aria-labelledby="plan-pro">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div id="plan-pro" style="font-weight:700;color:var(--color-text)">Pro</div>
+                <div class="price" style="color:var(--color-text)">$12<span style="font-weight:500;color:var(--color-muted)">/month</span></div>
+              </div>
+              <div style="background:var(--accent-gradient);padding:6px 10px;border-radius:8px;color:var(--color-bg);font-weight:700">Most popular</div>
+            </div>
+
+            <div class="plan-features">
+              <div>Unlimited posts & scheduling</div>
+              <div>Advanced analytics in user dashboard</div>
+              <div>Full CSV & JSON data export</div>
+              <div>Priority email support</div>
+            </div>
+
+            <div style="margin-top:12px">
+              <a class="btn btn-primary" href="pages/signup.html">Start Pro — $12/mo</a>
+            </div>
+          </div>
+
+          <div class="plan reveal" aria-labelledby="plan-enterprise">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div id="plan-enterprise" style="font-weight:700;color:var(--color-text)">Enterprise</div>
+                <div class="price" style="color:var(--color-secondary)">Custom pricing</div>
+              </div>
+              <div style="color:var(--color-secondary);font-weight:700">Scale</div>
+            </div>
+
+            <div class="plan-features">
+              <div>Team accounts & permissions</div>
+              <div>SLAs and dedicated onboarding</div>
+              <div>Advanced export: CSV, JSON, XML</div>
+              <div>Custom integrations & data export workflows</div>
+            </div>
+
+            <div style="margin-top:12px">
+              <a class="btn btn-primary" href="pages/signup.html">Contact Sales</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRE-FOOTER CTA -->
+      <section class="prefooter reveal" style="margin-top: clamp(18px, 2.4vw, 34px);">
+        <div style="max-width:70%">
+          <div style="font-weight:700;font-family:var(--font-display)">Ready to publish smarter?</div>
+          <div style="color:var(--color-secondary)">Start your free account and explore the user dashboard, publish workflows, and data export tools that free you to write.</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+          <a class="btn btn-ghost" href="app.html">Try Demo</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="margin-top: clamp(18px, 2.4vw, 34px);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:700">Blog Website App</div>
+          <div style="color:var(--color-secondary);font-size:0.92rem">Publish • Manage • Export</div>
+        </div>
+
+        <nav class="f-links" aria-label="Footer navigation">
+          <a class="nav-link" href="index.html">Home</a>
+          <a class="nav-link" href="app.html">Open App</a>
+          <a class="nav-link" href="pages/signup.html">Sign Up</a>
+          <a class="nav-link" href="pages/signup.html">Pricing</a>
+        </nav>
+      </div>
+
+      <small>© <span id="year"></span> Blog Website App — Core functionality, user dashboard, and secure data export for publishers. All rights reserved.</small>
+    </footer>
+  </div>
+
+  <script>
+    // Sticky navbar: add .scrolled when scrollY > 14
+    (function(){
+      var nav = document.getElementById('navbar');
+      function checkScroll(){
+        if(window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      }
+      checkScroll();
+      window.addEventListener('scroll', checkScroll, {passive:true});
+    })();
+
+    // Reveal-on-scroll
+    (function(){
+      var observer = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {threshold: 0.12});
+      document.querySelectorAll('.reveal').forEach(function(el){
+        observer.observe(el);
+      });
+    })();
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

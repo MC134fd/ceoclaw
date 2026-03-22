@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — CEOClaw</title>
+  <meta name="description" content="Sign in or create your CEOClaw account to access your AI founder operating system." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #EDE3D3;
+      --color-bg-2: #E4D9C7;
+      --color-surface: rgba(250,246,238,0.72);
+      --color-surface-strong: rgba(255,255,255,0.92);
+      --color-text: #2E2A26;
+      --color-text-dim: rgba(46,42,38,0.58);
+      --color-primary: #C96A2B;
+      --color-secondary: #A86A3A;
+      --color-tertiary: #4FA3A5;
+      --color-accent: #4FA3A5;
+      --color-border: rgba(201,106,43,0.2);
+      --color-border-focus: rgba(201,106,43,0.6);
+      --color-error: #E85B6B;
+      --color-error-bg: rgba(232,91,107,0.06);
+      --shadow-soft: 0 20px 60px rgba(46,42,38,0.12);
+      --shadow-card: 0 16px 40px rgba(46,42,38,0.10);
+      --accent-gradient: linear-gradient(120deg,#C96A2B 0%,#A86A3A 50%,#8A5530 100%);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --transition: 0.28s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(201,106,43,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(168,106,58,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 80%, rgba(79,163,165,0.1) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top nav */
+    .auth-topbar {
+      position: relative; z-index: 10;
+      padding: 1.25rem clamp(1rem, 5vw, 3rem);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 1.25rem; letter-spacing: 0.01em;
+      color: var(--color-text); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo-mark {
+      width: 28px; height: 28px; background: var(--accent-gradient);
+      border-radius: 7px; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff;
+    }
+    .topbar-link {
+      font-size: 0.875rem; color: var(--color-text-dim); text-decoration: none;
+      transition: color var(--transition); min-height: 44px;
+      display: inline-flex; align-items: center;
+    }
+    .topbar-link:hover { color: var(--color-text); }
+    .topbar-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 4px; }
+
+    /* Auth main */
+    .auth-main {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 5vw, 3rem);
+      position: relative; z-index: 1;
+    }
+    .auth-card {
+      width: 100%; max-width: min(460px, 100%);
+      background: var(--color-surface-strong);
+      border: 1px solid rgba(201,106,43,0.18);
+      border-radius: var(--radius-lg);
+      padding: clamp(1.5rem, 6vw, 3rem);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    @media (max-width: 480px) {
+      .auth-card { border-radius: var(--radius-md); }
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      background: var(--color-bg-2);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      margin-bottom: 2rem;
+      gap: 4px;
+    }
+    .auth-tab {
+      flex: 1; padding: 0.625rem;
+      border-radius: 7px; border: none; cursor: pointer;
+      font-size: 0.9rem; font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      transition: all var(--transition);
+      min-height: 44px;
+      color: var(--color-text-dim);
+      background: transparent;
+    }
+    .auth-tab.active {
+      background: #fff;
+      color: var(--color-text);
+      box-shadow: 0 2px 8px rgba(46,42,38,0.1);
+    }
+    .auth-tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+    /* Card header */
+    .auth-header { margin-bottom: 1.75rem; }
+    .auth-title {
+      font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-weight: 700;
+      font-size: 1.5rem; letter-spacing: -0.02em;
+      margin-bottom: 0.375rem;
+    }
+    .auth-subtitle { font-size: 0.875rem; color: var(--color-text-dim); }
+
+    /* Google button */
+    .btn-google {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      padding: 0.75rem 1.25rem; border-radius: var(--radius-sm);
+      font-size: 0.9rem; font-weight: 500; font-family: 'Inter', sans-serif;
+      color: var(--color-text); background: #fff;
+      border: 1px solid rgba(201,106,43,0.2); cursor: pointer;
+      transition: all var(--transition); min-height: 44px;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(46,42,38,0.08);
+    }
+    .btn-google:hover { border-color: rgba(201,106,43,0.4); box-shadow: 0 4px 16px rgba(46,42,38,0.12); transform: translateY(-1px); }
+    .btn-google:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* Divider */
+    .auth-divider {
+      display: flex; align-items: center; gap: 0.875rem;
+      margin: 1.5rem 0; color: var(--color-text-dim); font-size: 0.8rem;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(201,106,43,0.14);
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 1.125rem; }
+    .form-label {
+      display: block; font-size: 0.85rem; font-weight: 500;
+      color: var(--color-text); margin-bottom: 0.5rem;
+    }
+    .form-input {
+      width: 100%; padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.7); color: var(--color-text);
+      font-size: 0.9rem; font-family: 'Inter', sans-serif;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      min-height: 44px; outline: none;
+    }
+    .form-input::placeholder { color: rgba(90,98,128,0.5); }
+    .form-input:focus {
+      border-color: var(--color-border-focus);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(201,106,43,0.12);
+    }
+    .form-input.error { border-color: var(--color-error); background: var(--color-error-bg); }
+    .form-input.error:focus { box-shadow: 0 0 0 3px rgba(232,91,107,0.12); }
+    .form-helper {
+      font-size: 0.78rem; color: var(--color-text-dim);
+      margin-top: 0.375rem; display: block;
+    }
+    .form-error {
+      font-size: 0.78rem; color: var(--color-error);
+      margin-top: 0.375rem; display: none; align-items: center; gap: 0.375rem;
+    }
+    .form-error.visible { display: flex; }
+    .form-error::before { content: '⚠'; font-size: 0.7rem; }
+
+    /* Password wrapper */
+    .password-wrapper { position: relative; }
+    .password-toggle {
+      position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--color-text-dim); padding: 0.25rem;
+      min-height: 32px; min-width: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      transition: color var(--transition);
+    }
+    .password-toggle:hover { color: var(--color-text); }
+    .password-toggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+    /* Checkbox + Terms */
+    .form-check {
+      display: flex; align-items: flex-start; gap: 0.625rem;
+      margin-bottom: 1.25rem;
+    }
+    .form-check input[type="checkbox"] {
+      width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;
+      accent-color: var(--color-primary); cursor: pointer; border-radius: 4px;
+    }
+    .form-check label { font-size: 0.82rem; color: var(--color-text-dim); cursor: pointer; }
+    .form-check a { color: var(--color-primary); text-decoration: none; }
+    .form-check a:hover { text-decoration: underline; }
+
+    /* Error / info banner */
+    .error-banner {
+      display: none; align-items: center; gap: 0.625rem;
+      background: var(--color-error-bg); border: 1px solid rgba(232,91,107,0.2);
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--color-error);
+      line-height: 1.5; animation: bannerSlideIn 0.25s ease;
+    }
+    .error-banner.visible { display: flex; }
+    @keyframes bannerSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%; padding: 0.8rem;
+      border-radius: var(--radius-sm); border: none; cursor: pointer;
+      font-size: 0.95rem; font-weight: 600; font-family: 'Inter', sans-serif;
+      color: #fff; background: var(--accent-gradient);
+      transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+      min-height: 48px; box-shadow: 0 4px 16px rgba(168,106,58,0.32);
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(168,106,58,0.40); }
+    .btn-submit:active { transform: none; }
+    .btn-submit:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+    /* Footer link */
+    .auth-switch {
+      text-align: center; margin-top: 1.5rem;
+      font-size: 0.85rem; color: var(--color-text-dim);
+    }
+    .auth-switch a { color: var(--color-primary); text-decoration: none; font-weight: 500; }
+    .auth-switch a:hover { text-decoration: underline; }
+
+    /* Forgot password */
+    .forgot-link {
+      display: block; text-align: right; font-size: 0.8rem;
+      color: var(--color-primary); text-decoration: none; margin-top: -0.5rem; margin-bottom: 1rem;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* Footer */
+    .auth-footer {
+      position: relative; z-index: 1;
+      padding: 1.5rem clamp(1rem, 5vw, 3rem);
+      text-align: center; font-size: 0.78rem; color: var(--color-text-dim);
+      border-top: 1px solid rgba(201,106,43,0.08);
+    }
+    .auth-footer a { color: var(--color-text-dim); text-decoration: none; margin-inline: 0.5rem; }
+    .auth-footer a:hover { color: var(--color-text); }
+    .auth-footer a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .form-check a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .auth-switch a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .forgot-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+
+    /* Sign-up only fields - hidden by default */
+    .signup-only { display: none; }
+  </style>
+</head>
+<body>
+  <header class="auth-topbar" role="banner">
+    <a href="../index.html" class="nav-logo" aria-label="CEOClaw home">
+      <span class="nav-logo-mark" aria-hidden="true">C</span>CEOClaw
+    </a>
+    <a href="../index.html" class="topbar-link">&larr; Return home</a>
+  </header>
+
+  <main class="auth-main" id="main-content" role="main">
+    <div class="auth-card">
+      <!-- Tabs -->
+      <div class="auth-tabs" role="tablist" aria-label="Authentication options">
+        <button class="auth-tab active" role="tab" aria-selected="true" aria-controls="panel-signin" id="tab-signin">Sign In</button>
+        <button class="auth-tab" role="tab" aria-selected="false" aria-controls="panel-signup" id="tab-signup">Sign Up</button>
+      </div>
+
+      <!-- Sign In panel -->
+      <div id="panel-signin" role="tabpanel" aria-labelledby="tab-signin">
+        <div class="auth-header">
+          <h1 class="auth-title">Welcome back.</h1>
+          <p class="auth-subtitle">Sign in to your CEOClaw account.</p>
+        </div>
+
+        <button class="btn-google" type="button" aria-label="Continue with Google">
+          <svg class="google-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616Z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
+            <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider" role="separator" aria-label="Or">or</div>
+
+        <div id="error-banner-signin" class="error-banner" role="alert" aria-live="polite">
+          <span>Invalid email or password. Please try again.</span>
+        </div>
+
+        <form id="signin-form" novalidate aria-label="Sign in form">
+          <div class="form-group">
+            <label class="form-label" for="signin-email">Email address</label>
+            <input
+              class="form-input" type="email" id="signin-email"
+              name="email" autocomplete="email"
+              placeholder="you@company.com" required
+            />
+            <span class="form-error" id="signin-email-error" role="alert">Please enter a valid email address.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signin-password">Password</label>
+            <div class="password-wrapper">
+              <input
+                class="form-input" type="password" id="signin-password"
+                name="password" autocomplete="current-password"
+                placeholder="Your password" required
+              />
+              <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="signin-password">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 3C4.5 3 1.5 6 1.5 8s3 5 6.5 5 6.5-3 6.5-5-3-5-6.5-5Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <span class="form-error" id="signin-password-error" role="alert">Please enter your password.</span>
+          </div>
+          <a href="#" class="forgot-link">Forgot password?</a>
+          <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+        <p class="auth-switch">Don't have an account? <a href="#" id="switch-to-signup">Sign up free</a></p>
+      </div>
+
+      <!-- Sign Up panel (hidden by default) -->
+      <div id="panel-signup" role="tabpanel" aria-labelledby="tab-signup" hidden>
+        <div class="auth-header">
+          <h1 class="auth-title">Create your account.</h1>
+          <p class="auth-subtitle">Start free — your execution layer is ready in seconds.</p>
+        </div>
+
+        <button class="btn-google" type="button" aria-label="Sign up with Google">
+          <svg class="google-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616Z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
+            <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/>
+          </svg>
+          Sign up with Google
+        </button>
+
+        <div class="auth-divider" role="separator" aria-label="Or">or</div>
+
+        <div id="error-banner-signup" class="error-banner" role="alert" aria-live="polite">
+          <span>Something went wrong. Please check your details and try again.</span>
+        </div>
+
+        <form id="signup-form" novalidate aria-label="Sign up form">
+          <div class="form-group">
+            <label class="form-label" for="signup-name">Full name</label>
+            <input
+              class="form-input" type="text" id="signup-name"
+              name="name" autocomplete="name"
+              placeholder="Your full name" required
+            />
+            <span class="form-error" id="signup-name-error" role="alert">Please enter your full name.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-email">Email address</label>
+            <input
+              class="form-input" type="email" id="signup-email"
+              name="email" autocomplete="email"
+              placeholder="you@company.com" required
+            />
+            <span class="form-error" id="signup-email-error" role="alert">Please enter a valid email address.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-password">Password</label>
+            <div class="password-wrapper">
+              <input
+                class="form-input" type="password" id="signup-password"
+                name="password" autocomplete="new-password"
+                placeholder="At least 8 characters" required minlength="8"
+              />
+              <button type="button" class="password-toggle" aria-label="Toggle password visibility" data-target="signup-password">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 3C4.5 3 1.5 6 1.5 8s3 5 6.5 5 6.5-3 6.5-5-3-5-6.5-5Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <span class="form-helper">Minimum 8 characters.</span>
+            <span class="form-error" id="signup-password-error" role="alert">Password must be at least 8 characters.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-confirm">Confirm password</label>
+            <div class="password-wrapper">
+              <input
+                class="form-input" type="password" id="signup-confirm"
+                name="confirm" autocomplete="new-password"
+                placeholder="Re-enter your password" required
+              />
+              <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility" data-target="signup-confirm">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 3C4.5 3 1.5 6 1.5 8s3 5 6.5 5 6.5-3 6.5-5-3-5-6.5-5Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <span class="form-error" id="signup-confirm-error" role="alert">Passwords do not match.</span>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="terms-check" name="terms" required />
+            <label for="terms-check">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</label>
+          </div>
+          <button type="submit" class="btn-submit">Create Account</button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="#" id="switch-to-signin">Sign in</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="auth-footer" role="contentinfo">
+    <a href="../index.html">Home</a>
+    <a href="landing.html">Product</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    (function () {
+      var supabaseClient = null;
+      var DASHBOARD_URL = '/app';
+
+      // Determine the API base URL (same origin, or fallback for local dev)
+      var apiBase = window.location.origin;
+      if (window.location.protocol === 'file:') {
+        apiBase = 'http://localhost:8000';
+      }
+
+      // Fetch Supabase config from backend and initialize the client
+      fetch(apiBase + '/api/config/auth')
+        .then(function(r) { return r.json(); })
+        .then(function(cfg) {
+          if (cfg.supabase_url && cfg.supabase_anon_key) {
+            supabaseClient = supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+            // If already signed in, redirect to dashboard
+            supabaseClient.auth.getSession().then(function(result) {
+              if (result.data.session) {
+                window.location.href = DASHBOARD_URL;
+              }
+            });
+          }
+        })
+        .catch(function() { /* Supabase not configured — forms fall through to demo mode */ });
+
+      // Tab switching
+      var tabSignin = document.getElementById('tab-signin');
+      var tabSignup = document.getElementById('tab-signup');
+      var panelSignin = document.getElementById('panel-signin');
+      var panelSignup = document.getElementById('panel-signup');
+      var switchToSignup = document.getElementById('switch-to-signup');
+      var switchToSignin = document.getElementById('switch-to-signin');
+
+      function showSignin() {
+        tabSignin.classList.add('active');
+        tabSignin.setAttribute('aria-selected', 'true');
+        tabSignup.classList.remove('active');
+        tabSignup.setAttribute('aria-selected', 'false');
+        panelSignin.hidden = false;
+        panelSignup.hidden = true;
+        hideBanner('error-banner-signin');
+        var firstInput = panelSignin.querySelector('input');
+        if (firstInput) setTimeout(function(){ firstInput.focus(); }, 50);
+      }
+      function showSignup() {
+        tabSignup.classList.add('active');
+        tabSignup.setAttribute('aria-selected', 'true');
+        tabSignin.classList.remove('active');
+        tabSignin.setAttribute('aria-selected', 'false');
+        panelSignup.hidden = false;
+        panelSignin.hidden = true;
+        hideBanner('error-banner-signup');
+        var firstInput = panelSignup.querySelector('input');
+        if (firstInput) setTimeout(function(){ firstInput.focus(); }, 50);
+      }
+      tabSignin.addEventListener('click', showSignin);
+      tabSignup.addEventListener('click', showSignup);
+      if (switchToSignup) switchToSignup.addEventListener('click', function(e){ e.preventDefault(); showSignup(); });
+      if (switchToSignin) switchToSignin.addEventListener('click', function(e){ e.preventDefault(); showSignin(); });
+
+      if (new URLSearchParams(window.location.search).get('mode') === 'signup') showSignup();
+
+      // Password visibility toggles
+      document.querySelectorAll('.password-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var targetId = btn.getAttribute('data-target');
+          var input = document.getElementById(targetId);
+          if (!input) return;
+          var isPassword = input.type === 'password';
+          input.type = isPassword ? 'text' : 'password';
+          btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Toggle password visibility');
+        });
+      });
+
+      // Validation & error helpers
+      function validateEmail(val) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()); }
+
+      function setFieldError(inputId, errorId, show) {
+        var input = document.getElementById(inputId);
+        var error = document.getElementById(errorId);
+        if (input) input.classList.toggle('error', show);
+        if (error) error.classList.toggle('visible', show);
+      }
+
+      function showBanner(bannerId, message) {
+        var banner = document.getElementById(bannerId);
+        if (!banner) return;
+        banner.querySelector('span').textContent = message;
+        banner.classList.add('visible');
+      }
+
+      function hideBanner(bannerId) {
+        var banner = document.getElementById(bannerId);
+        if (banner) banner.classList.remove('visible');
+      }
+
+      function setSubmitLoading(btn, loading) {
+        if (loading) {
+          btn.dataset.originalText = btn.textContent;
+          btn.textContent = 'Please wait…';
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+        } else {
+          btn.textContent = btn.dataset.originalText || btn.textContent;
+          btn.disabled = false;
+          btn.style.opacity = '';
+        }
+      }
+
+      function friendlyAuthError(supabaseError) {
+        var msg = (supabaseError && supabaseError.message) || '';
+        if (/invalid.*credentials|invalid.*password/i.test(msg)) return 'Wrong password. Please try again.';
+        if (/email.*not.*confirmed/i.test(msg)) return 'Please check your email and confirm your account first.';
+        if (/user.*not.*found/i.test(msg)) return 'No account found with that email address.';
+        if (/already.*registered|already.*exists/i.test(msg)) return 'An account with this email already exists. Try signing in instead.';
+        if (/rate.*limit/i.test(msg)) return 'Too many attempts. Please wait a moment and try again.';
+        if (/weak.*password/i.test(msg)) return 'Password is too weak. Please use at least 8 characters.';
+        if (msg) return msg;
+        return 'Something went wrong. Please try again.';
+      }
+
+      // ─── Sign In ─────────────────────────────────────────────────────
+      document.getElementById('signin-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideBanner('error-banner-signin');
+
+        var email = document.getElementById('signin-email').value;
+        var pass = document.getElementById('signin-password').value;
+        var submitBtn = this.querySelector('.btn-submit');
+        var valid = true;
+
+        if (!validateEmail(email)) { setFieldError('signin-email','signin-email-error',true); valid = false; }
+        else { setFieldError('signin-email','signin-email-error',false); }
+        if (!pass) { setFieldError('signin-password','signin-password-error',true); valid = false; }
+        else { setFieldError('signin-password','signin-password-error',false); }
+        if (!valid) return;
+
+        if (!supabaseClient) {
+          showBanner('error-banner-signin', 'Authentication is not configured. Please contact support.');
+          return;
+        }
+
+        setSubmitLoading(submitBtn, true);
+
+        supabaseClient.auth.signInWithPassword({ email: email.trim(), password: pass })
+          .then(function(result) {
+            setSubmitLoading(submitBtn, false);
+            if (result.error) {
+              showBanner('error-banner-signin', friendlyAuthError(result.error));
+              return;
+            }
+            window.location.href = DASHBOARD_URL;
+          })
+          .catch(function(err) {
+            setSubmitLoading(submitBtn, false);
+            showBanner('error-banner-signin', friendlyAuthError(err));
+          });
+      });
+
+      // ─── Sign Up ─────────────────────────────────────────────────────
+      document.getElementById('signup-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideBanner('error-banner-signup');
+
+        var name = document.getElementById('signup-name').value.trim();
+        var email = document.getElementById('signup-email').value;
+        var pass = document.getElementById('signup-password').value;
+        var confirm = document.getElementById('signup-confirm').value;
+        var terms = document.getElementById('terms-check').checked;
+        var submitBtn = this.querySelector('.btn-submit');
+        var valid = true;
+
+        if (!name) { setFieldError('signup-name','signup-name-error',true); valid = false; }
+        else { setFieldError('signup-name','signup-name-error',false); }
+        if (!validateEmail(email)) { setFieldError('signup-email','signup-email-error',true); valid = false; }
+        else { setFieldError('signup-email','signup-email-error',false); }
+        if (pass.length < 8) { setFieldError('signup-password','signup-password-error',true); valid = false; }
+        else { setFieldError('signup-password','signup-password-error',false); }
+        if (pass !== confirm) { setFieldError('signup-confirm','signup-confirm-error',true); valid = false; }
+        else { setFieldError('signup-confirm','signup-confirm-error',false); }
+        if (!terms) { showBanner('error-banner-signup', 'Please agree to the Terms of Service and Privacy Policy.'); valid = false; }
+        if (!valid) return;
+
+        if (!supabaseClient) {
+          showBanner('error-banner-signup', 'Authentication is not configured. Please contact support.');
+          return;
+        }
+
+        setSubmitLoading(submitBtn, true);
+
+        supabaseClient.auth.signUp({
+          email: email.trim(),
+          password: pass,
+          options: { data: { full_name: name, display_name: name } }
+        })
+          .then(function(result) {
+            setSubmitLoading(submitBtn, false);
+            if (result.error) {
+              showBanner('error-banner-signup', friendlyAuthError(result.error));
+              return;
+            }
+            // Some Supabase configs require email confirmation
+            if (result.data.user && !result.data.session) {
+              showBanner('error-banner-signup', 'Account created! Please check your email to confirm your account, then sign in.');
+              document.getElementById('error-banner-signup').style.background = 'rgba(79,163,165,0.08)';
+              document.getElementById('error-banner-signup').style.color = 'var(--color-tertiary)';
+              document.getElementById('error-banner-signup').style.borderColor = 'rgba(79,163,165,0.25)';
+              return;
+            }
+            window.location.href = DASHBOARD_URL;
+          })
+          .catch(function(err) {
+            setSubmitLoading(submitBtn, false);
+            showBanner('error-banner-signup', friendlyAuthError(err));
+          });
+      });
+
+      // ─── Google OAuth ────────────────────────────────────────────────
+      document.querySelectorAll('.btn-google').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          if (!supabaseClient) {
+            var bannerId = panelSignin.hidden ? 'error-banner-signup' : 'error-banner-signin';
+            showBanner(bannerId, 'Google sign-in is not configured. Please use email and password.');
+            return;
+          }
+          supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + DASHBOARD_URL }
+          });
+        });
+      });
+
+      // Clear field errors on input
+      document.querySelectorAll('.form-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+          input.classList.remove('error');
+          var errorEl = input.closest('.form-group').querySelector('.form-error');
+          if (errorEl) errorEl.classList.remove('visible');
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

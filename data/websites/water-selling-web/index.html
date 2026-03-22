@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Water Selling Web — Simple water sales, smart distribution</title>
+  <meta name="description" content="Water Selling Web is an app for general users to sell, manage routes, and export sales data with a clear user dashboard and built-in payments." />
+  <style>
+    /* Font import as required */
+    @import url('https://fonts.googleapis.com/css2?family=Cal+Sans:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #14b8a6;
+      --color-secondary: #06b6d4;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0a1628;
+      --color-surface: #0f2340;
+      --color-text: #e0f7f7;
+      --color-muted: #6b9aaa;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #14b8a6, #06b6d4);
+      --font-display: 'Cal Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+
+      /* supplementary colors derived for UI translucency */
+      --surface-alpha: rgba(15,35,64,0.6);
+      --bg-alpha: rgba(10,22,40,0.85);
+      --muted-alpha: rgba(107,154,170,0.12);
+      --glass-border: rgba(255,255,255,0.04);
+    }
+
+    /* Base reset and layout */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(20,184,166,0.06), transparent 10%),
+                  radial-gradient(900px 400px at 90% 90%, rgba(6,182,212,0.04), transparent 8%),
+                  var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.5;
+      padding-bottom: clamp(1.25rem, calc(1rem + var(--spacing) * 0.75vw), 2rem);
+    }
+
+    a{color:inherit; text-decoration:none}
+
+    img{max-width:100%;height:auto;display:block}
+
+    main{max-width:1200px;margin:0 auto;padding: clamp(1rem, 2.5vw, 2.25rem);}
+
+    /* Navbar */
+    header.nav{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter: blur(8px);
+      background: var(--surface-alpha);
+      border-bottom: 1px solid var(--glass-border);
+      transition: background .25s ease, box-shadow .25s ease, transform .18s ease;
+      box-shadow: none;
+    }
+    header.nav.scrolled{
+      background: linear-gradient(180deg, rgba(15,35,64,0.9), rgba(10,22,40,0.86));
+      box-shadow: var(--shadow-md);
+      transform: translateY(0);
+    }
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      gap: clamp(.5rem, 1.5vw, 1.25rem);
+      padding: clamp(.5rem, 1.5vw, 1rem);
+      max-width:1200px;
+      margin:0 auto;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-family:var(--font-display);
+      font-weight:700;
+      color:var(--color-text);
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+    }
+    .logo-mark{
+      width:40px;height:40px;border-radius:10px;
+      background: var(--accent-gradient);
+      display:grid;place-items:center;color:#052b28;
+      box-shadow: var(--shadow-sm);
+      flex:0 0 40px;
+    }
+    nav.site-nav{
+      margin-left:auto;
+      display:flex;
+      gap: clamp(.5rem, 1.5vw, 1.25rem);
+      align-items:center;
+    }
+    nav.site-nav a{
+      color:var(--color-text);
+      opacity:.85;
+      padding: .5rem .6rem;
+      border-radius:8px;
+      font-weight:500;
+      font-size:.95rem;
+    }
+    nav.site-nav a:hover{opacity:1}
+    .cta-primary{
+      background: var(--accent-gradient);
+      color:#052b28;
+      min-height:44px;
+      padding: .5rem .9rem;
+      border-radius: 10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+      transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease;
+    }
+    .cta-primary:hover{transform:translateY(-2px); box-shadow: var(--shadow-md)}
+    .cta-secondary{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--color-text);
+      min-height:44px;
+      padding: .4rem .8rem;
+      border-radius: 10px;
+      transition: background .15s ease, transform .12s ease;
+    }
+    .cta-secondary:hover{background:var(--muted-alpha); transform:translateY(-1px)}
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(1rem, 3vw, 2rem);
+      align-items:center;
+      padding-top: clamp(1.25rem, 3.5vw, 3.5rem);
+      padding-bottom: clamp(1rem, 2.5vw, 1.5rem);
+    }
+    .hero-inner{
+      display:flex;
+      gap: clamp(1rem, 3vw, 2rem);
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .hero-copy{
+      max-width:720px;
+    }
+    h1.hero-title{
+      margin:0 0 .5rem 0;
+      font-family:var(--font-display);
+      font-weight:700;
+      letter-spacing:-0.02em;
+      font-size: clamp(2rem, 6vw, 3.25rem);
+      line-height:1.02;
+      color:var(--color-text);
+    }
+    p.lead{
+      margin:0 0 1rem 0;
+      color:var(--color-text);
+      opacity:.92;
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+    }
+    .hero-actions{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+    .hero-visual{
+      flex:1 1 340px;
+      min-width:260px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius-md);
+      padding: clamp(.75rem, 2.5vw, 1.25rem);
+      box-shadow: var(--shadow-lg);
+      border:1px solid var(--glass-border);
+    }
+    .dashboard-mock{
+      background: linear-gradient(180deg, rgba(10,22,40,0.4), rgba(15,35,64,0.25));
+      border-radius: calc(var(--radius-md) - 4px);
+      padding:1rem;
+      color:var(--color-text);
+      min-height:180px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:.75rem;
+      align-items:center;
+    }
+    .mock-left{
+      display:flex;
+      gap:.6rem;
+      align-items:center;
+    }
+    .stat{
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:.6rem .75rem;
+      border-radius: 8px;
+      font-weight:600;
+      color:var(--color-text);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .mock-right{
+      display:flex;
+      flex-direction:column;
+      gap:.4rem;
+      align-items:flex-end;
+      font-size:.9rem;
+      color:var(--color-muted);
+    }
+
+    /* Sections */
+    section{margin-top: clamp(1.25rem, 3vw, 2.25rem)}
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:1rem;
+      margin-bottom:.75rem;
+    }
+    .section-title h2{
+      margin:0;
+      font-family:var(--font-display);
+      font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+      color:var(--color-text);
+    }
+    .section-intro{color:var(--color-muted); font-size:.95rem}
+
+    /* Fluid grid for features and pricing */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(.75rem, 2vw, 1.25rem);
+    }
+
+    /* Feature cards */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border-radius: var(--radius-md);
+      padding: clamp(.85rem, 1.6vw, 1.15rem);
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: var(--shadow-sm);
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .card:hover{transform:translateY(-6px); box-shadow: var(--shadow-md); border-color: rgba(255,255,255,0.06)}
+    .feature-icon{
+      width:48px;height:48px;border-radius:10px;
+      display:grid;place-items:center;color:#052b28;
+      background: var(--accent-gradient);
+      flex:0 0 48px;
+      margin-bottom:.6rem;
+    }
+    .card h3{margin:0 0 .4rem 0;font-size:1.05rem}
+    .card p{margin:0;color:var(--color-muted);font-size:.95rem}
+
+    /* Testimonials */
+    .testimonials{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(.75rem, 2vw, 1rem);
+      margin-top:.6rem;
+    }
+    .testimonial{
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+      padding:1rem;
+      border-radius: var(--radius-md);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .quote{font-style:italic;color:var(--color-text);margin:0 0 .6rem 0}
+    .who{font-weight:600;color:var(--color-muted);font-size:.95rem}
+
+    /* Pricing */
+    .price{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      font-weight:700;
+      font-size:1.6rem;
+      color:var(--color-text);
+    }
+    .price-sub{font-weight:600;color:var(--color-muted);font-size:.95rem}
+    .plan{
+      padding:1rem;
+      border-radius: var(--radius-md);
+      border:1px solid rgba(255,255,255,0.02);
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      display:flex;
+      flex-direction:column;
+      gap:.75rem;
+      align-items:flex-start;
+    }
+    .plan .plan-features{display:flex;flex-direction:column;gap:.45rem;font-size:.95rem;color:var(--color-muted)}
+    .plan .plan-cta{margin-top:.5rem;align-self:stretch}
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top: clamp(1rem, 2.5vw, 1.75rem);
+      background: linear-gradient(90deg, rgba(20,184,166,0.08), rgba(6,182,212,0.04));
+      border-radius: var(--radius-lg);
+      padding: clamp(.9rem, 2vw, 1.15rem);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .prefooter .pf-text{font-weight:600;color:var(--color-text)}
+    .prefooter .pf-sub{color:var(--color-muted);font-size:.95rem}
+
+    /* Footer */
+    footer.site-footer{
+      margin-top: clamp(1.25rem, 3vw, 2rem);
+      padding-top: clamp(.9rem, 2.5vw, 1.25rem);
+      border-top: 1px solid rgba(255,255,255,0.03);
+      color:var(--color-muted);
+      font-size:.95rem;
+    }
+    .footer-inner{
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .footer-nav{display:flex;gap:1rem;align-items:center}
+    .copyright{opacity:.9}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0; transform:translateY(14px); transition: opacity .6s ease, transform .6s ease;}
+    .reveal.visible{opacity:1; transform:translateY(0)}
+
+    /* Responsive tweaks */
+    @media (min-width:1024px){
+      .hero{grid-template-columns: 1fr;}
+      .hero-inner{gap: clamp(1.5rem, 3vw, 3rem)}
+    }
+    @media (max-width:640px){
+      .nav-inner{padding:.6rem}
+      nav.site-nav{display:none}
+      .hero-visual{order:2;width:100%}
+      .hero-copy{order:1;width:100%}
+      .prefooter{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <header class="nav" id="siteHeader" role="banner">
+    <div class="nav-inner">
+      <a class="brand" href="index.html" aria-label="Water Selling Web home">
+        <div class="logo-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2C12 2 8 7 8 11C8 14.3137 10.6863 17 14 17C15.6569 17 17 18.3431 17 20H7C7 16 9 11 12 8C14.5 5.5 12 2 12 2Z" fill="#052b28"/>
+          </svg>
+        </div>
+        Water Selling Web
+      </a>
+
+      <nav class="site-nav" role="navigation" aria-label="Main navigation">
+        <a href="app.html">Open App</a>
+        <a href="pages/signup.html">Sign Up</a>
+        <a href="pages/signup.html" class="cta-secondary">Pricing</a>
+        <a href="app.html" class="cta-secondary">Demo</a>
+        <a href="pages/signup.html" class="cta-primary">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy reveal">
+          <h1 class="hero-title">Sell water efficiently. Manage routes. Export sales.</h1>
+          <p class="lead">Water Selling Web is an app built for small vendors and community distributors. Our core functionality brings a clear user dashboard to track orders, manage delivery routes, and perform secure transactions — with one-click data export for your records.</p>
+          <div class="hero-actions">
+            <a href="pages/signup.html" class="cta-primary" title="Get Started — create an account">Get Started</a>
+            <a href="app.html" class="cta-secondary" title="Open the demo app">Try the Demo</a>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-hidden="false">
+          <div class="dashboard-mock">
+            <div class="mock-left">
+              <div class="stat">
+                124 orders
+                <div style="font-size:.8rem;color:var(--color-muted);font-weight:500">this week</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:.25rem;margin-left:.6rem">
+                <div style="font-weight:700;color:var(--color-text)">Active deliveries</div>
+                <div style="color:var(--color-muted)">3 trucks · 12 stops</div>
+              </div>
+            </div>
+            <div class="mock-right">
+              <div style="font-weight:700;color:var(--color-text);">Export ready</div>
+              <div class="price-sub">CSV / XLSX · Quick data export</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:.6rem;margin-top:.9rem">
+            <div class="card" style="flex:1" aria-hidden="true">
+              <h3 style="margin-bottom:.35rem">Order timeline</h3>
+              <p style="margin:0">Track each sale from order to delivery with timestamps and customer notes.</p>
+            </div>
+            <div class="card" style="flex:1" aria-hidden="true">
+              <h3 style="margin-bottom:.35rem">Payments</h3>
+              <p style="margin:0">Accept cash-on-delivery or integrate mobile payments for faster settlement.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section aria-labelledby="featuresHeading" class="reveal">
+      <div class="section-title">
+        <h2 id="featuresHeading">Core features built for water sellers</h2>
+        <div class="section-intro">Everything you need to run daily sales, route deliveries, and keep export-ready records.</div>
+      </div>
+
+      <div class="grid" role="list">
+        <article class="card reveal" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C9 7 6 10 6 13.5C6 16.5 8.5 19 11.5 19C14.5 19 17 16.5 17 13.5C17 10 14 7 12 2Z" fill="#052b28"/>
+            </svg>
+          </div>
+          <h3>Simple ordering flow</h3>
+          <p>Let customers place orders by phone or in person and log each sale instantly. Streamlined entry reduces errors and speeds up deliveries.</p>
+        </article>
+
+        <article class="card reveal" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M3 12H21" stroke="#052b28" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M3 6H21" stroke="#052b28" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M3 18H21" stroke="#052b28" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>Route management</h3>
+          <p>Assign stops, optimize delivery order, and mark completed deliveries. Route views help drivers stay efficient on the road.</p>
+        </article>
+
+        <article class="card reveal" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L15 8H9L12 2Z" fill="#052b28"/>
+              <path d="M4 20H20V18H4V20Z" fill="#052b28"/>
+            </svg>
+          </div>
+          <h3>Secure payments</h3>
+          <p>Record cash payments or enable mobile wallet links. Secure transaction logs reduce reconciliation headaches at month-end.</p>
+        </article>
+
+        <article class="card reveal" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6H20V18H4V6Z" fill="#052b28"/>
+              <path d="M8 10H16" stroke="#052b28" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>Data export & reports</h3>
+          <p>One-click data export for bookkeeping: generate CSV or XLSX reports of orders, payments, and delivery history for any date range.</p>
+        </article>
+
+        <article class="card reveal" role="listitem">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C8 6 5 8 5 11C5 14 7 16 9.5 17.5C10 17.8 10 18.6 10 19.2V20H14V19.2C14 18.6 14 17.8 14.5 17.5C17 16 19 14 19 11C19 8 16 6 12 2Z" fill="#052b28"/>
+            </svg>
+          </div>
+          <h3>User dashboard</h3>
+          <p>A focused dashboard provides daily totals, recent orders, and driver status so you can make decisions without digging through spreadsheets.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section aria-labelledby="testimonialsHeading" class="reveal">
+      <div class="section-title">
+        <h2 id="testimonialsHeading">Trusted by sellers and cooperatives</h2>
+        <div class="section-intro">Real feedback from teams that moved from pen-and-paper to a digital workflow.</div>
+      </div>
+
+      <div class="testimonials">
+        <figure class="testimonial reveal">
+          <blockquote class="quote">"Switching to Water Selling Web cut our reconciliation time in half. The user dashboard makes it easy to see daily income and prepare exports for accounting."</blockquote>
+          <figcaption class="who">— Maria Gomez, roadside water vendor</figcaption>
+        </figure>
+
+        <figure class="testimonial reveal">
+          <blockquote class="quote">"Our NGO uses the app to coordinate community distribution. Route management is straightforward, and the order logs are reliable for audits."</blockquote>
+          <figcaption class="who">— Ahmed Saleh, field coordinator</figcaption>
+        </figure>
+
+        <figure class="testimonial reveal">
+          <blockquote class="quote">"The data export feature is a lifesaver at month-end. We export sales and payments in one click and share with our accountant."</blockquote>
+          <figcaption class="who">— Rina Patel, small business owner</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section aria-labelledby="pricingHeading" class="reveal">
+      <div class="section-title">
+        <h2 id="pricingHeading">Pricing that grows with your operation</h2>
+        <div class="section-intro">Choose a plan for daily sales or scale to fleet and multi-location management.</div>
+      </div>
+
+      <div class="grid">
+        <div class="plan card reveal">
+          <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+            <div>
+              <div style="font-weight:700;font-size:1.1rem">Free</div>
+              <div class="price-sub">Starter tools for a single seller</div>
+            </div>
+            <div class="price">Free</div>
+          </div>
+          <div class="plan-features">
+            <div>Basic user dashboard</div>
+            <div>Up to 50 orders/month</div>
+            <div>Manual data export (CSV)</div>
+          </div>
+          <div class="plan-cta">
+            <a href="pages/signup.html" class="cta-primary" style="width:100%;display:inline-flex;justify-content:center">Get Started</a>
+          </div>
+        </div>
+
+        <div class="plan card reveal">
+          <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+            <div>
+              <div style="font-weight:700;font-size:1.1rem">Pro</div>
+              <div class="price-sub">For growing vendors & small fleets</div>
+            </div>
+            <div>
+              <div class="price">$19<span style="font-size:.85rem;color:var(--color-muted);font-weight:600">/mo</span></div>
+            </div>
+          </div>
+          <div class="plan-features">
+            <div>Unlimited orders</div>
+            <div>Route optimization & driver assignments</div>
+            <div>Scheduled exports & automated reports</div>
+            <div>Priority email support</div>
+          </div>
+          <div class="plan-cta">
+            <a href="pages/signup.html" class="cta-primary" style="width:100%;display:inline-flex;justify-content:center">Start Pro</a>
+          </div>
+        </div>
+
+        <div class="plan card reveal" aria-label="Enterprise plan">
+          <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+            <div>
+              <div style="font-weight:700;font-size:1.1rem">Enterprise</div>
+              <div class="price-sub">Custom setup for multi-location operations</div>
+            </div>
+            <div>
+              <div class="price">Contact</div>
+            </div>
+          </div>
+          <div class="plan-features">
+            <div>Dedicated onboarding</div>
+            <div>API access for integrations</div>
+            <div>Custom data export formats and SFTP delivery</div>
+            <div>Service-level agreement & phone support</div>
+          </div>
+          <div class="plan-cta">
+            <a href="pages/signup.html" class="cta-primary" style="width:100%;display:inline-flex;justify-content:center">Request Quote</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pre-footer CTA -->
+    <section class="prefooter reveal" role="region" aria-label="Ready to get started">
+      <div>
+        <div class="pf-text">Ready to manage sales, routes, and exports in one place?</div>
+        <div class="pf-sub">Create your account now and set up your first delivery in minutes.</div>
+      </div>
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <a href="pages/signup.html" class="cta-primary">Get Started</a>
+        <a href="app.html" class="cta-secondary">Open Demo</a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div style="display:flex;gap:1rem;align-items:center">
+          <a class="brand" href="index.html" aria-label="Water Selling Web home">
+            <div class="logo-mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C9 7 6 10 6 13.5C6 16.5 8.5 19 11.5 19C14.5 19 17 16.5 17 13.5C17 10 14 7 12 2Z" fill="#052b28"/>
+              </svg>
+            </div>
+            Water Selling Web
+          </a>
+          <div class="copyright">© <span id="year"></span> Water Selling Web</div>
+        </div>
+
+        <nav class="footer-nav" aria-label="Footer">
+          <a href="app.html">Open App</a>
+          <a href="pages/signup.html">Sign Up</a>
+          <a href="pages/signup.html">Pricing</a>
+          <a href="pages/signup.html">Terms</a>
+        </nav>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Update year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sticky header: add .scrolled when scroll > 14px
+    (function(){
+      const header = document.getElementById('siteHeader');
+      function onScroll(){
+        if(window.scrollY > 14){
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Reveal-on-scroll using IntersectionObserver
+    (function(){
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -10% 0px',
+        threshold: 0.08
+      };
+      const revealElems = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('visible');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, observerOptions);
+        revealElems.forEach(el => io.observe(el));
+      } else {
+        // Fallback: reveal all
+        revealElems.forEach(el => el.classList.add('visible'));
+      }
+    })();
+
+    // Small accessibility: focus outlines for keyboard users
+    (function(){
+      function handleFirstTab(e) {
+        if(e.key === 'Tab'){
+          document.documentElement.classList.add('user-is-tabbing');
+          window.removeEventListener('keydown', handleFirstTab);
+        }
+      }
+      window.addEventListener('keydown', handleFirstTab);
+    })();
+  </script>
+</body>
+</html>

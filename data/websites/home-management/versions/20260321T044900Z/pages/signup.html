@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — Home Management</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
+      --color-accent-pink: #ec4899;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #06b6d4, #22d3ee);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding: clamp(16px, 3vw, 32px);
+    }
+
+    /* Navbar */
+    .nav {
+      position: sticky;
+      top: 14px;
+      width: min(980px, 100%);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: clamp(8px, calc(var(--spacing) * 1rem), 18px);
+      padding: clamp(8px, 1.2vw, 14px);
+      border-radius: calc(var(--radius-md) + 2px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: var(--shadow-sm);
+      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+      z-index:20;
+      backdrop-filter: blur(6px);
+    }
+    .nav.scrolled{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(90deg, rgba(6,182,212,0.06), rgba(34,211,238,0.03));
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      color:var(--color-text);
+      font-family:var(--font-display);
+      font-weight:600;
+      letter-spacing:0.2px;
+      font-size: clamp(18px, 2vw, 20px);
+    }
+    .brand .logo{
+      width:36px;
+      height:36px;
+      border-radius:8px;
+      background: var(--accent-gradient);
+      display:inline-grid;
+      place-items:center;
+      color:var(--color-bg);
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+      flex:0 0 36px;
+    }
+    .nav-links{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .nav-links a{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:14px;
+      padding:6px 10px;
+      border-radius:8px;
+    }
+    .nav-links a.active,
+    .nav-links a:hover{
+      color:var(--color-text);
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* Center card */
+    .container{
+      width: min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(16px, calc(var(--spacing) * 1.2rem), 28px);
+      margin-top: clamp(18px, 3vh, 30px);
+      align-items:start;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border-radius: var(--radius-lg);
+      padding: clamp(18px, 2.5vw, 28px);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.03);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(12px, 1.6vw, 18px);
+    }
+
+    .card-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(12px, calc(var(--spacing) * 1rem), 18px);
+      align-items:start;
+    }
+
+    /* Left column (form) */
+    .signup-panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.004));
+      padding: clamp(14px, 2vw, 20px);
+      border-radius: var(--radius-md);
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow: var(--shadow-sm);
+    }
+    .headline{
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size: clamp(20px, 2.6vw, 26px);
+      margin:0 0 6px 0;
+      color:var(--color-text);
+    }
+    .sub{
+      margin:0 0 14px 0;
+      color:var(--color-muted);
+      font-size:14px;
+    }
+
+    form label{
+      display:block;
+      font-size:13px;
+      margin-bottom:6px;
+      color:var(--color-text);
+      font-weight:600;
+    }
+    .field{
+      margin-bottom:12px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      width:100%;
+      padding: clamp(10px, 1.8vw, 12px);
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.03);
+      border-radius: var(--radius-sm);
+      color:var(--color-text);
+      font-size:15px;
+      outline:none;
+      transition: box-shadow .14s ease, border-color .14s ease, transform .08s;
+    }
+    input:focus{
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 18px rgba(6,182,212,0.08);
+      transform:translateY(-1px);
+    }
+    .hint{
+      font-size:13px;
+      color:var(--color-muted);
+      margin-top:6px;
+    }
+    .error{
+      color:var(--color-accent-pink);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-top:8px;
+    }
+    button.btn{
+      min-height:44px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: none;
+      cursor:pointer;
+      color: var(--color-bg);
+      background: var(--accent-gradient);
+      font-weight:600;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:15px;
+      box-shadow: var(--shadow-sm);
+    }
+    button.btn:hover{ transform:translateY(-2px); box-shadow: var(--shadow-md) }
+    button.btn:active{ transform:translateY(0) scale(.996); }
+
+    a.secondary{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:14px;
+    }
+    a.secondary:hover{ color:var(--color-text) }
+
+    /* Right column (feature bento grid) */
+    .features{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:12px;
+    }
+    .feature{
+      padding:12px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.004));
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow: var(--shadow-sm);
+      min-height:74px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .feature .icon{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background: rgba(255,255,255,0.02);
+      display:grid;
+      place-items:center;
+      color:var(--color-primary);
+      font-weight:700;
+      flex:0 0 44px;
+      box-shadow: inset 0 -6px 18px rgba(6,182,212,0.02);
+    }
+    .feature h4{
+      margin:0;
+      font-size:15px;
+      font-weight:600;
+      color:var(--color-text);
+    }
+    .feature p{
+      margin:6px 0 0 0;
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* reveal animation */
+    .reveal{
+      opacity:0;
+      transform: translateY(12px) scale(.995);
+      transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1);
+      will-change: transform, opacity;
+    }
+    .reveal.in-view{
+      opacity:1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Footer small */
+    .foot{
+      font-size:13px;
+      color:var(--color-muted);
+      text-align:center;
+      margin-top:8px;
+    }
+
+    /* Responsive tweaks */
+    @media (min-width: 1024px){
+      .container{
+        grid-template-columns: 1fr;
+      }
+      .card{
+        grid-template-columns: 2fr 1.2fr;
+      }
+    }
+    @media (max-width: 640px){
+      .nav{ padding:10px }
+      .brand .logo{ width:32px; height:32px; font-size:14px }
+      .card{ padding:16px }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="siteNav" aria-label="Primary">
+    <a class="brand" href="../index.html">
+      <span class="logo" aria-hidden="true">HM</span>
+      Home Management
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a class="active" href="signup.html">Sign up</a>
+      <a href="../app.html">Open app</a>
+    </div>
+  </nav>
+
+  <main class="container" role="main">
+    <section class="card reveal" aria-labelledby="signupHead">
+      <div class="signup-panel">
+        <h1 id="signupHead" class="headline reveal">Create your Home Management account</h1>
+        <p class="sub reveal">Get instant access to core functionality — manage tasks, inventories and schedules from a single user dashboard. Export your records anytime with reliable data export tools.</p>
+
+        <form id="signupForm" action="../app.html" method="get" novalidate>
+          <div class="field reveal">
+            <label for="fullname">Full name</label>
+            <input id="fullname" name="fullname" type="text" aria-label="Full name" required autocomplete="name" placeholder="Alex Morgan" />
+            <div class="error" id="nameError" aria-live="polite" style="display:none;"></div>
+          </div>
+
+          <div class="field reveal">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" aria-label="Email address" required autocomplete="email" placeholder="name@example.com" />
+            <div class="hint">We use email for important account notifications and secure access.</div>
+            <div class="error" id="emailError" aria-live="polite" style="display:none;"></div>
+          </div>
+
+          <div class="field reveal">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" aria-label="Password" required minlength="8" placeholder="At least 8 characters" />
+            <div class="hint">Minimum 8 characters. Use a mix of letters and numbers for stronger protection.</div>
+            <div class="error" id="passwordError" aria-live="polite" style="display:none;"></div>
+          </div>
+
+          <div class="actions reveal">
+            <button class="btn" type="submit">Get Started</button>
+            <a class="secondary" href="../index.html">Already have an account? Sign in</a>
+          </div>
+        </form>
+
+        <p class="foot reveal">By signing up you agree to Home Management's Terms and Data Use policy. Your profile powers the user dashboard and enables safe exports of your home data.</p>
+      </div>
+
+      <aside class="features reveal" aria-label="Key features">
+        <div class="feature">
+          <div class="icon" aria-hidden="true">★</div>
+          <div>
+            <h4>Core functionality</h4>
+            <p>Essential tools to track tasks, appliances, and maintenance schedules so nothing in your home slips through the cracks.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="icon" aria-hidden="true">📊</div>
+          <div>
+            <h4>User dashboard</h4>
+            <p>Instant overview of your home with actionable tiles — quick insights and shortcuts tailored to your daily routine.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="icon" aria-hidden="true">⬇️</div>
+          <div>
+            <h4>Data export</h4>
+            <p>Download records and history in standard formats for archiving, sharing with professionals, or migration to other tools.</p>
+          </div>
+        </div>
+
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    // Sticky nav on scroll > 14px
+    (function(){
+      const nav = document.getElementById('siteNav');
+      function onScroll(){
+        if(window.scrollY > 14){
+          nav.classList.add('scrolled');
+        } else {
+          nav.classList.remove('scrolled');
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            entry.target.classList.add('in-view');
+            // Optionally unobserve to keep visible
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      reveals.forEach(r => obs.observe(r));
+    })();
+
+    // Form validation
+    (function(){
+      const form = document.getElementById('signupForm');
+      const fullname = document.getElementById('fullname');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+
+      const nameError = document.getElementById('nameError');
+      const emailError = document.getElementById('emailError');
+      const passwordError = document.getElementById('passwordError');
+
+      function showError(el, container, message){
+        container.textContent = message;
+        container.style.display = 'block';
+        el.setAttribute('aria-invalid','true');
+      }
+      function clearError(el, container){
+        container.textContent = '';
+        container.style.display = 'none';
+        el.removeAttribute('aria-invalid');
+      }
+
+      function validateEmailFormat(value){
+        // Simple but robust-ish email check
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+
+      form.addEventListener('submit', function(e){
+        let valid = true;
+
+        // Full name
+        if(!fullname.value.trim()){
+          showError(fullname, nameError, 'Please enter your full name.');
+          valid = false;
+        } else {
+          clearError(fullname, nameError);
+        }
+
+        // Email
+        if(!email.value.trim()){
+          showError(email, emailError, 'Email is required.');
+          valid = false;
+        } else if(!validateEmailFormat(email.value.trim())){
+          showError(email, emailError, 'Enter a valid email address (example@example.com).');
+          valid = false;
+        } else {
+          clearError(email, emailError);
+        }
+
+        // Password
+        if(!password.value){
+          showError(password, passwordError, 'Password cannot be empty.');
+          valid = false;
+        } else if(password.value.length < 8){
+          showError(password, passwordError, 'Password must be at least 8 characters.');
+          valid = false;
+        } else {
+          clearError(password, passwordError);
+        }
+
+        if(!valid){
+          e.preventDefault();
+          // focus the first invalid field
+          const firstInvalid = form.querySelector('[aria-invalid="true"]');
+          if(firstInvalid) firstInvalid.focus();
+        } else {
+          // Allow the form to submit to ../app.html. Optionally we can show a quick visual feedback.
+          // Small safeguard: show a short disabled state to the submit button to indicate processing.
+          const btn = form.querySelector('button[type="submit"]');
+          if(btn){
+            btn.disabled = true;
+            btn.style.opacity = '0.92';
+            btn.textContent = 'Starting...';
+          }
+          // Let the browser submit the form normally
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

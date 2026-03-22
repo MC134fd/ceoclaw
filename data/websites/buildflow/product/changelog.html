@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .changelog-timeline { max-width: 760px; }
+    .changelog-entry { display: grid; grid-template-columns: 120px 1fr; gap: var(--space-xl); padding-bottom: var(--space-2xl); position: relative; }
+    .changelog-entry::before { content: ''; position: absolute; left: 120px; top: 8px; bottom: 0; width: 1px; background: var(--color-border); transform: translateX(calc(var(--space-xl) / 2)); }
+    .changelog-entry:last-child::before { display: none; }
+    .changelog-date { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-subtle); padding-top: 4px; text-align: right; }
+    .changelog-dot { position: absolute; left: 120px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-primary); border: 2px solid var(--color-bg); transform: translateX(calc(var(--space-xl) / 2 - 6px)); }
+    .changelog-content { padding-left: calc(var(--space-xl) + 12px); }
+    .release-tag { display: inline-flex; align-items: center; gap: 0.35rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-primary); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); border-radius: var(--radius-pill); padding: 0.15rem 0.6rem; margin-bottom: 0.5rem; }
+    .changelog-title { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .changelog-desc { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: var(--space-md); }
+    .change-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .change-item { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted); }
+    .change-item.new::before { content: 'NEW'; font-size: 0.6rem; padding: 0.1rem 0.35rem; background: rgba(52,211,153,0.12); color: var(--color-accent); border-radius: 3px; flex-shrink: 0; font-weight: 700; margin-top: 2px; }
+    .change-item.fix::before { content: 'FIX'; font-size: 0.6rem; padding: 0.1rem 0.35rem; background: rgba(245,158,11,0.12); color: var(--color-warm); border-radius: 3px; flex-shrink: 0; font-weight: 700; margin-top: 2px; }
+    .change-item.improve::before { content: 'IMP'; font-size: 0.6rem; padding: 0.1rem 0.35rem; background: rgba(167,139,250,0.12); color: var(--color-secondary); border-radius: 3px; flex-shrink: 0; font-weight: 700; margin-top: 2px; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-secondary mb-md">Changelog</div>
+    <h1>What's new in Buildflow.</h1>
+    <p>Every update, improvement, and fix — documented so you always know what changed and why.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="changelog-timeline">
+      <div class="changelog-entry">
+        <div class="changelog-date">Mar 12, 2026</div>
+        <div style="position:relative;">
+          <div class="changelog-dot"></div>
+          <div class="changelog-content">
+            <div class="release-tag">v2.4.0</div>
+            <div class="changelog-title">Multi-agent context sharing</div>
+            <div class="changelog-desc">Agents now share a unified project context. When your Product Agent updates the roadmap, your Marketing Agent sees it instantly — no more copy-paste between tools.</div>
+            <div class="change-list">
+              <div class="change-item new">Shared context store across all 6 agents</div>
+              <div class="change-item new">Agent-to-agent handoff notifications</div>
+              <div class="change-item improve">40% faster agent response times</div>
+              <div class="change-item fix">Fixed edge case where brand voice wasn't applied to email sequences</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">Feb 28, 2026</div>
+        <div style="position:relative;">
+          <div class="changelog-dot" style="background:var(--color-secondary);"></div>
+          <div class="changelog-content">
+            <div class="release-tag" style="color:var(--color-secondary); background:rgba(167,139,250,0.08); border-color:rgba(167,139,250,0.2);">v2.3.0</div>
+            <div class="changelog-title">Brand voice & Notion sync</div>
+            <div class="changelog-desc">Train Buildflow on your existing writing. Upload samples and every agent output will match your tone, vocabulary, and style.</div>
+            <div class="change-list">
+              <div class="change-item new">Brand voice training from text samples</div>
+              <div class="change-item new">Notion bidirectional sync (Pro plan)</div>
+              <div class="change-item improve">Improved cold email open rate predictions</div>
+              <div class="change-item fix">Resolved auth token refresh edge case on mobile browsers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">Feb 10, 2026</div>
+        <div style="position:relative;">
+          <div class="changelog-dot" style="background:var(--color-accent);"></div>
+          <div class="changelog-content">
+            <div class="release-tag" style="color:var(--color-accent); background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.2);">v2.2.0</div>
+            <div class="changelog-title">Sprint Auto-Planner</div>
+            <div class="changelog-desc">From a roadmap item to a full sprint plan in 30 seconds. The Product Agent now auto-generates tasks, time estimates, and dependencies.</div>
+            <div class="change-list">
+              <div class="change-item new">Sprint auto-planning from any roadmap item</div>
+              <div class="change-item new">RICE scoring visualization</div>
+              <div class="change-item improve">Linear integration now supports project sync</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-xl">
+      <a href="roadmap.html" class="btn btn-secondary">See what's coming next →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="features.html">Features</a></li><li><a href="agents.html">Agents</a></li><li><a href="roadmap.html">Roadmap</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="../company/about.html">About</a></li><li><a href="../company/contact.html">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

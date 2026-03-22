@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make A Web App — Build apps without friction</title>
+  <meta name="description" content="Make A Web App: fast core functionality, an intuitive user dashboard, and secure data export — launch and grow your web app with confidence." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@300;400;600;700&family=Manrope:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #4338ca;
+      --color-secondary: #7c3aed;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f0a2e;
+      --color-surface: #1e1652;
+      --color-text: #eef2ff;
+      --color-muted: #818cf8;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #4338ca, #7c3aed);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+      --container-max: 1200px;
+    }
+
+    /* Base reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.08), transparent),
+                  radial-gradient(900px 400px at 90% 80%, rgba(67,56,202,0.06), transparent),
+                  var(--color-bg);
+      color:var(--color-text);
+      font-family:var(--font-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding-bottom: clamp(2rem, calc(var(--spacing) * 1.25rem + 1vw), 4rem);
+      -webkit-font-kerning:normal;
+    }
+
+    a{color:inherit; text-decoration:none}
+    img{max-width:100%; display:block}
+
+    .container{
+      max-width:var(--container-max);
+      margin:0 auto;
+      padding: clamp(1rem, calc(var(--spacing) * .75rem + .5vw), 2rem);
+    }
+
+    /* Navbar */
+    header.nav{
+      position:sticky;
+      top:0;
+      z-index:60;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(30,22,82,0.55), rgba(30,22,82,0.35));
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      padding:.5rem .25rem;
+    }
+    .logo{
+      width:42px;
+      height:42px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      box-shadow: var(--shadow-sm);
+      display:grid;
+      place-items:center;
+      color:var(--color-text);
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size:1rem;
+      letter-spacing:.5px;
+    }
+    .brand h1{
+      margin:0;
+      font-size: clamp(1rem, 1.2rem + .2vw, 1.125rem);
+      font-family:var(--font-display);
+      font-weight:700;
+      color:var(--color-text);
+    }
+
+    nav.primary{
+      display:flex;
+      gap: .5rem;
+      align-items:center;
+    }
+
+    .nav-links{
+      display:flex;
+      gap: .5rem;
+      align-items:center;
+      margin-right:.5rem;
+    }
+    .nav-links a{
+      color:var(--color-text);
+      padding:.5rem .6rem;
+      border-radius:8px;
+      font-weight:600;
+      font-size:.95rem;
+      opacity:.95;
+    }
+    .nav-links a:hover{ background: rgba(255,255,255,0.02) }
+
+    .cta{
+      display:inline-flex;
+      align-items:center;
+      gap:.6rem;
+      padding: .45rem .85rem;
+      min-height:44px;
+      border-radius: 12px;
+      background:var(--accent-gradient);
+      color: white;
+      font-weight:700;
+      box-shadow: var(--shadow-md);
+      transition: transform .13s ease, box-shadow .13s ease, opacity .13s ease;
+    }
+    .cta:hover{ transform: translateY(-2px); box-shadow: var(--shadow-lg) }
+    .cta:active{ transform: translateY(0) scale(.995) }
+
+    /* Scrolled state */
+    header.nav.scrolled{
+      background: linear-gradient(180deg, rgba(14,10,34,0.8), rgba(14,10,34,0.55));
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 6px 20px rgba(3,2,12,0.5);
+    }
+
+    /* Hero */
+    .hero{
+      padding: clamp(2rem, calc(var(--spacing) * 2rem + 1vw), 4rem) 0;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(1rem, calc(var(--spacing) * 0.5rem + .5vw), 2rem);
+      align-items:center;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(.75rem, calc(var(--spacing) * .5rem + .2vw), 1.5rem);
+      align-items:center;
+    }
+
+    .hero-copy{
+      max-width: 72ch;
+    }
+    .eyebrow{
+      display:inline-block;
+      font-weight:700;
+      color:var(--color-accent-pink);
+      background: linear-gradient(90deg, rgba(236,72,153,0.08), transparent);
+      padding: .4rem .6rem;
+      border-radius:999px;
+      margin-bottom:.5rem;
+      font-size:.9rem;
+    }
+    h2.display{
+      margin:0 0 .5rem 0;
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size: clamp(1.8rem, 2.8rem + 1vw, 3.4rem);
+      line-height:1.02;
+      letter-spacing:-0.02em;
+      color:var(--color-text);
+    }
+    p.lead{
+      margin:0 0 1rem 0;
+      color:var(--color-muted);
+      font-size:1.05rem;
+      max-width:56ch;
+      font-weight:600;
+    }
+
+    .hero-ctas{
+      display:flex;
+      gap:.75rem;
+      align-items:center;
+      margin-top:.75rem;
+      flex-wrap:wrap;
+    }
+    .btn-outline{
+      padding:.45rem .85rem;
+      border-radius: 12px;
+      min-height:44px;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      color:var(--color-text);
+      font-weight:700;
+      transition: background .12s ease, transform .12s ease;
+    }
+    .btn-outline:hover{ background: rgba(255,255,255,0.02); transform: translateY(-2px) }
+    .small{
+      font-size:.95rem;
+      color:var(--color-muted);
+      display:flex;
+      gap:.5rem;
+      align-items:center;
+      margin-top:.5rem;
+    }
+
+    /* Illustration card */
+    .hero-visual{
+      background: linear-gradient(180deg, rgba(124,58,237,0.06), rgba(67,56,202,0.04));
+      border-radius: var(--radius-lg);
+      padding: clamp(.75rem, calc(var(--spacing) * .5rem + .5vw), 1.25rem);
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+    .mock{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius: calc(var(--radius-md));
+      padding:1rem;
+      display:grid;
+      gap:.6rem;
+      grid-template-columns: 1fr;
+      align-items:start;
+    }
+    .mock .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:.5rem;
+    }
+    .mock .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border-radius:8px;
+      padding:.7rem;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .chip{ font-size:.8rem; color:var(--color-muted); padding:.25rem .5rem; border-radius:999px; background: rgba(255,255,255,0.02) }
+
+    /* Features */
+    .section{
+      padding: clamp(1.25rem, calc(var(--spacing) * 1rem + .5vw), 2.25rem) 0;
+    }
+    .grid{
+      display:grid;
+      gap:1rem;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .feature-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius: var(--radius-md);
+      padding: clamp(.9rem, calc(var(--spacing) * .6rem + .2vw), 1.2rem);
+      box-shadow: var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      gap:.75rem;
+      align-items:flex-start;
+    }
+    .feature-icon{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      border-radius:12px;
+      background: linear-gradient(135deg, rgba(67,56,202,0.14), rgba(124,58,237,0.08));
+      display:grid;
+      place-items:center;
+      color:var(--color-text);
+      font-weight:700;
+      font-family:var(--font-display);
+      font-size:1.1rem;
+    }
+    .feature-title{ font-weight:700; margin:0; color:var(--color-text) }
+    .feature-desc{ margin:0; color:var(--color-muted); font-size:.96rem }
+
+    /* Testimonials */
+    .testimonials{
+      display:grid;
+      gap:1rem;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .testimonial{
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+      border-radius: var(--radius-md);
+      padding:1rem;
+      box-shadow: var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .quote{ font-weight:600; color:var(--color-text); margin:0 0 .5rem 0 }
+    .who{ font-size:.9rem; color:var(--color-muted); margin:0 }
+
+    /* Pricing */
+    .pricing-grid{
+      display:grid;
+      gap:1rem;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      align-items:start;
+    }
+    .plan{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius: var(--radius-md);
+      padding:1.1rem;
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow: var(--shadow-sm);
+      display:flex;
+      flex-direction:column;
+      gap:.75rem;
+    }
+    .plan .tag{
+      font-weight:700;
+      color:var(--color-primary);
+      padding:.25rem .5rem;
+      border-radius:999px;
+      background: rgba(67,56,202,0.06);
+      display:inline-block;
+      font-size:.95rem;
+    }
+    .price{
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size:1.6rem;
+      color:var(--color-text);
+    }
+    .plan-features{ color:var(--color-muted); font-size:.95rem; margin-top:.25rem; flex:1 }
+    .plan .plan-cta{ margin-top:.5rem; align-self:stretch; display:inline-flex; justify-content:center }
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top: clamp(1.25rem, calc(var(--spacing) * 1rem + .4vw), 2rem);
+      padding: clamp(1rem, calc(var(--spacing) * .6rem + .5vw), 1.6rem);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(90deg, rgba(67,56,202,0.08), rgba(124,58,237,0.06));
+      display:flex;
+      gap:1rem;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow: var(--shadow-md);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    /* Footer */
+    footer.sitefoot{
+      margin-top: clamp(1.5rem, calc(var(--spacing) * 1rem + .6vw), 2.5rem);
+      padding-top: clamp(.75rem, calc(var(--spacing)*.5rem + .2vw), 1.25rem);
+      border-top: 1px solid rgba(255,255,255,0.02);
+      color:var(--color-muted);
+    }
+    .foot-inner{
+      display:flex;
+      gap:1rem;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .foot-links{ display:flex; gap: .75rem; align-items:center; flex-wrap:wrap }
+    .foot-links a{ color:var(--color-muted); font-weight:600 }
+
+    /* Reveal animations */
+    .reveal{ opacity:0; transform: translateY(14px) scale(.997); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.3,1) }
+    .reveal.visible{ opacity:1; transform: translateY(0) scale(1) }
+
+    /* Responsive */
+    @media (min-width: 1024px){
+      .hero-grid{ grid-template-columns: 1fr 420px; align-items:center }
+      .hero{ padding-top: clamp(3rem, calc(var(--spacing) * 3rem + 1vw), 5rem) }
+    }
+    @media (max-width: 640px){
+      .nav-links{ display:none }
+      .brand h1{ font-size:1rem }
+      .hero-grid{ grid-template-columns: 1fr }
+      .prefooter{ flex-direction:column; align-items:stretch; text-align:center }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="nav" id="site-nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">MWA</div>
+        <h1>Make A Web App</h1>
+      </div>
+
+      <nav class="primary" aria-label="Primary">
+        <div class="nav-links" role="navigation" aria-label="Main">
+          <a href="index.html">Home</a>
+          <a href="app.html">App</a>
+          <a href="pages/signup.html">Sign up</a>
+        </div>
+
+        <a class="cta" href="pages/signup.html">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container section">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow reveal">FAST TO LAUNCH</span>
+          <h2 class="display reveal">Build, launch, and iterate your web app with clarity.</h2>
+          <p class="lead reveal">Make A Web App delivers dependable core functionality so you can focus on your users. Deploy a user dashboard in minutes, connect workflows, and extract reliable data export when you need it.</p>
+
+          <div class="hero-ctas reveal">
+            <a class="cta" href="pages/signup.html">Get Started</a>
+            <a class="btn-outline" href="app.html">Explore the App</a>
+          </div>
+
+          <div class="small reveal" style="margin-top:1rem">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22v-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Trusted by builders for features that matter: onboarding, analytics, and secure data export.
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-hidden="true">
+          <div class="mock" role="img" aria-label="Dashboard preview">
+            <div class="top">
+              <div class="panel" style="flex:1">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; gap:.6rem; align-items:center">
+                    <div style="width:34px; height:34px; background:var(--accent-gradient); border-radius:8px; display:grid; place-items:center; color:white; font-weight:700; font-family:var(--font-display)">WA</div>
+                    <div>
+                      <div style="font-weight:700; font-size:.95rem">Project Orion</div>
+                      <div style="font-size:.82rem; color:var(--color-muted)">Active • 240 users</div>
+                    </div>
+                  </div>
+                  <div class="chip">Live</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="display:grid; grid-template-columns: 1fr 1fr; gap:.5rem">
+              <div style="background:rgba(255,255,255,0.01); border-radius:8px; padding:.5rem">
+                <div style="font-weight:700">User dashboard</div>
+                <div style="font-size:.85rem; color:var(--color-muted)">Activity, roles, and quick invites.</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.01); border-radius:8px; padding:.5rem">
+                <div style="font-weight:700">Data export</div>
+                <div style="font-size:.85rem; color:var(--color-muted)">CSV & JSON with field mapping.</div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:.6rem; align-items:center; margin-top:.6rem">
+              <div style="flex:1; background:linear-gradient(90deg, rgba(67,56,202,0.06), rgba(124,58,237,0.04)); border-radius:8px; padding:.55rem">
+                <div style="font-size:.9rem; font-weight:700">Core functionality</div>
+                <div style="font-size:.82rem; color:var(--color-muted)">APIs, auth, and file handling ready.</div>
+              </div>
+              <div style="width:64px; text-align:center; font-size:.82rem; color:var(--color-muted)">v2.1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" aria-labelledby="features-heading">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.9rem">
+        <div>
+          <h3 id="features-heading" style="margin:0; font-family:var(--font-display); font-weight:700; font-size:1.25rem">Features that accelerate delivery</h3>
+          <p style="margin:6px 0 0 0; color:var(--color-muted); font-weight:600">Everything you need to ship an app: predictable infrastructure, a clear user dashboard, and export-ready data.</p>
+        </div>
+      </div>
+
+      <div class="grid reveal" style="margin-top:1rem">
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">⚡</div>
+          <div>
+            <h4 class="feature-title">Reliable core functionality</h4>
+            <p class="feature-desc">Turnkey authentication, routing, and scalable storage so app logic is the focus — not plumbing.</p>
+          </div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">📊</div>
+          <div>
+            <h4 class="feature-title">Intuitive user dashboard</h4>
+            <p class="feature-desc">Prebuilt dashboards for users and admins, customizable views, and role management out of the box.</p>
+          </div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">🔁</div>
+          <div>
+            <h4 class="feature-title">Seamless data export</h4>
+            <p class="feature-desc">Export production data in CSV or JSON with field mapping and scheduled exports for audits and reporting.</p>
+          </div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">🧩</div>
+          <div>
+            <h4 class="feature-title">Flexible integrations</h4>
+            <p class="feature-desc">Connect to analytics, email, and payment providers. Build full workflows without custom adapters.</p>
+          </div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">⚙️</div>
+          <div>
+            <h4 class="feature-title">Developer-friendly controls</h4>
+            <p class="feature-desc">CLI, environment management, and webhooks to automate deploys and testing for production-grade apps.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" aria-labelledby="testi-heading">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.9rem">
+        <div>
+          <h3 id="testi-heading" style="margin:0; font-family:var(--font-display); font-weight:700; font-size:1.25rem">Trusted by teams building real products</h3>
+          <p style="margin:6px 0 0 0; color:var(--color-muted); font-weight:600">Real teams building real products use Make A Web App for reliable delivery.</p>
+        </div>
+      </div>
+
+      <div class="testimonials" style="margin-top:1rem">
+        <blockquote class="testimonial reveal">
+          <p class="quote">"Make A Web App gave us a usable user dashboard in hours, not weeks. The core functionality covered our base so we could focus on growth."</p>
+          <p class="who">— Lina Rodriguez, Product Lead at AtlasFit</p>
+        </blockquote>
+
+        <blockquote class="testimonial reveal">
+          <p class="quote">"Exports and reporting are clean and dependable. Scheduled data export saved us time during compliance reviews."</p>
+          <p class="who">— Marcus Li, CTO, Tabletop</p>
+        </blockquote>
+
+        <blockquote class="testimonial reveal">
+          <p class="quote">"Integrations and auth were straightforward. We deployed a complete app with team permissions and analytics in days."</p>
+          <p class="who">— Priya Nair, Founder, LearnFlow</p>
+        </blockquote>
+      </div>
+    </section>
+
+    <section class="section container" aria-labelledby="pricing-heading">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.9rem">
+        <div>
+          <h3 id="pricing-heading" style="margin:0; font-family:var(--font-display); font-weight:700; font-size:1.25rem">Pricing built for real projects</h3>
+          <p style="margin:6px 0 0 0; color:var(--color-muted); font-weight:600">Start free. Upgrade as your user base and needs grow — export and integrations scale with you.</p>
+        </div>
+      </div>
+
+      <div class="pricing-grid reveal" style="margin-top:1rem">
+        <div class="plan">
+          <div class="tag">Free</div>
+          <div class="price">$0</div>
+          <div class="plan-features">
+            • Core functionality for prototypes<br>
+            • Basic user dashboard<br>
+            • One-click data export (manual)
+          </div>
+          <div class="plan-cta">
+            <a class="btn-outline" href="pages/signup.html">Start free</a>
+          </div>
+        </div>
+
+        <div class="plan" style="border:2px solid rgba(67,56,202,0.12); box-shadow: var(--shadow-md);">
+          <div class="tag">Pro</div>
+          <div class="price">$29/mo</div>
+          <div class="plan-features">
+            • Everything in Free<br>
+            • Scheduled data export & CSV mapping<br>
+            • Advanced user dashboard & roles<br>
+            • Priority support
+          </div>
+          <div class="plan-cta">
+            <a class="cta" href="pages/signup.html">Get Pro</a>
+          </div>
+        </div>
+
+        <div class="plan">
+          <div class="tag">Enterprise</div>
+          <div class="price">Custom</div>
+          <div class="plan-features">
+            • Dedicated environment<br>
+            • Data export automation & encryption<br>
+            • SSO, audit logs, and SLAs<br>
+            • Onboarding and integration support
+          </div>
+          <div class="plan-cta">
+            <a class="btn-outline" href="pages/signup.html">Contact Sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container prefooter reveal" aria-labelledby="start-heading">
+      <div>
+        <h3 id="start-heading" style="margin:0; font-family:var(--font-display); font-weight:700; font-size:1.15rem">Launch with confidence. Iterate without friction.</h3>
+        <p style="margin:6px 0 0 0; color:var(--color-muted); font-weight:600">Get a production-ready app shell, a clear user dashboard, and predictable exports to keep your team moving.</p>
+      </div>
+      <div style="display:flex; gap:.6rem; align-items:center">
+        <a class="cta" href="pages/signup.html">Get Started</a>
+        <a class="btn-outline" href="app.html">See the App</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sitefoot container">
+    <div class="foot-inner">
+      <div style="display:flex; gap:.75rem; align-items:center">
+        <div class="logo" style="width:40px; height:40px; font-size:.95rem">MWA</div>
+        <div>
+          <div style="font-weight:700; color:var(--color-text)">Make A Web App</div>
+          <div style="font-size:.9rem; color:var(--color-muted)">Core functionality. Clear dashboard. Reliable data export.</div>
+        </div>
+      </div>
+
+      <nav class="foot-links" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="app.html">App</a>
+        <a href="pages/signup.html">Sign up</a>
+      </nav>
+    </div>
+
+    <div style="margin-top:.9rem; color:var(--color-muted); font-size:.9rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap">
+      <div>© <span id="year"></span> Make A Web App — All rights reserved.</div>
+      <div style="color:var(--color-muted)">Built for teams and creators who ship products.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Set copyright year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sticky nav scrolled class
+    (function(){
+      var nav = document.getElementById('site-nav');
+      function onScroll(){
+        if(window.scrollY > 14){
+          nav.classList.add('scrolled');
+        } else {
+          nav.classList.remove('scrolled');
+        }
+      }
+      onScroll();
+      window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+
+    // Reveal on scroll
+    (function(){
+      var opts = { root:null, rootMargin:'0px', threshold: 0.12 };
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, opts);
+
+      document.addEventListener('DOMContentLoaded', function(){
+        var els = document.querySelectorAll('.reveal');
+        els.forEach(function(el){
+          io.observe(el);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -2,17 +2,21 @@
 Provider-agnostic image generation adapter.
 
 Routing order:
-  1. (Future) DALL-E / OpenAI Images API
-  2. (Future) Stability AI
-  3. Deterministic SVG placeholder — always works, no API key needed
+  1. DALL-E 2 via OpenAI Images API (when API key is available)
+  2. Deterministic SVG placeholder — always works, no API key needed
 
 Placeholders are category-aware: palette, icons, and layout all reflect
 the detected product category.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # Category-aware palettes (mirrors tools/website_builder._category_palette)
 _PALETTES: dict[str, dict[str, str]] = {
@@ -36,6 +40,17 @@ _FEATURE_EMOJI: dict[str, str] = {
     "dashboard": "📊", "analytics": "📉", "report": "📄", "data": "🗃️", "chart": "📊",
 }
 
+# Style hints per category for DALL-E prompts
+_CATEGORY_STYLE: dict[str, str] = {
+    "health":    "fresh green tones, organic shapes, wellness aesthetic",
+    "finance":   "clean blue tones, professional, financial charts aesthetic",
+    "crm":       "warm purple tones, people-centric, business relationship aesthetic",
+    "devtools":  "dark theme, neon accents, developer tools aesthetic",
+    "edtech":    "warm orange tones, educational, learning platform aesthetic",
+    "ecommerce": "vibrant pink tones, retail, shopping experience aesthetic",
+    "saas":      "modern indigo tones, sleek, SaaS product aesthetic",
+}
+
 
 def _detect_category(text: str) -> str:
     t = text.lower()
@@ -55,6 +70,165 @@ def _feature_emoji(text: str) -> str:
             return emoji
     return "✨"
 
+
+# ---------------------------------------------------------------------------
+# DALL-E image generation
+# ---------------------------------------------------------------------------
+
+def _dalle_available() -> bool:
+    """Check if DALL-E generation can be attempted."""
+    from config.settings import settings
+    return bool(settings.openai_api_key and settings.image_generation_enabled)
+
+
+_MAX_IMAGE_BYTES = 900_000  # compress to stay well under the 1MB pipeline limit
+
+
+def _optimize_image(raw_png: bytes) -> tuple[bytes, str]:
+    """Optimize an image for web delivery. Returns (bytes, extension).
+
+    If the raw PNG is under the limit, returns it as-is with '.png'.
+    Otherwise compresses to JPEG (much smaller for photographic DALL-E output).
+    """
+    if len(raw_png) <= _MAX_IMAGE_BYTES:
+        return raw_png, ".png"
+
+    try:
+        from io import BytesIO
+        from PIL import Image
+
+        img = Image.open(BytesIO(raw_png)).convert("RGB")
+        buf = BytesIO()
+        img.save(buf, format="JPEG", quality=85, optimize=True)
+        compressed = buf.getvalue()
+        logger.info(
+            "Compressed image: %d KB PNG → %d KB JPEG",
+            len(raw_png) // 1024,
+            len(compressed) // 1024,
+        )
+        return compressed, ".jpg"
+    except Exception as exc:
+        logger.warning("Image compression failed, returning raw PNG: %s", exc)
+        return raw_png, ".png"
+
+
+def _call_dalle(prompt: str, size: str) -> tuple[bytes, str] | None:
+    """Call the OpenAI Images API. Returns (image_bytes, extension) or None."""
+    import httpx
+    from config.settings import settings
+
+    try:
+        resp = httpx.post(
+            "https://api.openai.com/v1/images/generations",
+            headers={
+                "Authorization": f"Bearer {settings.openai_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": settings.dalle_model,
+                "prompt": prompt,
+                "n": 1,
+                "size": size,
+                "response_format": "b64_json",
+            },
+            timeout=settings.dalle_timeout,
+        )
+        resp.raise_for_status()
+        b64_data = resp.json()["data"][0]["b64_json"]
+        raw = base64.b64decode(b64_data)
+        return _optimize_image(raw)
+    except Exception as exc:
+        logger.warning("DALL-E image generation failed: %s", exc)
+        return None
+
+
+def generate_hero_image(intent: dict[str, Any]) -> tuple[bytes, str] | None:
+    """Generate a hero image via DALL-E 2. Returns (image_bytes, ext) or None."""
+    if not _dalle_available():
+        return None
+
+    from config.settings import settings
+    product_name = (intent.get("product_name") or "Product")[:60]
+    tagline = (intent.get("tagline") or intent.get("raw_message") or "")[:100]
+    cat = _detect_category(f"{product_name} {tagline}")
+    style = _CATEGORY_STYLE.get(cat, _CATEGORY_STYLE["saas"])
+
+    prompt = (
+        f"Clean modern hero illustration for a {product_name} website. "
+        f"{tagline}. Professional product hero image, "
+        f"minimal flat design, soft gradients, {style}, "
+        f"no text, no words, no letters, abstract shapes and patterns"
+    )[:1000]
+
+    return _call_dalle(prompt, settings.dalle_hero_size)
+
+
+def generate_feature_icon_image(feature: str) -> tuple[bytes, str] | None:
+    """Generate a feature icon via DALL-E 2. Returns (image_bytes, ext) or None."""
+    if not _dalle_available():
+        return None
+
+    from config.settings import settings
+    cat = _detect_category(feature)
+    style = _CATEGORY_STYLE.get(cat, _CATEGORY_STYLE["saas"])
+
+    prompt = (
+        f"Minimal flat icon representing '{feature}'. "
+        f"Simple geometric design, {style}, "
+        f"single centered symbol on clean background, "
+        f"no text, no words, app icon style"
+    )[:1000]
+
+    return _call_dalle(prompt, settings.dalle_icon_size)
+
+
+def generate_all_images(
+    intent: dict[str, Any],
+) -> dict[str, bytes]:
+    """Generate hero + feature icon images in parallel via DALL-E.
+
+    Returns {asset_path: image_bytes} for successfully generated images.
+    Asset paths include the correct extension based on compression outcome.
+    Failures are silently skipped (caller should fill in SVG fallbacks).
+    """
+    if not _dalle_available():
+        return {}
+
+    results: dict[str, bytes] = {}
+    features = (intent.get("core_features") or [])[:3]
+    import re as _re
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures: dict = {}
+
+        futures[pool.submit(generate_hero_image, intent)] = ("hero", None)
+
+        for i, feature in enumerate(features):
+            feature_slug = _re.sub(r'[^a-z0-9]+', '-', feature.lower()).strip('-')
+            futures[pool.submit(generate_feature_icon_image, feature)] = (
+                f"icon-{i + 1}",
+                f"icon-{feature_slug}",
+            )
+
+        for future in as_completed(futures):
+            key = futures[future]
+            try:
+                result = future.result()
+                if result:
+                    img_bytes, ext = result
+                    name_primary, name_alias = key
+                    results[f"assets/{name_primary}{ext}"] = img_bytes
+                    if name_alias:
+                        results[f"assets/{name_alias}{ext}"] = img_bytes
+            except Exception as exc:
+                logger.warning("Image generation future failed: %s", exc)
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# SVG placeholder generators (fallback)
+# ---------------------------------------------------------------------------
 
 def generate_hero_svg(intent: dict[str, Any]) -> str:
     """Generate a hero section SVG placeholder (800×400)."""

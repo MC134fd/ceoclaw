@@ -107,7 +107,7 @@ class WorkspaceScope:
         self.operations.append(op)
         try:
             return safe_path.read_text(encoding="utf-8")
-        except FileNotFoundError:
+        except (FileNotFoundError, UnicodeDecodeError):
             return None
 
     def write(self, relative_path: str, content: str) -> bool:

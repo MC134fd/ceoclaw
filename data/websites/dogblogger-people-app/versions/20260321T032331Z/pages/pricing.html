@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Dogblogger People App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #16a34a; --color-secondary: #15803d; --color-bg:#f0fdf4; --color-surface:#ffffff; --color-text:#14532d; --accent-gradient:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);
+      --space-sm: clamp(0.5rem,1vw,0.75rem); --space-md: clamp(0.75rem,1.5vw,1.25rem); --space-lg: clamp(1rem,2vw,1.75rem); --container-width: clamp(320px,90vw,1000px); --radius:12px;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--color-bg);color:var(--color-text);margin:0}
+    .container{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md);padding-block:var(--space-lg)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--space-md)}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius);border:1px solid rgba(20,83,45,0.05)}
+    .card.pro{border:2px solid transparent;background:var(--accent-gradient);padding:2px}
+    .card.pro .inner{background:var(--color-surface);padding:var(--space-md);border-radius:calc(var(--radius));}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:var(--space-sm) var(--space-md);border-radius:10px;border:0}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);font-weight:600}
+    .btn-secondary{background:transparent;border:1.5px solid var(--color-primary);color:var(--color-primary);font-weight:600}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;">Dogblogger People App</div>
+      <nav style="display:flex;gap:var(--space-sm)">
+        <a href="../index.html">Home</a>
+        <a href="../index.html#features">Features</a>
+        <a href="signup.html">Sign up</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 style="font-family:'Cormorant Garamond',serif;letter-spacing:-0.02em">Pricing</h1>
+    <p style="color:rgba(20,83,45,0.6)">Choose a plan for your listing volume and export needs.</p>
+
+    <div class="grid" style="margin-top:var(--space-md)">
+      <div class="card">
+        <h3 style="margin-top:0">Free</h3>
+        <p style="color:rgba(20,83,45,0.6)">Unlimited basic listings, messaging, templates.</p>
+        <div style="margin-top:var(--space-md)"><a href="signup.html" class="btn btn-primary">Get Started</a></div>
+      </div>
+
+      <div class="card pro">
+        <div class="inner">
+          <h3 style="margin-top:0">Pro — $19/mo</h3>
+          <p style="color:rgba(20,83,45,0.6)">Scheduled posts, CSV data export, priority placement in searches.</p>
+          <div style="margin-top:var(--space-md)"><a href="signup.html" class="btn btn-primary">Start free trial</a></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Enterprise</h3>
+        <p style="color:rgba(20,83,45,0.6)">Bulk uploads, team accounts, custom export formats and SLAs.</p>
+        <div style="margin-top:var(--space-md)"><a href="signup.html" class="btn btn-secondary">Contact us</a></div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer style="padding:var(--space-lg);border-top:1px solid rgba(20,83,45,0.04)">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:600">Dogblogger People App</div>
+      <div><a href="signup.html" class="btn btn-primary">Get Started</a></div>
+    </div>
+  </footer>
+</body>
+</html>

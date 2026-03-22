@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Build Me A App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      /* Framer Aura — sage palette (bright, happy, nature-forward) */
+      --color-primary: #16a34a; /* sage primary */
+      --color-secondary: #15803d; /* deeper sage */
+      --color-bg: #f0fdf4; /* pale green background */
+      --color-surface: #ffffff;
+      --color-text: #14532d; /* dark green text */
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+      --text-sm: clamp(0.85rem, 1vw, 0.95rem);
+      --text-md: clamp(1rem, 1.2vw, 1.05rem);
+      --container-width: clamp(320px, 90vw, 1200px);
+      --radius-md:12px;--radius-lg:20px;
+      --motion: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text);min-height:100vh}
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+
+    /* Top nav */
+    nav{display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0}
+    .brand{font-family:'Cormorant Garamond',serif;color:var(--color-text);font-weight:600}
+    .btn{padding:0.45rem 0.75rem;border-radius:10px;border:none;cursor:pointer;transition:var(--motion)}
+    .btn.primary{background:var(--accent-gradient);color:var(--color-surface)}
+    .btn:hover{transform:scale(1.02)}
+
+    /* Layout */
+    .layout{display:grid;grid-template-columns:250px 1fr;gap:var(--space-lg);align-items:start;padding-block:var(--space-md)}
+    .sidebar{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+    .content{min-height:400px}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,.06);margin-bottom:var(--space-md);transition:var(--motion)}
+    .card:hover{transform:translateY(-4px)}
+
+    /* Metrics row */
+    .metrics{display:flex;gap:var(--space-md);flex-wrap:wrap}
+    .metric{flex:1 1 160px;padding:var(--space-sm);border-radius:var(--radius-md);background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.95));box-shadow:0 1px 4px rgba(0,0,0,.06);text-align:center}
+    .metric .num{font-weight:700;color:var(--color-primary);font-size:1.25rem}
+
+    /* Table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:0.6rem;border-bottom:1px solid rgba(0,0,0,0.04);text-align:left}
+
+    /* Connect card */
+    .connect input[type="password"]{width:100%;padding:0.5rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+    .connect .hint{color:var(--color-muted);font-size:var(--text-sm);margin-top:var(--space-sm)}
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity 0.4s ease, transform 0.4s ease}
+    .reveal.visible{opacity:1;transform:none}
+
+    @media (max-width:1024px){.layout{grid-template-columns:220px 1fr}}
+    @media (max-width:640px){.layout{grid-template-columns:1fr;padding-inline:var(--space-sm)} .sidebar{order:2}}
+  </style>
+</head>
+<body>
+  <nav class="wrap" id="top-nav">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:var(--container-width);margin-inline:auto">
+      <div class="brand">Build Me A App</div>
+      <div style="display:flex;gap:var(--space-sm);align-items:center">
+        <a href="index.html">Home</a>
+        <a href="pages/signup.html">Sign up</a>
+        <button class="btn primary">New post</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <div class="layout">
+      <aside class="sidebar reveal">
+        <div style="font-weight:700;margin-bottom:var(--space-sm)">Dashboard</div>
+        <nav style="display:flex;flex-direction:column;gap:var(--space-xs)">
+          <a href="#">All posts</a>
+          <a href="#">Drafts</a>
+          <a href="#">Schedule</a>
+          <a href="#">Exports</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <div class="card reveal">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0;font-family:'Cormorant Garamond',serif">Your editor & workflow</h2>
+              <div style="color:var(--color-muted);font-size:var(--text-sm)">Create posts, set publish times, and manage comments from a single place using our core functionality and user dashboard.</div>
+            </div>
+            <div style="display:flex;gap:var(--space-sm)">
+              <button class="btn">Import</button>
+              <a class="btn primary" href="#connect">Connect account</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card metrics reveal">
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="120">0</span></div>
+            <div class="label">Published this month</div>
+          </div>
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="47">0</span></div>
+            <div class="label">Scheduled posts</div>
+          </div>
+          <div class="metric">
+            <div class="num"><span class="counter" data-target="3">0</span>GB</div>
+            <div class="label">Exported data</div>
+          </div>
+        </div>
+
+        <div class="card reveal">
+          <h3 style="margin-top:0">Recent posts</h3>
+          <table>
+            <thead>
+              <tr><th>Title</th><th>Status</th><th>Published</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Puppy Socialization Tips</td><td>Published</td><td>Mar 3</td></tr>
+              <tr><td>Adoption Story: Ruby</td><td>Draft</td><td>-</td></tr>
+              <tr><td>Breed Spotlight: Beagle</td><td>Scheduled</td><td>Mar 21</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="connect" class="card connect reveal">
+          <h3 style="margin-top:0">Connect your account</h3>
+          <p style="color:var(--color-muted);font-size:var(--text-sm)">Provide an API token to enable direct publishing, scheduled posts, and exports.</p>
+          <form id="connect-form">
+            <label for="api-token" style="display:block;margin-top:var(--space-sm);font-size:var(--text-sm);color:var(--color-muted)">API token</label>
+            <input id="api-token" name="api-token" type="password" placeholder="sk-..." aria-label="API token" required>
+            <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm);align-items:center">
+              <button class="btn primary" type="submit">Connect</button>
+              <button class="btn" type="button" id="reveal-token">Paste token</button>
+            </div>
+            <div class="hint">We only store minimal metadata; your token stays local in this demo.</div>
+          </form>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Sticky nav
+    const nav = document.getElementById('top-nav');
+    function onScroll(){
+      if(window.scrollY > 14) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const ro = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting) e.target.classList.add('visible');
+      });
+    }, {threshold:0.15});
+    reveals.forEach(r=>ro.observe(r));
+
+    // Animated counters
+    function animateCounter(el){
+      const target = parseFloat(el.dataset.target) || 0;
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = target; return }
+      let start = null; const duration = 1200;
+      function step(ts){
+        if(!start) start = ts;
+        const progress = Math.min((ts - start)/duration, 1);
+        el.textContent = Math.floor(progress * target);
+        if(progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    const counters = document.querySelectorAll('.counter');
+    const co = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ animateCounter(e.target); co.unobserve(e.target); }
+      })
+    }, {threshold:0.2});
+    counters.forEach(c=>co.observe(c));
+
+    // Connect form basic handling
+    const connectForm = document.getElementById('connect-form');
+    connectForm.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const token = document.getElementById('api-token');
+      if(!token.value){ token.style.outline = '2px solid rgba(255,0,0,0.12)'; return }
+      token.style.outline = 'none';
+      alert('Token saved (demo). You can now publish directly from the editor.');
+    });
+
+    // Helper: reveal token prompt for demo
+    document.getElementById('reveal-token').addEventListener('click', ()=>{
+      const token = prompt('Paste API token (demo):');
+      if(token !== null) document.getElementById('api-token').value = token;
+    });
+  </script>
+</body>
+</html>

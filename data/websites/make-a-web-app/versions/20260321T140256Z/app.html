@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make A Web App — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #14b8a6;
+      --color-secondary: #06b6d4;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0a1628;
+      --color-surface: #0f2340;
+      --color-text: #e0f7f7;
+      --color-muted: #6b9aaa;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #14b8a6, #06b6d4);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base reset */
+    * { box-sizing: border-box; }
+    html,body { height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, var(--color-bg) 0%, #071225 100%);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding-top: clamp(56px, calc(48px + var(--spacing) * 2px), 72px); /* allow for sticky navbar */
+    }
+
+    /* Navbar */
+    .navbar{
+      position: fixed;
+      left:0;
+      right:0;
+      top:0;
+      height: clamp(56px, 6vh, 72px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: clamp(8px, 1vw, 16px);
+      padding: 0 clamp(12px, 2vw, 28px);
+      background: transparent;
+      transition: background .24s ease, box-shadow .24s ease, transform .2s ease;
+      z-index: 60;
+    }
+    .navbar.scrolled{
+      background: linear-gradient(180deg, rgba(15,35,64,0.72), rgba(10,22,40,0.6));
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      text-decoration:none;
+      color:var(--color-text);
+    }
+    .brand .logo{
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      background: var(--accent-gradient);
+      display:grid;
+      place-items:center;
+      color:#031018;
+      font-weight:700;
+      box-shadow: var(--shadow-md);
+      font-family: var(--font-display);
+      font-size:1.05rem;
+    }
+    .brand .title{
+      display:flex;
+      flex-direction:column;
+      line-height:1;
+    }
+    .brand .title strong{
+      font-family: var(--font-display);
+      font-size: clamp(14px, 1.2vw, 18px);
+      letter-spacing:0.2px;
+    }
+    .brand .title small{
+      color:var(--color-muted);
+      font-size:12px;
+    }
+
+    .nav-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 14px;
+      min-height:44px;
+      border-radius: var(--radius-sm);
+      border:1px solid transparent;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease, background .12s ease;
+      text-decoration:none;
+      color:var(--color-text);
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      box-shadow: var(--shadow-sm);
+    }
+    .btn.primary{
+      background: var(--accent-gradient);
+      color: #021617;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--color-text);
+    }
+    .btn:hover{ transform: translateY(-2px); }
+    .btn:active{ transform: translateY(0); opacity:0.95; }
+
+    /* Layout */
+    .wrap{
+      max-width:1200px;
+      margin: 0 auto;
+      padding: clamp(12px, 2.5vw, 28px);
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap: clamp(12px, 2vw, 24px);
+      align-items:start;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, rgba(15,35,64,0.6), rgba(15,35,64,0.36));
+      padding: clamp(14px, 1.6vw, 22px);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      position:sticky;
+      top: calc(clamp(56px, 6vh, 72px) + 12px);
+      height: calc(100vh - clamp(56px, 6vh, 72px) - 48px);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .sidebar nav{ display:flex; flex-direction:column; gap:8px; margin-top:6px;}
+    .side-link{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius:8px;
+      color:var(--color-text);
+      text-decoration:none;
+      font-weight:500;
+      background:transparent;
+      transition: background .12s ease, transform .08s ease;
+      border:1px solid transparent;
+      font-size:14px;
+    }
+    .side-link:hover{ background: rgba(255,255,255,0.02); transform: translateX(4px); }
+    .side-link.active{
+      background: linear-gradient(90deg, rgba(20,184,166,0.12), rgba(6,182,212,0.08));
+      border:1px solid rgba(20,184,166,0.12);
+      box-shadow: var(--shadow-sm);
+    }
+    .sidebar .section-title{
+      color:var(--color-muted);
+      font-size:13px;
+      margin-top:6px;
+    }
+    .collapse-tip{
+      margin-top:auto;
+      font-size:12px;
+      color:var(--color-muted);
+    }
+
+    /* Main content */
+    main{
+      display:flex;
+      flex-direction:column;
+      gap: clamp(12px, 2vw, 22px);
+    }
+
+    .welcome{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .welcome h1{
+      margin:0;
+      font-family: var(--font-display);
+      font-size: clamp(20px, 3.2vw, 32px);
+      letter-spacing: -0.02em;
+    }
+    .welcome p{
+      margin:6px 0 0 0;
+      color:var(--color-muted);
+      max-width:55ch;
+    }
+
+    /* Metrics row: fluid grid */
+    .metrics-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(10px, 2vw, 18px);
+      align-items:stretch;
+    }
+    .metric-card{
+      padding:16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .metric-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .metric-title{ color:var(--color-muted); font-size:13px; }
+    .metric-value{ font-size:22px; font-weight:700; font-family:var(--font-display); }
+    .metric-meta{ font-size:13px; color:var(--color-muted); }
+
+    /* Bento grid area for features and API */
+    .bento{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: clamp(12px, 2vw, 20px);
+    }
+    .card{
+      padding:16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(180deg, rgba(15,35,64,0.28), rgba(15,35,64,0.18));
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow: var(--shadow-md);
+    }
+    .card h3{ margin:0 0 8px 0; font-size:16px; font-family:var(--font-display); }
+    .card p{ margin:0; color:var(--color-muted); font-size:14px; }
+
+    .features-list{ display:grid; gap:10px; margin-top:12px; }
+    .feature{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:10px;
+      border-radius:8px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .feature .dot{
+      width:12px;height:12px;border-radius:4px;background:var(--color-primary);
+      flex:0 0 12px;margin-top:6px;
+    }
+    .feature .desc{ font-size:14px; color:var(--color-text); }
+
+    /* Token card */
+    .token-row{ display:flex; gap:8px; margin-top:12px; align-items:center; }
+    .token-input{
+      flex:1;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.04);
+      background:transparent;
+      color:var(--color-text);
+      font-family:monospace;
+      font-size:13px;
+    }
+    .small-muted{ font-size:13px; color:var(--color-muted); margin-top:8px; }
+
+    /* Footer area inside main */
+    .insights{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(12px, 2.5vw, 20px);
+    }
+
+    /* Reveal animations */
+    .reveal{ opacity:0; transform: translateY(10px); transition: opacity .6s ease, transform .6s ease; will-change: opacity, transform; }
+    .reveal.visible{ opacity:1; transform:none; }
+
+    /* Responsive adjustments */
+    @media (max-width:1024px){
+      .wrap{ padding: clamp(10px, 4vw, 20px); grid-template-columns: 220px 1fr; }
+      .bento{ grid-template-columns: 1fr; }
+    }
+    @media (max-width:640px){
+      /* Sidebar collapses on mobile */
+      .wrap{ grid-template-columns: 1fr; padding: clamp(10px, 4vw, 16px); }
+      .sidebar{ display:none; }
+      .navbar .mobile-toggle{ display:inline-flex; }
+      .brand .title small{ display:none; }
+    }
+
+    /* mobile toggle hidden by default */
+    .mobile-toggle{ display:none; background:transparent; border:none; color:var(--color-text); font-size:18px; cursor:pointer; }
+
+    /* tiny utilities */
+    .muted{ color:var(--color-muted); }
+    .kpi-change{ font-size:13px; color:var(--color-accent-pink); font-weight:600; }
+    a { color:inherit; }
+
+  </style>
+</head>
+<body>
+  <header class="navbar" id="navbar">
+    <a href="index.html" class="brand" aria-label="Make A Web App home">
+      <div class="logo">MA</div>
+      <div class="title">
+        <strong>Make A Web App</strong>
+        <small>Build, connect, export</small>
+      </div>
+    </a>
+
+    <div class="nav-actions">
+      <button class="mobile-toggle" id="openSidebar" aria-label="Open menu">☰</button>
+      <a href="pages/signup.html" class="btn ghost">Sign up</a>
+      <a href="pages/signup.html" class="btn primary">Get Started</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <aside class="sidebar reveal" id="sidebar">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-weight:700;font-family:var(--font-display);font-size:18px;">Workspace</div>
+          <div class="small-muted">Team: Core Users</div>
+        </div>
+      </div>
+
+      <nav aria-label="Primary">
+        <a href="app.html" class="side-link active">Dashboard</a>
+        <a href="app.html#features" class="side-link">Features</a>
+        <a href="app.html#settings" class="side-link">Settings</a>
+        <a href="index.html" class="side-link">Back to site</a>
+      </nav>
+
+      <div class="section-title">Quick actions</div>
+      <nav>
+        <a href="pages/signup.html" class="side-link">Create project</a>
+        <a href="app.html#connect" class="side-link">Connect API</a>
+        <a href="app.html#export" class="side-link">Data export</a>
+      </nav>
+
+      <div class="collapse-tip">Tip: The sidebar collapses on small screens for a focused view of your user dashboard.</div>
+    </aside>
+
+    <main>
+      <section class="welcome reveal" id="top">
+        <div>
+          <h1>Welcome back — refine your core functionality</h1>
+          <p>Make A Web App is your platform to design workflows, monitor performance, and share results. Start from your user dashboard to see active projects, recent exports, and API usage at a glance.</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <a href="pages/signup.html" class="btn primary">Get Started</a>
+          <a href="app.html#features" class="btn">Explore features</a>
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section class="metrics-grid">
+        <article class="metric-card reveal">
+          <div class="metric-top">
+            <div>
+              <div class="metric-title">Active Projects</div>
+              <div class="metric-value">8</div>
+            </div>
+            <div class="metric-meta">All projects currently running</div>
+          </div>
+          <div class="small-muted">Projects represent live web app configurations where core functionality is enabled, including integrations and user roles.</div>
+        </article>
+
+        <article class="metric-card reveal">
+          <div class="metric-top">
+            <div>
+              <div class="metric-title">Monthly Actions</div>
+              <div class="metric-value">24,312</div>
+            </div>
+            <div class="metric-meta"><span class="kpi-change">+12%</span> vs last month</div>
+          </div>
+          <div class="small-muted">Actions count interactions like form submissions, automated tasks, and scheduled events tracked across your dashboard.</div>
+        </article>
+
+        <article class="metric-card reveal">
+          <div class="metric-top">
+            <div>
+              <div class="metric-title">Data Exports</div>
+              <div class="metric-value">142</div>
+            </div>
+            <div class="metric-meta">Exports completed</div>
+          </div>
+          <div class="small-muted">Quickly export project data and audit trails. Use exports to archive snapshots or move datasets into analysis tools.</div>
+        </article>
+
+        <article class="metric-card reveal">
+          <div class="metric-top">
+            <div>
+              <div class="metric-title">API Calls (24h)</div>
+              <div class="metric-value">1.2M</div>
+            </div>
+            <div class="metric-meta">Peak usage observed</div>
+          </div>
+          <div class="small-muted">Monitor API traffic to optimize endpoints and scale your integrations. Token health and rate limits appear in settings.</div>
+        </article>
+      </section>
+
+      <!-- Bento grid -->
+      <section class="bento">
+        <div class="card reveal" id="features">
+          <h3>Platform capabilities — designed around your workflow</h3>
+          <p>We built Make A Web App to help non-technical teams launch and manage web apps with confidence. The platform focuses on modular core functionality so you can iterate quickly and keep your user dashboard uncluttered.</p>
+
+          <div class="features-list">
+            <div class="feature">
+              <div class="dot"></div>
+              <div class="desc"><strong>Visual builder</strong> — Assemble pages, actions, and data sources with a drag-and-drop editor that outputs production-ready components.</div>
+            </div>
+
+            <div class="feature">
+              <div class="dot" style="background:var(--color-secondary)"></div>
+              <div class="desc"><strong>Integrations</strong> — Connect third-party services, databases, and webhooks without writing glue code.</div>
+            </div>
+
+            <div class="feature">
+              <div class="dot" style="background:var(--color-accent-pink)"></div>
+              <div class="desc"><strong>User dashboard</strong> — Centralize reports, project activity, and export history for team members and stakeholders.</div>
+            </div>
+
+            <div class="feature">
+              <div class="dot"></div>
+              <div class="desc"><strong>Data export & backups</strong> — Scheduled and on-demand export options (CSV, JSON) so you can archive and analyze your datasets outside the platform.</div>
+            </div>
+
+            <div class="feature">
+              <div class="dot"></div>
+              <div class="desc"><strong>Permissions & roles</strong> — Fine-grained access control so collaborators see only what’s relevant to their role.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px; display:flex; gap:10px;">
+            <a href="app.html#connect" class="btn">Connect services</a>
+            <a href="pages/signup.html" class="btn primary">Start a project</a>
+          </div>
+        </div>
+
+        <div class="card reveal" id="connect">
+          <h3>Connect your API</h3>
+          <p>Securely attach external services or your custom backend to extend Make A Web App. Add an API token below to enable integrations and real-time syncing with your user projects.</p>
+
+          <div class="token-row">
+            <input class="token-input" id="apiToken" type="password" placeholder="Enter API token (masked)" aria-label="API token">
+            <button id="revealToken" class="btn" aria-pressed="false">Reveal</button>
+            <button id="saveToken" class="btn primary">Save</button>
+          </div>
+          <div class="small-muted">Tokens are stored encrypted. You can revoke any token from Settings. Use tokens to authenticate automated exports or third-party access.</div>
+
+          <div style="margin-top:12px;">
+            <div style="font-size:13px;color:var(--color-muted);margin-bottom:8px;">Recent token activity</div>
+            <div style="display:flex;gap:8px;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);">
+                <div><strong>token-frontend-1•••</strong><div class="small-muted">Issued to Web UI • 12:04 GMT</div></div>
+                <div class="small-muted">Active</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);">
+                <div><strong>export-worker-2•••</strong><div class="small-muted">Issued to Exporter • 03:18 GMT</div></div>
+                <div class="small-muted">Active</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Insights / exports -->
+      <section class="insights">
+        <div class="card reveal" id="export">
+          <h3>Data export queue</h3>
+          <p>Schedule exports or create ad-hoc data snapshots for reporting. Exports capture the state of selected projects and related logs in CSV or JSON formats.</p>
+
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <a href="pages/signup.html" class="btn">Schedule export</a>
+            <a href="app.html#export" class="btn">View history</a>
+          </div>
+        </div>
+
+        <div class="card reveal" id="settings">
+          <h3>Project settings snapshot</h3>
+          <p>Review configuration that controls core functionality: environments, API keys, and role assignments. Keep settings tidy to reduce errors when teams collaborate.</p>
+
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <a href="app.html#settings" class="btn">Manage settings</a>
+            <a href="pages/signup.html" class="btn primary">Invite team</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Sticky navbar: add .scrolled when > 14px
+    (function(){
+      const navbar = document.getElementById('navbar');
+      const scrollHandler = () => {
+        if (window.scrollY > 14) navbar.classList.add('scrolled');
+        else navbar.classList.remove('scrolled');
+      };
+      window.addEventListener('scroll', scrollHandler, { passive: true });
+      scrollHandler();
+
+      // Reveal on scroll for .reveal elements
+      const reveals = document.querySelectorAll('.reveal');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e=>{
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+      reveals.forEach(r => io.observe(r));
+
+      // Mobile sidebar toggle (optional): toggles a simple overlay clone of the sidebar
+      const openBtn = document.getElementById('openSidebar');
+      let mobileOverlay;
+      if (openBtn) {
+        openBtn.addEventListener('click', () => {
+          if (document.body.contains(mobileOverlay)) {
+            mobileOverlay.remove();
+            return;
+          }
+          mobileOverlay = document.createElement('div');
+          mobileOverlay.style.position = 'fixed';
+          mobileOverlay.style.inset = '0';
+          mobileOverlay.style.background = 'linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4))';
+          mobileOverlay.style.zIndex = 80;
+          mobileOverlay.style.padding = '20px';
+          mobileOverlay.style.overflowY = 'auto';
+
+          const side = document.getElementById('sidebar');
+          if (side) {
+            const clone = side.cloneNode(true);
+            clone.style.position = 'relative';
+            clone.style.top = '0';
+            clone.style.height = 'auto';
+            clone.style.maxWidth = '420px';
+            clone.style.margin = '20px auto';
+            mobileOverlay.appendChild(clone);
+          }
+          mobileOverlay.addEventListener('click', (ev) => {
+            if (ev.target === mobileOverlay) mobileOverlay.remove();
+          });
+          document.body.appendChild(mobileOverlay);
+        });
+      }
+
+      // API token reveal/save behavior
+      const tokenInput = document.getElementById('apiToken');
+      const revealBtn = document.getElementById('revealToken');
+      const saveBtn = document.getElementById('saveToken');
+
+      if (revealBtn && tokenInput) {
+        revealBtn.addEventListener('click', () => {
+          const pressed = revealBtn.getAttribute('aria-pressed') === 'true';
+          if (pressed) {
+            tokenInput.type = 'password';
+            revealBtn.setAttribute('aria-pressed', 'false');
+            revealBtn.textContent = 'Reveal';
+          } else {
+            tokenInput.type = 'text';
+            revealBtn.setAttribute('aria-pressed', 'true');
+            revealBtn.textContent = 'Hide';
+          }
+        });
+      }
+
+      if (saveBtn && tokenInput) {
+        saveBtn.addEventListener('click', () => {
+          const token = tokenInput.value.trim();
+          if (!token) {
+            saveBtn.textContent = 'Enter token';
+            setTimeout(()=> saveBtn.textContent = 'Save', 1400);
+            return;
+          }
+          // Simulate saving: in production this would POST to the platform API
+          saveBtn.textContent = 'Saving...';
+          saveBtn.disabled = true;
+          setTimeout(()=>{
+            saveBtn.textContent = 'Saved';
+            saveBtn.classList.add('ghost');
+            saveBtn.disabled = false;
+            setTimeout(()=>{ saveBtn.textContent = 'Save'; saveBtn.classList.remove('ghost'); }, 1600);
+          }, 900);
+        });
+      }
+
+    })();
+  </script>
+</body>
+</html>

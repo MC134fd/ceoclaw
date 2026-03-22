@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product — CEOClaw AI Founder OS</title>
+  <meta name="description" content="CEOClaw automates the full founder execution stack. Research, brand, website, outreach, analytics — coordinated AI operators running on your behalf." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #F6F8FF;
+      --color-bg-2: #EEF2FF;
+      --color-surface: rgba(255,255,255,0.62);
+      --color-surface-strong: rgba(255,255,255,0.82);
+      --color-text: #1C2440;
+      --color-text-dim: #5A6280;
+      --color-primary: #7C8BFF;
+      --color-secondary: #A27BFF;
+      --color-tertiary: #5FD3FF;
+      --color-accent: #6BE2C6;
+      --color-border: rgba(255,255,255,0.45);
+      --shadow-soft: 0 20px 60px rgba(100,120,255,0.16);
+      --shadow-card: 0 16px 40px rgba(82,99,180,0.14);
+      --accent-gradient: linear-gradient(120deg,#7C8BFF 0%,#A27BFF 35%,#5FD3FF 70%,#6BE2C6 100%);
+      --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --transition: 0.22s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,139,255,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(162,123,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 90%, rgba(107,226,198,0.10) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; line-height: 1.15; }
+    .container { width: min(100%, 1120px); margin-inline: auto; padding-inline: clamp(1rem,5vw,3rem); position: relative; z-index: 1; }
+    section { position: relative; z-index: 1; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    .gradient-text { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; padding: 0.875rem 0; transition: background var(--transition), box-shadow var(--transition); }
+    nav.scrolled { background: rgba(246,248,255,0.88); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 1px 0 rgba(124,139,255,0.12), 0 4px 24px rgba(100,120,255,0.08); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .nav-logo { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--color-text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .nav-logo-mark { width: 28px; height: 28px; background: var(--accent-gradient); border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .nav-actions { display: flex; align-items: center; gap: 0.625rem; }
+    .btn-ghost { padding: 0.5rem 1.125rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; border: 1px solid transparent; transition: all var(--transition); min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; background: none; }
+    .btn-ghost:hover { color: var(--color-text); border-color: rgba(124,139,255,0.25); background: var(--color-surface); }
+    .btn-ghost:focus-visible, .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .btn-secondary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-logo:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+    .footer-nav-sm a:focus-visible,
+    .footer-bottom-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .btn-primary { padding: 0.5rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; color: #fff; background: var(--accent-gradient); text-decoration: none; border: none; cursor: pointer; transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(124,139,255,0.35); }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,139,255,0.4); }
+
+    /* Conversion Hero */
+    .landing-hero { padding: clamp(5rem,12vw,9rem) 0 clamp(3rem,7vw,5.5rem); text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 1rem; background: rgba(107,226,198,0.12); border: 1px solid rgba(107,226,198,0.3); border-radius: 100px; font-size: 0.78rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace; color: var(--color-accent); margin-bottom: 1.75rem; }
+    .landing-headline { font-size: clamp(2.2rem,6vw,4.5rem); font-weight: 800; letter-spacing: -0.025em; max-width: 860px; margin-inline: auto; margin-bottom: 1.5rem; }
+    .landing-sub { font-size: clamp(1rem,2.2vw,1.2rem); color: var(--color-text-dim); max-width: 580px; margin-inline: auto; margin-bottom: 2.25rem; }
+    .landing-ctas { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 3rem; }
+    .btn-lg { padding: 0.875rem 2rem; font-size: 1rem; min-height: 52px; }
+    .btn-secondary { padding: 0.625rem 1.375rem; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; color: var(--color-text); background: var(--color-surface-strong); text-decoration: none; border: 1px solid rgba(124,139,255,0.2); backdrop-filter: blur(8px); transition: all var(--transition); min-height: 44px; display: inline-flex; align-items: center; gap: 0.375rem; }
+    .btn-secondary:hover { border-color: rgba(124,139,255,0.4); background: #fff; transform: translateY(-1px); box-shadow: var(--shadow-card); }
+    .btn-secondary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .social-proof { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    .sp-chip { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.375rem 0.875rem; background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.14); border-radius: 100px; font-size: 0.78rem; color: var(--color-text-dim); backdrop-filter: blur(6px); }
+    .sp-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-gradient); }
+
+    /* Feature bento */
+    .bento-section { padding: clamp(3rem,8vw,6rem) 0; }
+    .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 1rem; }
+    .section-heading { font-size: clamp(1.6rem,3.5vw,2.5rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.75rem; max-width: 600px; }
+    .section-sub { font-size: 1rem; color: var(--color-text-dim); max-width: 500px; margin-bottom: 2.5rem; }
+    .bento-grid { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: auto; gap: 1.25rem; }
+    .bento-card { background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.15); border-radius: var(--radius-lg); padding: 2rem; backdrop-filter: blur(10px); transition: transform var(--transition), box-shadow var(--transition); }
+    .bento-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+    .bento-card.span2 { grid-column: span 2; }
+    .bento-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1.25rem; }
+    .bc-1 .bento-icon { background: rgba(124,139,255,0.1); }
+    .bc-2 .bento-icon { background: rgba(162,123,255,0.1); }
+    .bc-3 .bento-icon { background: rgba(95,211,255,0.1); }
+    .bc-4 .bento-icon { background: rgba(107,226,198,0.1); }
+    .bc-5 .bento-icon { background: rgba(124,139,255,0.08); }
+    .bento-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .bento-desc { font-size: 0.875rem; color: var(--color-text-dim); line-height: 1.65; }
+    @media (max-width: 1023px) { .bento-grid { grid-template-columns: 1fr 1fr; } .bento-card.span2 { grid-column: span 2; } }
+    @media (max-width: 639px) { .bento-grid { grid-template-columns: 1fr; } .bento-card.span2 { grid-column: span 1; } }
+
+    /* Benefits section */
+    .benefits-section { padding: clamp(3rem,8vw,6rem) 0; }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem,6vw,5rem); align-items: center; }
+    .benefits-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; }
+    .benefit-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .benefit-check { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .benefit-check svg { width: 12px; height: 12px; }
+    .benefit-text h4 { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .benefit-text p { font-size: 0.85rem; color: var(--color-text-dim); }
+    .benefits-visual { background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.18); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-soft); }
+    .pipeline-steps { display: flex; flex-direction: column; gap: 0; }
+    .pipeline-step { display: flex; gap: 1rem; align-items: flex-start; position: relative; padding-bottom: 1.25rem; }
+    .pipeline-step:last-child { padding-bottom: 0; }
+    .pipeline-step::before { content: ''; position: absolute; left: 14px; top: 28px; bottom: 0; width: 1px; background: linear-gradient(to bottom, rgba(124,139,255,0.3), transparent); }
+    .pipeline-step:last-child::before { display: none; }
+    .step-dot { width: 28px; height: 28px; border-radius: 8px; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #fff; font-weight: 700; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; }
+    .step-content h5 { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.2rem; }
+    .step-content p { font-size: 0.78rem; color: var(--color-text-dim); }
+    @media (max-width: 1023px) { .benefits-grid { grid-template-columns: 1fr; } }
+
+    /* Operators detail */
+    .operators-section { padding: clamp(3rem,8vw,6rem) 0; }
+    .op-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .op-table th { text-align: left; padding: 0.75rem 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-dim); border-bottom: 1px solid rgba(124,139,255,0.12); }
+    .op-table td { padding: 1rem; vertical-align: top; border-bottom: 1px solid rgba(124,139,255,0.06); }
+    .op-table tr:last-child td { border-bottom: none; }
+    .op-table tr:hover td { background: rgba(124,139,255,0.03); }
+    .op-name { font-weight: 600; font-family: 'Sora', sans-serif; display: flex; align-items: center; gap: 0.5rem; }
+    .op-badge { display: inline-flex; align-items: center; padding: 0.2rem 0.5rem; border-radius: 100px; font-size: 0.68rem; font-family: 'IBM Plex Mono', monospace; background: rgba(107,226,198,0.12); color: var(--color-accent); border: 1px solid rgba(107,226,198,0.25); }
+    .op-table-wrap { background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.14); border-radius: var(--radius-lg); overflow: hidden; backdrop-filter: blur(10px); }
+
+    /* Final CTA */
+    .landing-cta-section { padding: clamp(4rem,10vw,7rem) 0; }
+    .landing-cta-inner { background: var(--accent-gradient); border-radius: var(--radius-lg); padding: clamp(2.5rem,7vw,5rem); text-align: center; position: relative; overflow: hidden; }
+    .landing-cta-inner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%); }
+    .landing-cta-inner > * { position: relative; }
+    .cta-headline { font-size: clamp(1.75rem,5vw,3rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 1rem; }
+    .cta-sub { font-size: 1.05rem; color: rgba(255,255,255,0.82); margin-bottom: 2rem; max-width: 480px; margin-inline: auto; }
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-white { padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; color: var(--color-primary); background: #fff; text-decoration: none; border: none; cursor: pointer; transition: transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .btn-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .btn-outline-white { padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; color: #fff; background: rgba(255,255,255,0.15); text-decoration: none; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: background var(--transition), transform var(--transition); min-height: 44px; display: inline-flex; align-items: center; backdrop-filter: blur(6px); }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+    .btn-outline-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    /* Footer */
+    footer { padding: clamp(2rem,5vw,3.5rem) 0 2rem; border-top: 1px solid rgba(124,139,255,0.1); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-dim); flex-wrap: wrap; gap: 0.75rem; }
+    .footer-nav-sm { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 1.5rem; }
+    .footer-nav-sm a { font-size: 0.875rem; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition); }
+    .footer-nav-sm a:hover { color: var(--color-text); }
+    .footer-bottom-links { display: flex; gap: 1.5rem; }
+    .footer-bottom-links a { color: var(--color-text-dim); text-decoration: none; }
+    .footer-bottom-links a:hover { color: var(--color-text); }
+  </style>
+</head>
+<body>
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo" aria-label="CEOClaw home">
+        <span class="nav-logo-mark" aria-hidden="true">C</span>CEOClaw
+      </a>
+      <div class="nav-actions">
+        <a href="../index.html" class="btn-ghost">&larr; Home</a>
+        <a href="auth.html" class="btn-primary">Start Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+  <!-- Conversion hero -->
+  <section class="landing-hero" aria-labelledby="landing-headline">
+    <div class="container">
+      <div class="reveal">
+        <span class="hero-badge" aria-label="Now in beta">✓ Now in beta — join early</span>
+      </div>
+      <h1 class="landing-headline reveal" id="landing-headline">
+        The AI operating system<br /><span class="gradient-text">built for how founders actually work.</span>
+      </h1>
+      <p class="landing-sub reveal">
+        Five coordinated AI operators handling research, brand, website, outreach, and analytics — all sharing context, all working toward your revenue goal.
+      </p>
+      <div class="landing-ctas reveal">
+        <a href="auth.html" class="btn-primary btn-lg">Start Free &rarr;</a>
+        <a href="../index.html" class="btn-secondary">Back to home</a>
+      </div>
+      <div class="social-proof reveal" role="list" aria-label="Platform proof points">
+        <span class="sp-chip" role="listitem"><span class="sp-dot" aria-hidden="true"></span>No credit card required</span>
+        <span class="sp-chip" role="listitem"><span class="sp-dot" aria-hidden="true"></span>5 operators included free</span>
+        <span class="sp-chip" role="listitem"><span class="sp-dot" aria-hidden="true"></span>Setup in under 60 seconds</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature bento -->
+  <section class="bento-section" aria-labelledby="bento-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">What's inside</p>
+        <h2 class="section-heading" id="bento-heading">Everything a founding team needs.</h2>
+        <p class="section-sub">One system. No stitching together five tools. No context loss between functions.</p>
+      </div>
+      <div class="bento-grid">
+        <article class="bento-card bc-1 span2 reveal">
+          <div class="bento-icon" aria-hidden="true">🔬</div>
+          <h3 class="bento-title">Research Operator — Validate before you build</h3>
+          <p class="bento-desc">Before you spend a week building, CEOClaw's Research operator validates demand, maps the competitive landscape, defines your ICP, and surfaces the fastest path to revenue. Informed execution starts here.</p>
+        </article>
+        <article class="bento-card bc-2 reveal">
+          <div class="bento-icon" aria-hidden="true">✦</div>
+          <h3 class="bento-title">Brand Operator</h3>
+          <p class="bento-desc">Naming, positioning, messaging hierarchy, and design tokens — generated from your ICP and differentiation strategy, not a generic template.</p>
+        </article>
+        <article class="bento-card bc-3 reveal">
+          <div class="bento-icon" aria-hidden="true">⬡</div>
+          <h3 class="bento-title">Website Operator</h3>
+          <p class="bento-desc">Multi-page, conversion-focused sites from a single prompt. Semantic HTML, accessible structure, responsive layout. Ships, not previews.</p>
+        </article>
+        <article class="bento-card bc-4 reveal">
+          <div class="bento-icon" aria-hidden="true">◈</div>
+          <h3 class="bento-title">Outreach Operator</h3>
+          <p class="bento-desc">ICP-targeted cold sequences and warm intro drafts, brand-matched and cadenced for follow-up — not generic blast copy.</p>
+        </article>
+        <article class="bento-card bc-5 span2 reveal">
+          <div class="bento-icon" aria-hidden="true">◉</div>
+          <h3 class="bento-title">Analytics Operator — Closing the loop</h3>
+          <p class="bento-desc">Tracks MRR against target, scores each cycle, detects stagnation early, and recommends next-best domain — so the system self-corrects without you having to step in and diagnose.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits -->
+  <section class="benefits-section" aria-labelledby="benefits-heading">
+    <div class="container">
+      <div class="benefits-grid">
+        <div>
+          <div class="reveal">
+            <p class="section-label">Benefits</p>
+            <h2 class="section-heading" id="benefits-heading">Why it works when other tools don't.</h2>
+          </div>
+          <ul class="benefits-list" aria-label="Key benefits">
+            <li class="benefit-item reveal">
+              <span class="benefit-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div class="benefit-text">
+                <h4>Shared context, not isolated threads</h4>
+                <p>Every operator reads and writes to the same session state. Brand research informs website copy. Outreach reflects product positioning. Actions compound.</p>
+              </div>
+            </li>
+            <li class="benefit-item reveal">
+              <span class="benefit-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div class="benefit-text">
+                <h4>Goal-aware, not prompt-reactive</h4>
+                <p>CEOClaw knows your MRR target. It routes each cycle to the domain with the highest leverage — not the last thing you typed.</p>
+              </div>
+            </li>
+            <li class="benefit-item reveal">
+              <span class="benefit-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div class="benefit-text">
+                <h4>Evaluation built in, not bolted on</h4>
+                <p>After every cycle, an evaluator scores output against your goal. Progress is measured. Stagnation is caught. The loop continues or stops based on real results.</p>
+              </div>
+            </li>
+            <li class="benefit-item reveal">
+              <span class="benefit-check" aria-hidden="true">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <div class="benefit-text">
+                <h4>One system, not five subscriptions</h4>
+                <p>Replace the fragmented stack of research tools, no-code builders, email tools, and analytics dashboards with a single, coherent execution layer.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="benefits-visual reveal" aria-label="CEOClaw execution pipeline steps">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--color-text-dim);margin-bottom:1.5rem;opacity:0.7;">// execution pipeline</div>
+          <div class="pipeline-steps">
+            <div class="pipeline-step">
+              <div class="step-dot" aria-hidden="true">01</div>
+              <div class="step-content">
+                <h5>Set your goal</h5>
+                <p>Define target MRR and number of cycles.</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-dot" aria-hidden="true">02</div>
+              <div class="step-content">
+                <h5>Planner activates</h5>
+                <p>Assesses current state and prioritizes next domain.</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-dot" aria-hidden="true">03</div>
+              <div class="step-content">
+                <h5>Operator executes</h5>
+                <p>Research, Brand, Website, Outreach, or Analytics — whichever has highest leverage.</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-dot" aria-hidden="true">04</div>
+              <div class="step-content">
+                <h5>Evaluator scores</h5>
+                <p>Output is measured. MRR delta is tracked. Stagnation checked.</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-dot" aria-hidden="true">05</div>
+              <div class="step-content">
+                <h5>Loop or complete</h5>
+                <p>Goal reached → export summary. Gap remains → next cycle begins.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Operators table -->
+  <section class="operators-section" aria-labelledby="operators-table-heading">
+    <div class="container">
+      <div class="reveal" style="margin-bottom:2rem;">
+        <p class="section-label">Operator reference</p>
+        <h2 id="operators-table-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;">All five operators at a glance.</h2>
+      </div>
+      <div class="op-table-wrap reveal" role="region" aria-label="Operator comparison table" tabindex="0">
+        <table class="op-table">
+          <thead>
+            <tr>
+              <th scope="col">Operator</th>
+              <th scope="col">Primary output</th>
+              <th scope="col">Inputs used</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="op-name"><span aria-hidden="true">🔬</span> Research</span></td>
+              <td>ICP definition, competitor map, demand signals</td>
+              <td>Goal, industry, target market</td>
+              <td><span class="op-badge">Active</span></td>
+            </tr>
+            <tr>
+              <td><span class="op-name"><span aria-hidden="true">✦</span> Brand</span></td>
+              <td>Naming, positioning, design tokens</td>
+              <td>Research output, ICP</td>
+              <td><span class="op-badge">Active</span></td>
+            </tr>
+            <tr>
+              <td><span class="op-name"><span aria-hidden="true">⬡</span> Website</span></td>
+              <td>Multi-page HTML site</td>
+              <td>Brand output, product intent</td>
+              <td><span class="op-badge">Active</span></td>
+            </tr>
+            <tr>
+              <td><span class="op-name"><span aria-hidden="true">◈</span> Outreach</span></td>
+              <td>Cold sequences, follow-up cadences</td>
+              <td>ICP, brand voice, product value prop</td>
+              <td><span class="op-badge">Active</span></td>
+            </tr>
+            <tr>
+              <td><span class="op-name"><span aria-hidden="true">◉</span> Analytics</span></td>
+              <td>MRR delta, trend, next-action recommendation</td>
+              <td>All operator outputs, current MRR</td>
+              <td><span class="op-badge">Active</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landing-cta-section" aria-labelledby="landing-cta-heading">
+    <div class="container">
+      <div class="landing-cta-inner reveal">
+        <h2 class="cta-headline" id="landing-cta-heading">Your execution layer is ready.</h2>
+        <p class="cta-sub">Start free. Five operators. One goal. Your idea goes in — traction comes out.</p>
+        <div class="cta-buttons">
+          <a href="auth.html" class="btn-white">Start Free &rarr;</a>
+          <a href="../index.html" class="btn-outline-white">Back to Home</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-nav-sm" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="platform.html">Platform</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="docs.html">Docs</a>
+        <a href="auth.html">Sign Up</a>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CEOClaw. All rights reserved.</span>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      var nav=document.getElementById('main-nav');
+      if(nav) window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>12);},{passive:true});
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible');});
+        return;
+      }
+      var obs=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+      },{threshold:0.1,rootMargin:'0px 0px -32px 0px'});
+      document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+    }());
+  </script>
+</body>
+</html>

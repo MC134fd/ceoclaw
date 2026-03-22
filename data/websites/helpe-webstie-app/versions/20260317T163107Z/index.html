@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Website People App — The smart saas platform for general users</title>
+  <style>
+    /* Font import (required by design system) */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      /* Framer Aura — midnight palette (design system override) */
+      --color-primary: #6366f1; /* primary */
+      --color-secondary: #a78bfa; /* secondary */
+      --color-accent-pink: #ec4899;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 50%, var(--color-accent-pink) 100%);
+
+      --color-bg: #0a0a0f;      /* background */
+      --color-surface: #12121a; /* surface / cards */
+      --color-text: #f0f0ff;    /* primary text */
+      --color-muted: #6b7280;   /* muted */
+
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+
+      /* Spacing scale (fluid) */
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+
+      /* Type scale */
+      --text-sm: clamp(0.8rem, 1vw + 0.2rem, 1rem);
+      --text-base: clamp(1rem, 1.25vw + 0.2rem, 1.125rem);
+      --text-lg: clamp(1.125rem, 1.5vw + 0.2rem, 1.25rem);
+      --text-xl: clamp(1.25rem, 1.75vw + 0.2rem, 1.5rem);
+      --text-2xl: clamp(1.5rem, 2vw + 0.25rem, 1.75rem);
+      --text-3xl: clamp(1.75rem, 2.25vw + 0.25rem, 2.25rem);
+      --text-4xl: clamp(2.25rem, 2.75vw + 0.25rem, 3rem);
+
+      /* Container */
+      --container-width: clamp(320px, 90vw, 1200px);
+
+      --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+      --radius: var(--radius-md);
+    }
+
+    /* Global reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; letter-spacing: -0.025em; }
+    h1 { font-size: var(--text-4xl); letter-spacing: -0.03em; }
+    h2 { font-size: var(--text-3xl); }
+    h3 { font-size: var(--text-2xl); }
+
+    a { color: inherit; text-decoration: none; }
+
+    .site { max-width: var(--container-width); margin-inline: auto; padding-inline: var(--space-md); }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 8px; z-index: 60;
+      margin: var(--space-md) 0; backdrop-filter: none; transition: all 220ms var(--motion-ease);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+    }
+    nav.scrolled { backdrop-filter: blur(12px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .nav-left { display:flex; gap: var(--space-md); align-items:center; }
+    .brand { font-family: 'Cormorant Garamond', serif; color: transparent; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; font-size: var(--text-2xl); }
+
+    .nav-links { display:flex; gap: var(--space-sm); align-items:center; }
+    .nav-links a { color: var(--color-text); padding: calc(var(--space-xs)) calc(var(--space-sm)); border-radius: 8px; font-size: var(--text-sm); }
+    .nav-links a:hover { background: rgba(255,255,255,0.02); }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white; border: none; padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius); display:inline-flex; align-items:center; gap:8px; min-height:44px; min-width:44px;
+      cursor:pointer; transition: all 220ms var(--motion-ease); font-weight:600;
+    }
+    .btn-primary:hover { transform: scale(1.02); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-primary:focus-visible { outline: 3px solid rgba(167,139,250,0.12); outline-offset: 3px; }
+
+    .btn-secondary {
+      background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-primary);
+      padding: var(--space-sm) var(--space-md); border-radius: var(--radius); transition: all 220ms var(--motion-ease);
+    }
+
+    /* Hero */
+    .hero { display: grid; grid-template-columns: 1fr 420px; gap: var(--space-lg); align-items:center; padding-block: var(--space-2xl); }
+    @media (max-width: 1024px) { .hero { grid-template-columns: 1fr; } }
+
+    .hero-copy { max-width: 720px; }
+    .hero h1 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: var(--space-sm); color: transparent; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; }
+    .hero p { font-size: var(--text-lg); color: var(--color-muted); margin-bottom: var(--space-lg); }
+
+    .hero-cta { display:flex; gap: var(--space-sm); flex-wrap:wrap; }
+
+    .hero-illustration { width:100%; display:block; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+    .hero-side { display:flex; flex-direction:column; gap: var(--space-md); }
+
+    /* Feature grid */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,280px), 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    .feature-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: var(--radius-lg); padding: var(--space-lg); text-align:center; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.04); transition: all 220ms var(--motion-ease); }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .feature-card img { width:48px; height:48px; display:block; margin:0 auto var(--space-sm); }
+
+    /* Proof / counters */
+    .proof { display:flex; gap: var(--space-lg); justify-content:center; margin-top: var(--space-xl); flex-wrap:wrap; }
+    .proof .stat { text-align:center; }
+    .stat .value { font-size: var(--text-2xl); font-weight:700; color: var(--color-primary); }
+    .stat .label { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-xs); }
+
+    /* Testimonials carousel */
+    .carousel { position: relative; max-width: 900px; margin: var(--space-xl) auto; overflow: hidden; }
+    .carousel-track { display:flex; transition: transform 420ms var(--motion-ease); }
+    .testimonial { min-width: 100%; padding: var(--space-lg); box-sizing: border-box; }
+    .testimonial .quote { font-size: var(--text-lg); color: var(--color-text); }
+    .carousel-controls { display:flex; justify-content:center; gap: var(--space-sm); margin-top: var(--space-sm); }
+    .dot { width:10px; height:10px; border-radius:50%; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.06); cursor:pointer; }
+    .dot.active { background: var(--accent-gradient); box-shadow: var(--shadow-sm); }
+
+    /* Pricing */
+    .pricing { display:grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,260px),1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    .card { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-lg); border: 1px solid rgba(255,255,255,0.04); }
+    .card.pro { position: relative; padding: calc(var(--space-lg) - 2px); border-radius: calc(var(--radius-lg) + 2px); }
+    /* Pro gradient border via background + padding trick */
+    .card.pro > .inner { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding: var(--space-lg); border-radius: var(--radius-lg); }
+
+    /* Footer */
+    footer { padding-block: var(--space-xl); text-align:center; color: var(--color-muted); }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .reveal, .reveal.visible { opacity: 1; transform: none; transition: none; } }
+
+    /* Utility */
+    .container { max-width: var(--container-width); margin-inline: auto; padding-inline: var(--space-md); }
+
+  </style>
+</head>
+<body>
+  <nav id="nav" class="site">
+    <div class="nav-left">
+      <a class="brand" href="index.html">Website People App</a>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a class="btn-secondary" href="pages/signup.html">Sign up</a>
+      <a class="btn-primary" href="app.html">Start Tracking</a>
+    </div>
+  </nav>
+
+  <main class="site">
+    <section class="hero" aria-label="Hero section">
+      <div class="hero-copy">
+        <h1>Website People App — The smart saas platform for general users</h1>
+        <p>Build, manage and export your projects with an intuitive dashboard, built-in data export, and streamlined core functionality — designed for general users who want simple power.</p>
+        <div class="hero-cta">
+          <a class="btn-primary" id="hero-cta" href="app.html">Start Tracking</a>
+          <a class="btn-secondary" href="pages/signup.html">Create account</a>
+        </div>
+
+        <div class="proof reveal" aria-hidden="false">
+          <div class="stat">
+            <div class="value"><span class="counter" data-target="12400">0</span>+</div>
+            <div class="label">Projects launched</div>
+          </div>
+          <div class="stat">
+            <div class="value"><span class="counter" data-target="8500">0</span>+</div>
+            <div class="label">Active users</div>
+          </div>
+          <div class="stat">
+            <div class="value"><span class="counter" data-target="3200">0</span>+</div>
+            <div class="label">Exports / month</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-side reveal">
+        <img src="assets/hero.svg" alt="Website People App hero illustration" class="hero-illustration" style="max-width:100%;height:auto;">
+        <div class="card">
+          <strong>Connect quickly</strong>
+          <p style="margin-top:var(--space-xs);color:var(--color-muted);font-size:var(--text-sm)">Sign up to unlock hosted projects, exports and dashboard tools.</p>
+          <div style="margin-top:var(--space-sm);display:flex;gap:var(--space-sm)">
+            <a class="btn-primary" href="pages/signup.html">Create account</a>
+            <a class="btn-secondary" href="#pricing">View pricing</a>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="features" class="reveal">
+      <div class="container">
+        <h2>Core features</h2>
+        <p style="color:var(--color-muted);max-width:720px">Website People App centers around three pillars: core functionality, a clean user dashboard, and reliable data export — all accessible for general users.</p>
+        <div class="feature-grid">
+          <div class="feature-card reveal">
+            <img src="assets/icon-core-functionality.svg" alt="Core functionality icon" style="max-width:100%;height:auto;">
+            <h3>Core functionality</h3>
+            <p style="color:var(--color-muted)">Project templates, easy publishing and built-in versioning so non-technical users can move fast.</p>
+          </div>
+
+          <div class="feature-card reveal">
+            <img src="assets/icon-user-dashboard.svg" alt="User dashboard icon" style="max-width:100%;height:auto;">
+            <h3>User dashboard</h3>
+            <p style="color:var(--color-muted)">A single-pane dashboard for creating, editing and inspecting live projects and metrics.</p>
+          </div>
+
+          <div class="feature-card reveal">
+            <img src="assets/icon-data-export.svg" alt="Data export icon" style="max-width:100%;height:auto;">
+            <h3>Data export</h3>
+            <p style="color:var(--color-muted)">Export your project data or full site bundles with one-click CSV/ZIP downloads.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal" aria-label="Testimonials">
+      <div class="container">
+        <h2>What general users say</h2>
+        <div class="carousel" role="region" aria-label="Testimonials">
+          <div class="carousel-track" id="carousel-track">
+            <div class="testimonial">
+              <p class="quote">"Website People App made launching my first project painless — the dashboard removed the guesswork. Exports took minutes, not hours."</p>
+              <p style="color:var(--color-muted);margin-top:var(--space-sm)">— Mae, small business owner</p>
+            </div>
+            <div class="testimonial">
+              <p class="quote">"The core functionality is delightfully simple. I can manage projects without learning code and export client-ready bundles easily."</p>
+              <p style="color:var(--color-muted);margin-top:var(--space-sm)">— Arjun, freelancer</p>
+            </div>
+            <div class="testimonial">
+              <p class="quote">"We migrated our team's workflow to Website People App and our delivery time halved. The CSV exports are reliable and straightforward."</p>
+              <p style="color:var(--color-muted);margin-top:var(--space-sm)">— Lina, product lead</p>
+            </div>
+          </div>
+          <div class="carousel-controls" aria-hidden="false">
+            <button id="prev-testimonial" aria-label="Previous testimonial" class="btn-secondary">◀</button>
+            <div id="dots" style="display:flex;gap:var(--space-sm);align-items:center"></div>
+            <button id="next-testimonial" aria-label="Next testimonial" class="btn-secondary">▶</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="reveal">
+      <div class="container">
+        <h2>Pricing</h2>
+        <p style="color:var(--color-muted);max-width:720px">Choose a plan that fits solo creators to teams. Start free — upgrade anytime for export limits, team seats and priority support.</p>
+        <div class="pricing">
+          <div class="card">
+            <h3>Free</h3>
+            <p style="color:var(--color-muted)">Ideal for individuals trying core functionality. Limited exports and single user.</p>
+            <p style="font-weight:700;margin-top:var(--space-sm);">$0 / month</p>
+            <div style="margin-top:var(--space-md)"><a class="btn-primary" href="pages/signup.html">Get started free</a></div>
+          </div>
+
+          <div class="card pro" aria-hidden="false" style="background:var(--accent-gradient);">
+            <div class="inner">
+              <h3 style="background:transparent;">Pro</h3>
+              <p style="color:var(--color-muted)">Primary growth tier with exports, team seats and priority builds.</p>
+              <p style="font-weight:700;margin-top:var(--space-sm);">$29 / month</p>
+              <div style="margin-top:var(--space-md)"><a class="btn-primary" href="pages/signup.html">Start free trial</a></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Enterprise</h3>
+            <p style="color:var(--color-muted)">Custom exports, SLAs and dedicated support for large teams.</p>
+            <p style="font-weight:700;margin-top:var(--space-sm);">Contact us</p>
+            <div style="margin-top:var(--space-md)"><a class="btn-secondary" href="pages/signup.html">Contact sales</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-block:var(--space-lg);">
+      <div class="container" style="display:flex;justify-content:center;gap:var(--space-md)">
+        <a class="btn-primary" href="app.html">Start Tracking</a>
+        <a class="btn-secondary" href="pages/signup.html">Sign up</a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>© Website People App — The smart saas platform for general users</p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Sticky nav
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 14) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    });
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Animated counters
+    const counters = document.querySelectorAll('.counter');
+    const counterObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target; const target = +el.dataset.target;
+        let start = null;
+        const duration = 1200;
+        const step = (ts) => {
+          if (!start) start = ts; const progress = Math.min((ts - start)/duration, 1);
+          el.textContent = Math.floor(progress * target).toLocaleString();
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.2 });
+    counters.forEach(c => counterObserver.observe(c));
+
+    // Testimonial carousel (no autoplay)
+    const track = document.getElementById('carousel-track');
+    const testimonials = Array.from(track.children);
+    const dotsWrap = document.getElementById('dots');
+    let index = 0;
+    function renderDots(){ dotsWrap.innerHTML = ''; testimonials.forEach((t,i)=>{
+      const d = document.createElement('button'); d.className='dot'; d.setAttribute('aria-label', 'Go to testimonial '+(i+1));
+      if(i===index) d.classList.add('active'); d.addEventListener('click', ()=>{ goTo(i); });
+      dotsWrap.appendChild(d);
+    }); }
+    function goTo(i){ index = (i+testimonials.length)%testimonials.length; track.style.transform = `translateX(-${index*100}%)`; renderDots(); }
+    document.getElementById('prev-testimonial').addEventListener('click', ()=>goTo(index-1));
+    document.getElementById('next-testimonial').addEventListener('click', ()=>goTo(index+1));
+    document.addEventListener('keydown', (e)=>{ if(e.key==='ArrowLeft') goTo(index-1); if(e.key==='ArrowRight') goTo(index+1); });
+    renderDots();
+  </script>
+</body>
+</html>

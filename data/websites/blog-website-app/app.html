@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog Website App — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #94a3b8;
+      --color-secondary: #cbd5e1;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f8fafc;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #94a3b8, #cbd5e1);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(148,163,184,0.06), transparent),
+                  radial-gradient(1000px 400px at 90% 90%, rgba(203,213,225,0.04), transparent),
+                  var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding:clamp(12px, calc(var(--spacing) * 6px), 24px);
+      display:flex;
+      min-height:100vh;
+      gap:clamp(12px, calc(var(--spacing) * 6px), 24px);
+    }
+
+    a{color:inherit;text-decoration:none}
+
+    /* Layout */
+    .app-shell{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      gap:clamp(12px, calc(var(--spacing) * 6px), 24px);
+      width:100%;
+      align-items:start;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:var(--radius-lg);
+      padding:clamp(12px, calc(var(--spacing) * 8px), 28px);
+      box-shadow:var(--shadow-md);
+      backdrop-filter: blur(8px) saturate(120%);
+      -webkit-backdrop-filter: blur(8px) saturate(120%);
+      border:1px solid rgba(255,255,255,0.03);
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      background:var(--accent-gradient);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:var(--font-display);
+      font-weight:700;
+      color:var(--color-bg);
+      box-shadow:var(--shadow-sm);
+    }
+    .brand h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:18px;
+      letter-spacing:-0.02em;
+    }
+    .brand p{
+      margin:0;
+      font-size:12px;
+      color:var(--color-muted);
+    }
+
+    nav.nav{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:6px;
+    }
+    .nav a{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:10px;
+      border-radius:8px;
+      color:var(--color-text);
+      font-weight:600;
+      font-size:14px;
+      transition:background .18s ease, transform .08s ease;
+    }
+    .nav a:hover{ background: rgba(255,255,255,0.02); transform:translateY(-2px) }
+    .nav a.active{
+      background: linear-gradient(90deg, rgba(236,72,153,0.10), rgba(148,163,184,0.04));
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+    }
+
+    .sidebar .meta{
+      margin-top:auto;
+      font-size:13px;
+      color:var(--color-muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .sidebar .meta a{
+      font-weight:600;
+      color:var(--color-accent-pink);
+    }
+
+    /* Mobile hide sidebar */
+    @media (max-width:640px){
+      .app-shell{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .mobile-toggle{display:flex}
+    }
+
+    /* Header bar (top of main content) */
+    .header{
+      position:sticky;
+      top:16px;
+      z-index:5;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      justify-content:space-between;
+      padding:8px 12px;
+      background:transparent;
+      transition:all .2s ease;
+      border-radius:12px;
+    }
+    .header.scrolled{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(6px);
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+      transform:translateY(-2px);
+    }
+
+    .header .left{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .mobile-toggle{
+      display:none;
+      align-items:center;
+      gap:8px;
+    }
+    .mobile-toggle button{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--color-text);
+      padding:8px;
+      border-radius:10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:44px;
+      cursor:pointer;
+    }
+
+    .header .actions{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 14px;
+      border-radius:10px;
+      min-height:44px;
+      background:var(--color-primary);
+      color:var(--color-bg);
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+    .btn.secondary{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      color:var(--color-text);
+    }
+    .btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow-sm) }
+    .btn:active{ transform:translateY(-1px) }
+
+    /* Main content */
+    main{
+      width:100%;
+    }
+
+    .hero{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:24px;
+      border-radius:var(--radius-lg);
+      display:flex;
+      gap:18px;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow:var(--shadow-md);
+      border:1px solid rgba(255,255,255,0.02);
+      margin-bottom:20px;
+    }
+    .hero .title{
+      font-family:var(--font-display);
+      font-size:clamp(20px, 2.6vw, 28px);
+      margin:0 0 6px 0;
+      letter-spacing:-0.02em;
+    }
+    .hero p{
+      margin:0;
+      color:var(--color-muted);
+      font-size:14px;
+    }
+
+    /* Grid sections */
+    .grid{
+      display:grid;
+      gap:16px;
+    }
+    .metrics{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:14px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:16px;
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    .metric{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .metric .left{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .metric .label{
+      font-size:13px;
+      color:var(--color-muted);
+      font-weight:600;
+    }
+    .metric .value{
+      font-family:var(--font-display);
+      font-size:20px;
+      color:var(--color-text);
+      font-weight:700;
+    }
+    .metric .trend{
+      font-size:13px;
+      color:var(--color-accent-pink);
+      font-weight:700;
+    }
+
+    .features{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .feature-item{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .feature-item h4{margin:0;font-size:15px}
+    .feature-item p{margin:0;color:var(--color-muted);font-size:13px}
+
+    /* Connect API card */
+    .connect{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .token-input{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .token-input input{
+      flex:1;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.04);
+      background:transparent;
+      color:var(--color-text);
+      font-weight:500;
+      outline:none;
+    }
+    .token-input input::placeholder{ color:rgba(255,255,255,0.25) }
+
+    .muted-note{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* Footer area inside main */
+    .two-col{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width:1024px){
+      .two-col{grid-template-columns: 1fr}
+    }
+
+    /* Reveal animations */
+    .reveal{opacity:0; transform:translateY(18px) scale(.995); transition:all .6s cubic-bezier(.2,.9,.25,1)}
+    .reveal.visible{opacity:1; transform:none}
+
+    /* Utility */
+    .muted{color:var(--color-muted)}
+    .small{font-size:13px}
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.02);
+      font-weight:600;
+      font-size:12px;
+    }
+
+    /* scrollbar small */
+    ::-webkit-scrollbar{height:8px;width:8px}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.04);border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">BW</div>
+        <div>
+          <h1>Blog Website App</h1>
+          <p>Content tools & publishing</p>
+        </div>
+      </div>
+
+      <nav class="nav" role="navigation" aria-label="Main">
+        <a href="app.html" class="active" aria-current="page">
+          <span>Dashboard</span>
+        </a>
+        <a href="pages/signup.html">
+          <span>Features</span>
+        </a>
+        <a href="pages/signup.html">
+          <span>Settings</span>
+        </a>
+        <a href="index.html">
+          <span>Back to site</span>
+        </a>
+      </nav>
+
+      <div class="meta">
+        <span class="small muted">Core functionality: publishing, analytics, export</span>
+        <a href="pages/signup.html">Get Started</a>
+      </div>
+    </aside>
+
+    <main>
+      <!-- Header -->
+      <header class="header" id="pageHeader">
+        <div class="left">
+          <div class="mobile-toggle">
+            <button id="openSidebar" aria-label="Open sidebar">☰</button>
+          </div>
+          <div>
+            <h2 class="title" style="margin:0;font-family:var(--font-display);font-size:18px">Welcome back — editor tools at your fingertips</h2>
+            <p class="muted small" style="margin-top:6px">Fast publish, clear analytics, secure data export.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn secondary" id="exportBtn">Data export</button>
+          <a href="pages/signup.html" class="btn">Get Started</a>
+        </div>
+      </header>
+
+      <!-- Hero -->
+      <section class="hero reveal">
+        <div>
+          <h3 class="title">User dashboard — command your content</h3>
+          <p>Monitor readership, schedule posts, and manage contributors from a single user dashboard built for clarity and speed.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          <span class="pill">Core functionality: publishing</span>
+          <small class="muted small">Last sync 12 minutes ago</small>
+        </div>
+      </section>
+
+      <div class="grid">
+        <!-- Metrics Row -->
+        <section class="metrics">
+          <div class="card reveal">
+            <div class="metric">
+              <div class="left">
+                <div class="label">Active readers</div>
+                <div class="value">8,412</div>
+                <div class="small muted">Real-time visitors on site</div>
+              </div>
+              <div class="trend">+4.2%</div>
+            </div>
+          </div>
+
+          <div class="card reveal">
+            <div class="metric">
+              <div class="left">
+                <div class="label">Published posts</div>
+                <div class="value">1,256</div>
+                <div class="small muted">Total posts this year</div>
+              </div>
+              <div class="trend">+1.1%</div>
+            </div>
+          </div>
+
+          <div class="card reveal">
+            <div class="metric">
+              <div class="left">
+                <div class="label">Subscribers</div>
+                <div class="value">24,080</div>
+                <div class="small muted">Email list & RSS combined</div>
+              </div>
+              <div class="trend">+0.8%</div>
+            </div>
+          </div>
+
+          <div class="card reveal">
+            <div class="metric">
+              <div class="left">
+                <div class="label">Exports processed</div>
+                <div class="value">324</div>
+                <div class="small muted">CSV / JSON data export jobs</div>
+              </div>
+              <div class="trend">+6.5%</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Two-column area: features and connect -->
+        <div class="two-col reveal" style="margin-top:10px">
+          <section class="card">
+            <h3 style="margin-top:0;font-family:var(--font-display)">Platform capabilities</h3>
+            <p class="muted small">Everything you need to run a modern blog: editorial workflow, audience analytics, content scheduling, and secure backups.</p>
+            <div class="features" style="margin-top:12px">
+              <div class="feature-item">
+                <div class="logo" style="width:40px;height:40px;border-radius:8px;font-size:14px">ED</div>
+                <div>
+                  <h4>Editorial workflow</h4>
+                  <p>Drafts, reviews, and scheduled publishes with role-based approvals to keep your pipeline clean.</p>
+                </div>
+              </div>
+
+              <div class="feature-item">
+                <div class="logo" style="width:40px;height:40px;border-radius:8px;font-size:14px">AN</div>
+                <div>
+                  <h4>Reader analytics</h4>
+                  <p>Post-level metrics, reading time breakdowns, and referral tracking to inform content decisions.</p>
+                </div>
+              </div>
+
+              <div class="feature-item">
+                <div class="logo" style="width:40px;height:40px;border-radius:8px;font-size:14px">EX</div>
+                <div>
+                  <h4>Data export</h4>
+                  <p>One-click exports for posts, subscribers, and comments — CSV and JSON formats for integrations.</p>
+                </div>
+              </div>
+
+              <div class="feature-item">
+                <div class="logo" style="width:40px;height:40px;border-radius:8px;font-size:14px">API</div>
+                <div>
+                  <h4>Extensible API</h4>
+                  <p>Connect your tools and automate publishing with a secure token-based API for advanced workflows.</p>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px">
+              <a href="pages/signup.html" class="btn">Explore features</a>
+              <button class="btn secondary" id="openExport">Run export</button>
+            </div>
+          </section>
+
+          <aside class="card connect">
+            <h3 style="margin:0;font-family:var(--font-display)">Connect your API</h3>
+            <p class="muted small">Add a token to enable programmatic publishing and read-only analytics access for integrations.</p>
+
+            <form id="tokenForm" onsubmit="return false;">
+              <label class="small muted">API token</label>
+              <div class="token-input">
+                <input id="apiToken" type="text" placeholder="Enter your token (e.g. token_abc123)" aria-label="API token" />
+                <button class="btn" id="saveToken">Save</button>
+              </div>
+              <p class="muted-note small" style="margin-top:8px">Tokens are stored locally in your browser. Use CI or server-side vaults for production workflows.</p>
+            </form>
+
+            <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="small muted">Integration hints</span>
+                <span class="pill">API v1</span>
+              </div>
+              <ul class="small muted" style="margin:0;padding-left:18px">
+                <li>Use the token with Authorization: Bearer</li>
+                <li>Rate limits: 600 req/min for write endpoints</li>
+                <li>Data export accessible via /exports endpoint</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Reveal on scroll
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      reveals.forEach(r => io.observe(r));
+    })();
+
+    // Sticky header: add .scrolled when scroll > 14px
+    (function(){
+      const header = document.getElementById('pageHeader');
+      function onScroll(){
+        if(window.scrollY > 14) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Mobile sidebar toggle (showing the aside inline)
+    (function(){
+      const openBtn = document.getElementById('openSidebar');
+      openBtn && openBtn.addEventListener('click', () => {
+        // create overlay sidebar panel
+        let panel = document.querySelector('.mobile-panel');
+        if(panel) return;
+        panel = document.createElement('div');
+        panel.className = 'mobile-panel';
+        panel.style.position = 'fixed';
+        panel.style.top = '12px';
+        panel.style.left = '12px';
+        panel.style.right = '12px';
+        panel.style.bottom = '12px';
+        panel.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))';
+        panel.style.borderRadius = '16px';
+        panel.style.padding = '18px';
+        panel.style.boxShadow = 'var(--shadow-lg)';
+        panel.style.zIndex = 60;
+        panel.style.overflow = 'auto';
+        panel.innerHTML = document.querySelector('.sidebar').outerHTML;
+        // close button
+        const close = document.createElement('button');
+        close.textContent = 'Close';
+        close.className = 'btn secondary';
+        close.style.marginTop = '12px';
+        close.addEventListener('click', () => panel.remove());
+        panel.appendChild(close);
+        document.body.appendChild(panel);
+      });
+    })();
+
+    // Simple token save interaction and export button feedback
+    (function(){
+      const saveBtn = document.getElementById('saveToken');
+      const tokenInput = document.getElementById('apiToken');
+      const exportBtn = document.getElementById('exportBtn');
+      const openExport = document.getElementById('openExport');
+
+      saveBtn && saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const token = tokenInput.value.trim();
+        if(!token){
+          alert('Enter a valid token to save.');
+          return;
+        }
+        try{
+          localStorage.setItem('bwa_api_token', token);
+          saveBtn.textContent = 'Saved';
+          saveBtn.style.opacity = '0.9';
+          setTimeout(()=> saveBtn.textContent = 'Save', 1600);
+        }catch(err){
+          alert('Unable to save token locally.');
+        }
+      });
+
+      function runExportFeedback(){
+        exportBtn.disabled = true;
+        exportBtn.textContent = 'Exporting…';
+        setTimeout(()=>{
+          exportBtn.disabled = false;
+          exportBtn.textContent = 'Data export';
+          alert('Export job queued. Visit Exports tab for status.');
+        }, 1100);
+      }
+
+      exportBtn && exportBtn.addEventListener('click', runExportFeedback);
+      openExport && openExport.addEventListener('click', runExportFeedback);
+    })();
+  </script>
+</body>
+</html>

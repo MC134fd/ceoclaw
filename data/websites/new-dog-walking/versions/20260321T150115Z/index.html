@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawPath — Dog Walking Made Simple</title>
+  <meta name="description" content="PawPath is a dog-walking app that connects pet owners with vetted walkers, offers live GPS routes, photo updates, and secure scheduling and payments.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@300;400;600;700&family=Manrope:wght@300;400;500;600&display=swap');
+    :root {
+      --color-primary: #4338ca;
+      --color-secondary: #7c3aed;
+      --color-accent: #ec4899;
+      --color-bg: #f8fafc;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,.12);
+      --bg-rgb: 248,250,252;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.2; }
+    h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 700; }
+    h2 { font-size: clamp(1.6rem, 3.5vw, 2.5rem); font-weight: 700; }
+    h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 600; }
+    p { max-width: 65ch; }
+    a { color: var(--color-primary); text-decoration: none; }
+
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container {
+      max-width: clamp(320px, 90vw, 1200px);
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 3vw, 2rem);
+    }
+
+    .section {
+      padding: clamp(3rem, 8vw, 6rem) 0;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: clamp(2rem, 4vw, 3.5rem);
+    }
+    .section-header h2 { margin-bottom: 0.75rem; }
+    .section-header p { color: var(--color-muted); margin-inline: auto; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 28px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 200ms ease;
+      min-height: 44px;
+      border: none;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-primary);
+      border: 2px solid var(--color-primary);
+    }
+    .btn-secondary:hover { background: var(--color-primary); color: #fff; }
+
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: clamp(1.5rem, 3vw, 2rem);
+      transition: all 200ms ease;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+    .grid {
+      display: grid;
+      gap: clamp(1rem, 3vw, 1.5rem);
+    }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(248,250,252, 0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      transition: box-shadow 200ms ease;
+    }
+    .navbar.scrolled { box-shadow: var(--shadow-sm); }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 clamp(1rem, 3vw, 2rem);
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-brand {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 1.25rem; color: var(--color-text); text-decoration: none;
+    }
+    .nav-links { display: flex; align-items: center; gap: clamp(1rem, 2vw, 2rem); }
+    .nav-links a { color: var(--color-muted); text-decoration: none; font-size: 0.9rem; transition: color 200ms; }
+    .nav-links a:hover { color: var(--color-text); }
+    .nav-links .btn { font-size: 0.85rem; padding: 8px 20px; }
+    .nav-toggle {
+      display: none; background: none; border: none;
+      font-size: 1.5rem; cursor: pointer; color: var(--color-text);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: clamp(7rem, 14vw, 10rem) 0 clamp(4rem, 8vw, 6rem);
+      text-align: center;
+    }
+    .hero h1 { margin-bottom: 1.25rem; }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--color-muted);
+      margin-inline: auto;
+      margin-bottom: 2rem;
+    }
+    .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Features ── */
+    .feature-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 48px; height: 48px; border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      font-size: 1.5rem; margin-bottom: 1rem;
+    }
+    .feature-card h3 { margin-bottom: 0.5rem; }
+    .feature-card p { color: var(--color-muted); font-size: 0.95rem; }
+
+    /* ── Testimonials ── */
+    .testimonial-card { text-align: center; }
+    .testimonial-card blockquote {
+      font-style: italic; font-size: 1.05rem; color: var(--color-text);
+      margin-bottom: 1rem; line-height: 1.6;
+    }
+    .testimonial-card blockquote::before { content: "\201C"; font-size: 2rem; color: var(--color-primary); display: block; }
+    .testimonial-name { font-weight: 600; }
+    .testimonial-role { color: var(--color-muted); font-size: 0.85rem; }
+
+    /* ── Pricing ── */
+    .pricing-card { text-align: center; position: relative; }
+    .pricing-card.highlighted {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary), var(--shadow-lg);
+    }
+    .pricing-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--color-primary); color: #fff; font-size: 0.75rem;
+      padding: 4px 16px; border-radius: 999px; font-weight: 600;
+    }
+    .pricing-price {
+      font-family: var(--font-display); font-size: 2.5rem; font-weight: 700;
+      margin: 1rem 0 0.25rem;
+    }
+    .pricing-period { color: var(--color-muted); font-size: 0.85rem; margin-bottom: 1rem; }
+    .pricing-features { list-style: none; padding: 0; margin: 1.5rem 0; text-align: left; }
+    .pricing-features li {
+      padding: 0.5rem 0; border-bottom: 1px solid var(--color-border);
+      font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+    }
+    .pricing-features li::before { content: "\2713"; color: var(--color-primary); font-weight: 700; }
+
+    /* ── Stats ── */
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700; color: var(--color-primary);
+    }
+    .stat-label { color: var(--color-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+    /* ── How It Works ── */
+    .steps-grid { counter-reset: step-counter; }
+    .step-card { position: relative; padding-left: 4rem; }
+    .step-card::before {
+      counter-increment: step-counter;
+      content: counter(step-counter);
+      position: absolute; left: 0; top: 0;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--color-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 700; font-size: 1.25rem;
+    }
+    .step-card h3 { margin-bottom: 0.5rem; }
+    .step-card p { color: var(--color-muted); }
+
+    /* ── CTA Section ── */
+    .cta-section {
+      text-align: center;
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: clamp(2.5rem, 5vw, 4rem);
+      border: 1px solid var(--color-border);
+    }
+    .cta-section h2 { margin-bottom: 1rem; }
+    .cta-section p { color: var(--color-muted); margin-inline: auto; margin-bottom: 2rem; }
+
+    /* ── FAQ ── */
+    .faq-item {
+      border-bottom: 1px solid var(--color-border);
+      padding: 1.25rem 0;
+    }
+    .faq-question {
+      font-weight: 600; font-size: 1.05rem; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .faq-question::after { content: "+"; font-size: 1.25rem; color: var(--color-muted); transition: transform 200ms; }
+    .faq-item.open .faq-question::after { transform: rotate(45deg); }
+    .faq-answer {
+      max-height: 0; overflow: hidden; transition: max-height 300ms ease;
+      color: var(--color-muted); line-height: 1.6;
+    }
+    .faq-item.open .faq-answer { max-height: 500px; padding-top: 0.75rem; }
+
+    /* ── Footer ── */
+    .site-footer {
+      padding: clamp(2rem, 5vw, 3rem) 0;
+      border-top: 1px solid var(--color-border);
+      text-align: center;
+      color: var(--color-muted);
+      font-size: 0.85rem;
+    }
+    .footer-brand { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--color-text); margin-bottom: 0.5rem; }
+    .footer-links { display: flex; gap: 1.5rem; justify-content: center; margin: 1rem 0; flex-wrap: wrap; }
+    .footer-links a { color: var(--color-muted); font-size: 0.85rem; }
+    .footer-links a:hover { color: var(--color-text); }
+
+    /* ── Reveal ── */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.revealed { opacity: 1; transform: translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-toggle { display: block; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 64px; left: 0; right: 0;
+        background: var(--color-bg); border-bottom: 1px solid var(--color-border);
+        padding: 1rem; gap: 0.75rem;
+      }
+      .hero { padding: clamp(5rem, 10vw, 7rem) 0 clamp(2rem, 5vw, 3rem); }
+      .hero-ctas { flex-direction: column; align-items: center; }
+      .pricing-card { padding: 1.5rem; }
+      .step-card { padding-left: 3.5rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .reveal.revealed { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar" role="navigation">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">PawPath</a>
+    <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="pages/signup.html" class="btn btn-primary">Get Started</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+  </div>
+</nav>
+<main>
+<section class="hero reveal">
+  <div class="container">
+    <h1>Welcome</h1>
+    <p class="hero-sub"></p>
+    <div class="hero-ctas">
+      <a href="pages/signup.html" class="btn btn-primary">Get Started</a>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    
+    <div class="grid grid-4">
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>How it works</h2>
+    </div>
+    <div class="steps-grid" style="display:grid;gap:2rem;max-width:640px;margin-inline:auto">
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Features</h2>
+      <p></p>
+    </div>
+    <div class="grid grid-3">
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>What people say</h2>
+    </div>
+    <div class="grid grid-3">
+    </div>
+  </div>
+</section>
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-header">
+      <h2>Pricing</h2>
+      <p></p>
+    </div>
+    <div class="grid grid-3">
+    </div>
+  </div>
+</section>
+<section class="section reveal">
+  <div class="container">
+    <div class="cta-section">
+      <h2></h2>
+      <p></p>
+      <a href="pages/signup.html" class="btn btn-primary">Get Started</a>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>FAQ</h2>
+    </div>
+    <div style="max-width:720px;margin-inline:auto">
+    </div>
+  </div>
+</section>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-brand"></div>
+    
+    <div class="footer-links">
+    </div>
+    <p></p>
+  </div>
+</footer>
+</main>
+<script>
+'use strict';
+document.addEventListener('DOMContentLoaded', function() {
+  // Scroll reveal
+  var reveals = document.querySelectorAll('.reveal');
+  if (reveals.length && 'IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    reveals.forEach(function(el) { obs.observe(el); });
+  } else {
+    reveals.forEach(function(el) { el.classList.add('revealed'); });
+  }
+
+  // Sticky navbar
+  var nav = document.querySelector('.navbar');
+  if (nav) {
+    window.addEventListener('scroll', function() {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+  }
+
+  // Mobile toggle
+  var toggle = document.querySelector('.nav-toggle');
+  var links = document.querySelector('.nav-links');
+  if (toggle && links) {
+    toggle.addEventListener('click', function() { links.classList.toggle('open'); });
+  }
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(function(q) {
+    q.addEventListener('click', function() { q.parentElement.classList.toggle('open'); });
+  });
+});
+</script>
+</body>
+</html>

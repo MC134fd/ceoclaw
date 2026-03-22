@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .contact-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: start; }
+    .contact-options { display: flex; flex-direction: column; gap: var(--space-md); }
+    .contact-option { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md); }
+    .contact-icon { width: 44px; height: 44px; border-radius: var(--radius); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .contact-option h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .contact-option p { font-size: 0.85rem; color: var(--color-text-muted); max-width: unset; }
+    .contact-option a { color: var(--color-primary); font-size: 0.85rem; }
+    .contact-form { display: flex; flex-direction: column; gap: var(--space-md); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    textarea { resize: vertical; min-height: 140px; }
+    @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start building</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">Contact</div>
+    <h1>Let's talk.</h1>
+    <p>Whether you have a question, want to explore enterprise, or just want to say hi — we're here.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <h3 style="margin-bottom:var(--space-lg);">How can we help?</h3>
+        <div class="contact-options">
+          <div class="card contact-option">
+            <div class="contact-icon">💬</div>
+            <div>
+              <h4>Product support</h4>
+              <p>Having trouble with Buildflow? Our team responds within 4 hours on business days.</p>
+              <a href="mailto:support@buildflow.app">support@buildflow.app</a>
+            </div>
+          </div>
+          <div class="card contact-option">
+            <div class="contact-icon">🏢</div>
+            <div>
+              <h4>Enterprise enquiries</h4>
+              <p>Custom contracts, dedicated infrastructure, or team plans? Let's build the right package.</p>
+              <a href="mailto:enterprise@buildflow.app">enterprise@buildflow.app</a>
+            </div>
+          </div>
+          <div class="card contact-option">
+            <div class="contact-icon">🤝</div>
+            <div>
+              <h4>Partnerships</h4>
+              <p>Accelerators, VCs, and founder communities — we love building together.</p>
+              <a href="mailto:partnerships@buildflow.app">partnerships@buildflow.app</a>
+            </div>
+          </div>
+          <div class="card contact-option">
+            <div class="contact-icon">📰</div>
+            <div>
+              <h4>Press</h4>
+              <p>Journalists and media — for interviews, data, and press kit materials.</p>
+              <a href="mailto:press@buildflow.app">press@buildflow.app</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding: var(--space-xl);">
+        <h3 style="margin-bottom:var(--space-lg);">Send us a message</h3>
+        <form class="contact-form" onsubmit="submitContact(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First name</label>
+              <input type="text" placeholder="Alex" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last name</label>
+              <input type="text" placeholder="Johnson" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" placeholder="alex@startup.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <select>
+              <option value="">What's this about?</option>
+              <option>Product / support question</option>
+              <option>Enterprise enquiry</option>
+              <option>Partnership</option>
+              <option>Press / media</option>
+              <option>Job application</option>
+              <option>Something else</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea placeholder="Tell us what's on your mind…" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-full">Send message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a>
+        <p>The AI-native operating system for ambitious founders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="mission.html">Mission</a></li>
+          <li><a href="careers.html">Careers</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="../product/features.html">Features</a></li>
+          <li><a href="../pages/pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="../legal/privacy.html">Privacy</a></li>
+          <li><a href="../legal/terms.html">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+<script>
+  function submitContact(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.textContent = '✓ Message sent!';
+    btn.disabled = true;
+    btn.style.background = 'rgba(52,211,153,0.2)';
+    btn.style.color = 'var(--color-accent)';
+    btn.style.border = '1px solid rgba(52,211,153,0.3)';
+  }
+</script>
+</body>
+</html>

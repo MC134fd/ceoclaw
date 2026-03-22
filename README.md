@@ -11,7 +11,7 @@ CEOClaw is a **production-grade autonomous founder agent** built on the **FLock 
 **In 3 commands:**
 ```bash
 pip install -r requirements.txt
-python main.py demo --cycles 8 --mock-model
+python main.py demo --cycles 8
 uvicorn api.server:app --port 8000  # then open http://localhost:8000/app
 ```
 
@@ -28,7 +28,7 @@ uvicorn api.server:app --port 8000  # then open http://localhost:8000/app
 
 | Extension | File(s) | What it does |
 |-----------|---------|-------------|
-| **FLock BaseChatModel adapter** | `integrations/flock_client.py` | Wraps FLock HTTP API as LangChain `BaseChatModel` with retry, timeout, mock mode, structured metadata |
+| **FLock BaseChatModel adapter** | `integrations/flock_client.py` | Wraps FLock HTTP API as LangChain `BaseChatModel` with retry, timeout, fallback, structured metadata |
 | **LangGraph StateGraph** | `core/agent_loop.py` | 7-node compiled graph: Planner → Router → [4 executors] → Evaluator → StopCheck |
 | **Typed state + reducers** | `agents/__init__.py` | `CEOClawState` TypedDict with 22+ typed fields including `autonomy_mode` |
 | **Pydantic prompt layer** | `core/prompts.py` | Rich prompt templates, Pydantic-validated output models, safe fallback parsers |
@@ -54,7 +54,7 @@ uvicorn api.server:app --port 8000  # then open http://localhost:8000/app
                          ┌─────────────────────────────────────────┐
                          │         FLock API (OpenClaw)            │
                          │   FlockChatModel (BaseChatModel)        │
-                         │   mock | live | fallback modes          │
+                         │   live | fallback modes                 │
                          └───────────────┬─────────────────────────┘
                                          │ invoke()
 START ──► PlannerNode ──► RouterNode ────┼──► ProductExecutorNode  (website_builder, seo_tool)
@@ -106,8 +106,8 @@ MarketingExecutor
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run a full 8-cycle demo (no API key needed — mock mode)
-python main.py demo --cycles 8 --mock-model
+# 2. Run a full 8-cycle demo
+python main.py demo --cycles 8
 
 # 3. Start the chat UI
 uvicorn api.server:app --reload --port 8000
@@ -123,13 +123,12 @@ python main.py demo --cycles 8
 
 ---
 
-## 6. Live / Mock / Fallback Behavior
+## 6. Live / Fallback Behavior
 
 | Mode | How to activate | What happens | Indicator |
 |------|----------------|--------------|-----------|
-| **Mock** | `--mock-model` or `FLOCK_MOCK_MODE=true` | Deterministic responses, zero HTTP calls | `Mode: mock` in CLI; cyan badge in UI |
 | **Live** | Valid `FLOCK_ENDPOINT` + `FLOCK_API_KEY` | Real FLock API calls, token estimation | `[FLock] mode=LIVE` in logs; green badge |
-| **Fallback** | Live + all retries fail | Automatic switch to mock tagged `[FALLBACK]` | `[FLock] FALLBACK activated` warning; amber badge |
+| **Fallback** | Live + all retries fail | Automatic switch to deterministic template tagged `[FALLBACK]` | `[FLock] FALLBACK activated` warning; amber badge |
 
 ---
 
@@ -139,7 +138,7 @@ python main.py demo --cycles 8
 |-------------|--------|----------|
 | **Build on OpenClaw** | Met | `integrations/flock_client.py` wraps FLock HTTP API as `BaseChatModel`; all model calls go through this boundary |
 | **Founder-oriented extensions** | Met | 14 extensions listed in §2; research, social, autonomy modes all novel |
-| **Working multi-step business loop** | Met | 7-node LangGraph; `python main.py demo --cycles 8 --mock-model` |
+| **Working multi-step business loop** | Met | 7-node LangGraph; `python main.py demo --cycles 8` |
 | **Product domain** | Met | `agents/product_agent.py` + website_builder + seo_tool |
 | **Marketing domain** | Met | `agents/marketing_agent.py` + research_tool + social_publisher |
 | **Sales domain** | Met | `agents/sales_agent.py` + outreach_tool |
@@ -157,7 +156,7 @@ python main.py demo --cycles 8
 
 ## 8. Example Run Outputs
 
-### CLI Demo (8 cycles, mock mode)
+### CLI Demo (8 cycles)
 ```
   #  Domain       Action                            MRR   Score  Trend  Flags
   ────────────────────────────────────────────────────────────────────────
@@ -208,7 +207,7 @@ python main.py demo --cycles 8
 {
   "status": "ok",
   "run_id": "...",
-  "model_mode": "mock",
+  "model_mode": "live",
   "final_mrr": 70.0,
   "final_weighted_score": 0.548,
   "artifact_count": 12,
@@ -322,7 +321,6 @@ ceoclaw/
 |----------|---------|-------------|
 | `FLOCK_ENDPOINT` | _(empty)_ | FLock / OpenClaw VPS URL |
 | `FLOCK_API_KEY` | _(empty)_ | API key |
-| `FLOCK_MOCK_MODE` | `false` | `true` = deterministic mock |
 | `X_API_KEY` | _(empty)_ | X/Twitter API key (optional) |
 | `X_BEARER_TOKEN` | _(empty)_ | X/Twitter bearer token (optional) |
 | `INSTAGRAM_ACCESS_TOKEN` | _(empty)_ | Instagram Graph API token (optional) |

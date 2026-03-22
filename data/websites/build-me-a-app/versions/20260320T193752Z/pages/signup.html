@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign up — Build Me A App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+      --text-sm: clamp(0.85rem, 1vw, 0.95rem);
+      --text-md: clamp(1rem, 1.2vw, 1.05rem);
+      --text-lg: clamp(1.125rem, 1.5vw, 1.25rem);
+      --text-2xl: clamp(2rem, 4vw, 2.75rem);
+      --container-width: clamp(320px, 90vw, 1200px);
+      --radius-md:12px;
+      --min-touch:44px;
+      --motion: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body{margin:0;font-family:'DM Sans',system-ui;background:var(--color-bg);color:var(--color-text)}
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md);padding-block:var(--space-2xl)}
+    header{display:flex;justify-content:space-between;align-items:center}
+    .brand{font-family:'Cormorant Garamond',serif;font-size:var(--text-lg)}
+    .card{background:var(--color-surface);padding:var(--space-lg);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,.06);max-width:720px;margin-top:var(--space-lg)}
+    form{display:flex;flex-direction:column;gap:var(--space-sm)}
+    label{font-size:var(--text-sm);color:var(--color-muted)}
+    input[type="email"],input[type="password"]{padding:0.6rem 0.75rem;border:1px solid rgba(0,0,0,0.06);border-radius:8px;font-size:var(--text-md)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:0.6rem 1rem;border-radius:12px;border:none;background:var(--accent-gradient);color:var(--color-surface);cursor:pointer;min-height:var(--min-touch);transition:var(--motion)}
+    .btn:active{transform:scale(0.97)}
+    .muted{color:var(--color-muted);font-size:var(--text-sm)}
+    .links{margin-top:var(--space-sm);display:flex;gap:var(--space-sm);align-items:center}
+    @media (max-width:640px){header{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+<body>
+  <nav style="padding:block var(--space-sm);background:transparent;">
+    <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="brand">Build Me A App</div>
+      <div><a href="../index.html">Home</a></div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <header>
+      <div>
+        <h1 style="font-family:'Cormorant Garamond', serif;margin:0;font-size:var(--text-2xl)">Create your account</h1>
+        <p class="muted">Sign up to access the editor, user dashboard, and data export tools for your dog blog.</p>
+      </div>
+    </header>
+
+    <section class="card" aria-labelledby="signup-heading">
+      <h2 id="signup-heading" style="margin:0 0 var(--space-sm) 0">Start publishing</h2>
+      <form id="signup-form" novalidate>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required aria-label="Email address">
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required aria-label="Password">
+        </div>
+        <div style="margin-top:var(--space-md)">
+          <button class="btn" type="submit">Get Started</button>
+        </div>
+        <div class="links muted">
+          <div>Already have an account? <a href="../app.html">Sign in</a></div>
+        </div>
+      </form>
+    </section>
+
+    <section style="margin-top:var(--space-lg);color:var(--color-muted);font-size:var(--text-sm)">
+      <strong>Secure exports:</strong> Build Me A App supports CSV data export of posts and subscriber lists. We store minimal account metadata and let you export full content whenever you need it.
+    </section>
+  </main>
+
+  <script>
+    // Basic client-side validation and redirect to app.html on success
+    const form = document.getElementById('signup-form');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      let valid = true;
+      if(!email.value || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value)){
+        email.style.outline = '2px solid rgba(255,0,0,0.12)'; valid = false;
+      } else { email.style.outline = 'none'; }
+      if(!password.value || password.value.length < 6){
+        password.style.outline = '2px solid rgba(255,0,0,0.12)'; valid = false;
+      } else { password.style.outline = 'none'; }
+      if(valid){
+        // In a real flow, we'd submit to the server. For now, route to the app.
+        window.location.href = '../app.html';
+      }
+    });
+  </script>
+</body>
+</html>

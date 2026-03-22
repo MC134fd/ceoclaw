@@ -28,13 +28,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-_DEBUG_LOG_PATH = Path("/Users/marcuschien/code/MC134fd/ceoclaw/.cursor/debug-9d4649.log")
+_DEBUG_LOG_PATH = Path(__file__).parent.parent / ".cursor" / "debug-9d4649.log"
 
 
 def _debug_log(run_id: str, hypothesis_id: str, location: str, message: str, data: dict[str, Any]) -> None:
@@ -70,11 +70,14 @@ from data.database import (
     append_chat_message,
     deduct_credits,
     delete_chat_session,
+    delete_all_project_files,
+    delete_project_file,
     get_chat_history,
     get_chat_session,
     get_chat_session_owned_by,
     get_credit_ledger,
     get_design_system,
+    get_project_file,
     get_session_version,
     get_user_by_id,
     get_user_credits,
@@ -82,19 +85,46 @@ from data.database import (
     init_db,
     list_chat_sessions,
     list_chat_sessions_for_user,
+    list_project_files_for_session,
     list_session_versions,
     save_session_version,
     upsert_chat_session,
     upsert_design_system,
+    upsert_project_file,
 )
 from integrations.flock_client import get_model
-from tools.website_builder import website_builder_tool
 
 # ---------------------------------------------------------------------------
 # Credits constants
 # ---------------------------------------------------------------------------
 
 GENERATION_COST = 1  # credits per generation request
+
+_NEW_PROJECT_PATTERNS = re.compile(
+    r"\b(build|create|make|start|generate|design|launch|setup|set up)\b.{0,40}\b(new|another|different|fresh|brand.?new)\b"
+    r"|\b(from scratch|start over|instead build|instead make|instead create)\b"
+    r"|\bbuild (us |me |them )?a\b",
+    re.IGNORECASE,
+)
+_EDIT_PATTERNS = re.compile(
+    r"\b(change|update|modify|edit|fix|adjust|tweak|add|remove|delete|rename|replace)\b",
+    re.IGNORECASE,
+)
+
+
+def _infer_file_type(path: str) -> str:
+    """Return a simple file_type label from the file extension."""
+    ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+    return ext if ext in {"html", "css", "js", "json", "md", "svg", "txt"} else "text"
+
+
+def _is_new_project_request(message: str) -> bool:
+    """Return True if the message clearly signals intent to start a new/different project."""
+    if _EDIT_PATTERNS.search(message) and not re.search(
+        r"\b(new|another|different|from scratch|start over|instead)\b", message, re.IGNORECASE
+    ):
+        return False
+    return bool(_NEW_PROJECT_PATTERNS.search(message))
 
 
 @asynccontextmanager
@@ -135,7 +165,6 @@ def status() -> dict[str, Any]:
         "app_name": settings.app_name,
         "environment": settings.environment,
         "goal_mrr": settings.default_goal_mrr,
-        "mock_mode": settings.flock_mock_mode,
         "flock_endpoint_configured": bool(settings.flock_endpoint),
         "flock_model": settings.flock_model,
         "flock_auth_strategy": settings.flock_auth_strategy,
@@ -263,7 +292,6 @@ class ChatRequest(BaseModel):
     message: str = ""
     goal_mrr: float = 100.0
     cycles: int = 8
-    mock_mode: bool = True
     autonomy_mode: str = "A_AUTONOMOUS"
     workflow_mode: str = "chronological"   # new default: chronological
     selected_idea: dict[str, Any] | None = None
@@ -272,7 +300,6 @@ class ChatRequest(BaseModel):
 class RunStartRequest(BaseModel):
     goal_mrr: float = 100.0
     cycles: int = 8
-    mock_mode: bool = True
     autonomy_mode: str = "A_AUTONOMOUS"
     workflow_mode: str = "adaptive"
 
@@ -285,7 +312,6 @@ class IdeaGenerateRequest(BaseModel):
 class WebsiteChatRequest(BaseModel):
     session_id: str = "default"
     message: str
-    mock_mode: bool = False   # False = use real LLM when keys are configured
 
 
 class StyleSeed(BaseModel):
@@ -298,20 +324,19 @@ class StyleSeed(BaseModel):
 class BuilderChatRequest(BaseModel):
     session_id: str = "default"
     message: str
-    mock_mode: bool = False
     style_seed: StyleSeed | None = None
     operation: dict[str, Any] | None = None
+    active_file: str | None = None
 
 
 class ModelCheckRequest(BaseModel):
-    mock_mode: bool = False
+    pass
 
 
 def _bg_run(
     run_id: str,
     goal_mrr: float,
     cycles: int,
-    mock_mode: bool,
     autonomy_mode: str = "A_AUTONOMOUS",
     product_intent: dict[str, Any] | None = None,
     workflow_mode: str = "adaptive",
@@ -322,7 +347,6 @@ def _bg_run(
         run_graph(
             cycles=cycles,
             goal_mrr=goal_mrr,
-            mock_mode=mock_mode,
             max_cycles=cycles,
             quiet=True,
             run_id=run_id,
@@ -370,7 +394,6 @@ def chat_start(request: ChatRequest) -> dict[str, Any]:
             run_id,
             request.goal_mrr,
             request.cycles,
-            request.mock_mode,
             request.autonomy_mode,
             product_intent,
             request.workflow_mode,
@@ -385,7 +408,7 @@ def chat_start(request: ChatRequest) -> dict[str, Any]:
         "message": (
             f"Building {product_name} — run {run_id[:8]}. "
             f"Goal: ${request.goal_mrr:.0f} MRR in {request.cycles} cycles "
-            f"({'mock' if request.mock_mode else 'live'} model, {request.workflow_mode} workflow)."
+            f"({request.workflow_mode} workflow)."
         ),
         "stream_url": f"/runs/{run_id}/events",
         "autonomy_mode": request.autonomy_mode,
@@ -414,13 +437,12 @@ def generate_ideas_endpoint(request: IdeaGenerateRequest) -> dict[str, Any]:
 def model_check(request: ModelCheckRequest) -> dict[str, Any]:
     """Check model connectivity for UI diagnostics."""
     try:
-        model = get_model(mock_mode=request.mock_mode)
+        model = get_model()
         result = model.invoke("Reply with exactly: CEOClaw model check ok")
         content = (getattr(result, "content", "") or "").strip()
         metadata = getattr(result, "response_metadata", {}) or {}
         return {
             "status": "ok",
-            "mock_mode": request.mock_mode,
             "content_preview": content[:120],
             "model_mode": metadata.get("model_mode", "unknown"),
             "fallback_used": bool(metadata.get("fallback_used", False)),
@@ -429,7 +451,6 @@ def model_check(request: ModelCheckRequest) -> dict[str, Any]:
     except Exception as exc:
         return {
             "status": "error",
-            "mock_mode": request.mock_mode,
             "error": str(exc),
         }
 
@@ -479,7 +500,6 @@ def website_chat(request: WebsiteChatRequest) -> dict[str, Any]:
         user_message=msg,
         history=history,
         existing_files=existing_files or None,
-        mock_mode=request.mock_mode,
     )
 
     # Apply file changes to disk (with validation + backup)
@@ -587,10 +607,17 @@ _EXTENSION_MEDIA_TYPES: dict[str, str] = {
     ".html": "text/html",
     ".css": "text/css",
     ".js": "application/javascript",
+    ".jsx": "application/javascript",
+    ".ts": "application/javascript",
+    ".tsx": "application/javascript",
     ".json": "application/json",
     ".md": "text/plain",
     ".txt": "text/plain",
     ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
 }
 _ALLOWED_SERVING_EXTENSIONS = set(_EXTENSION_MEDIA_TYPES.keys())
 
@@ -601,8 +628,6 @@ def serve_generated_asset(slug: str, file_path: str) -> FileResponse:
 
     Backward-compatible: bare names 'index' and 'app' map to .html files.
     """
-    from pathlib import Path as _Path
-
     # 1. Sanitize slug
     safe_slug = re.sub(r"[^a-z0-9-]+", "-", slug.lower()).strip("-")
     if not safe_slug:
@@ -650,7 +675,7 @@ def runs_start(request: RunStartRequest) -> dict[str, Any]:
     run_id = str(uuid.uuid4())
     t = threading.Thread(
         target=_bg_run,
-        args=(run_id, request.goal_mrr, request.cycles, request.mock_mode,
+        args=(run_id, request.goal_mrr, request.cycles,
               request.autonomy_mode, None, request.workflow_mode),
         daemon=True,
     )
@@ -739,7 +764,7 @@ class ApprovalDecision(BaseModel):
 @app.post("/approvals/{approval_id}/decide")
 def decide_approval(approval_id: int, body: ApprovalDecision) -> dict[str, Any]:
     """Approve or reject a pending action."""
-    from data.database import get_approval, resolve_approval, update_social_post_status
+    from data.database import get_approval, resolve_approval
     import json as _json
 
     if body.decision not in ("approved", "rejected"):
@@ -1108,15 +1133,36 @@ def builder_chat(
         design_system_dict["design_family"] = "framer_aura"
         upsert_design_system(request.session_id, design_system_dict)
 
+    # ── Phase 1 v2: Call 1 — synthesise BrandSpec for new projects ──────────
+    brand_spec = None
+    brand_spec_dict: dict | None = None
+    if not existing_files:  # only synthesise on first-turn / new project
+        try:
+            from services.code_generation_service import synthesize_brand_spec
+            brand_spec = synthesize_brand_spec(
+                message=msg,
+                history=history,
+                slug=slug,
+                design_system=design_system_dict,
+            )
+            brand_spec_dict = brand_spec.to_dict()
+            logger.info(
+                "BrandSpec synthesised: brand=%r category=%r cta=%r layout=%r motif=%r copy=%r",
+                brand_spec.brand_name, brand_spec.product_category, brand_spec.primary_cta,
+                brand_spec.layout_profile, brand_spec.visual_motif, brand_spec.copy_style,
+            )
+        except Exception as _bs_exc:
+            logger.warning("BrandSpec synthesis failed (non-fatal): %s", _bs_exc)
+
     gen = generate(
         slug=slug,
         user_message=msg,
         history=history,
         existing_files=existing_files or None,
-        mock_mode=request.mock_mode,
         style_seed=style_seed_dict,
         design_system=design_system_dict,
         operation=operation,
+        brand_spec=brand_spec,
     )
 
     # Append data.json scaffold if this is an add_endpoint operation
@@ -1150,6 +1196,10 @@ def builder_chat(
                 files=files_snapshot,
                 message_id=msg_id,
             )
+            # Sync to project_files table so file tree + editor work
+            for _rel, _content in files_snapshot.items():
+                upsert_project_file(request.session_id, _rel, _content,
+                                    file_type=_infer_file_type(_rel))
 
     changes_summary = [
         {
@@ -1186,6 +1236,8 @@ def builder_chat(
         "layout_plan": gen.layout_plan,
         "consistency_profile_id": gen.consistency_profile_id or design_system_dict.get("consistency_profile_id", ""),
         "credits": credit_meta,
+        # Phase 1 v2: brand spec returned to chat so user can see what was understood
+        "brand_spec": brand_spec_dict,
     }
 
 
@@ -1467,6 +1519,141 @@ def get_version_file(
 
 
 # ---------------------------------------------------------------------------
+# Project file management endpoints
+# ---------------------------------------------------------------------------
+
+class FileUpdateBody(BaseModel):
+    content: str
+    file_type: str = "text"
+
+
+class FileCreateBody(BaseModel):
+    file_path: str
+    content: str
+    file_type: str = "text"
+
+
+@app.get("/builder/sessions/{session_id}/files")
+def list_session_files(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """List all project files stored for a session."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
+    files = list_project_files_for_session(session_id)
+    if not files:
+        # Backfill from disk for sessions predating the project_files sync
+        session_row = get_chat_session(session_id)
+        slug = (session_row or {}).get("slug", "")
+        if slug:
+            from services.file_persistence import list_project_files, read_current_file
+            for _rel in list_project_files(slug):
+                _content = read_current_file(slug, _rel)
+                if _content is not None:
+                    upsert_project_file(session_id, _rel, _content,
+                                        file_type=_infer_file_type(_rel))
+            files = list_project_files_for_session(session_id)
+    return {"session_id": session_id, "files": files}
+
+
+@app.get("/builder/sessions/{session_id}/files/{file_path:path}")
+def get_session_file(
+    session_id: str,
+    file_path: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Get the content of a single project file."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
+    record = get_project_file(session_id, file_path)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"File {file_path!r} not found")
+    return {
+        "session_id": session_id,
+        "file_path": file_path,
+        "content": record.get("content"),
+        "file_type": record.get("file_type", "text"),
+        "size_bytes": record.get("size_bytes", 0),
+        "updated_at": record.get("updated_at"),
+    }
+
+
+@app.put("/builder/sessions/{session_id}/files/{file_path:path}")
+def update_session_file(
+    session_id: str,
+    file_path: str,
+    body: FileUpdateBody,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Update an existing project file in DB and on disk."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
+
+    session_row = get_chat_session(session_id)
+    if not session_row:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    upsert_project_file(
+        session_id=session_id,
+        file_path=file_path,
+        content=body.content,
+        file_type=body.file_type,
+    )
+
+    # Mirror to disk
+    slug = session_row.get("slug", "")
+    if slug:
+        from services.file_persistence import save_website_files
+        save_website_files(slug, {file_path: body.content})
+
+    return {"session_id": session_id, "file_path": file_path, "status": "updated"}
+
+
+@app.post("/builder/sessions/{session_id}/files")
+def create_session_file(
+    session_id: str,
+    body: FileCreateBody,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Create a new project file for a session."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
+
+    session_row = get_chat_session(session_id)
+    if not session_row:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    upsert_project_file(
+        session_id=session_id,
+        file_path=body.file_path,
+        content=body.content,
+        file_type=body.file_type,
+    )
+
+    # Mirror to disk
+    slug = session_row.get("slug", "")
+    if slug:
+        from services.file_persistence import save_website_files
+        save_website_files(slug, {body.file_path: body.content})
+
+    return {"session_id": session_id, "file_path": body.file_path, "status": "created"}
+
+
+@app.delete("/builder/sessions/{session_id}/files/{file_path:path}")
+def delete_session_file(
+    session_id: str,
+    file_path: str,
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Delete a project file from DB."""
+    if _settings_mod.settings.auth_required:
+        _require_session_access(session_id, current_user)
+    delete_project_file(session_id, file_path)
+    return {"session_id": session_id, "file_path": file_path, "status": "deleted"}
+
+
+# ---------------------------------------------------------------------------
 # Builder pipeline endpoints (v1.0) — async 8-stage orchestrated generation
 # ---------------------------------------------------------------------------
 
@@ -1477,11 +1664,12 @@ def _run_pipeline_bg(
     slug: str,
     history: list[dict],
     existing_files: dict,
-    mock_mode: bool,
     style_seed: dict | None,
     design_system: dict | None,
     operation: dict | None,
     owner_user_id: str | None = None,
+    brand_spec: Any | None = None,  # Phase 1 v2 BrandSpec
+    active_file: str | None = None,
 ) -> None:
     """Background thread: run the generation pipeline and emit events to bus."""
     run_id = f"pipeline_bg_{job_id[:8]}"
@@ -1490,19 +1678,20 @@ def _run_pipeline_bg(
         _bus.emit(job_id, event)
 
     try:
-        from services.generation_pipeline import run_pipeline
-        ctx = run_pipeline(
+        from services.scaffold_pipeline import run_scaffold_pipeline
+        ctx = run_scaffold_pipeline(
             session_id=session_id,
             slug=slug,
             message=message,
             history=history,
             existing_files=existing_files or None,
-            mock_mode=mock_mode,
             style_seed=style_seed,
             design_system=design_system,
             operation=operation,
             emit=emit,
+            brand_spec=brand_spec,
         )
+        ctx["active_file"] = active_file
 
         gen = ctx.get("gen")
         apply_result = ctx.get("apply")
@@ -1542,6 +1731,10 @@ def _run_pipeline_bg(
                     files=files_snapshot,
                     message_id=msg_id,
                 )
+                # Sync to project_files table so file tree + editor work
+                for _rel, _content in files_snapshot.items():
+                    upsert_project_file(session_id, _rel, _content,
+                                        file_type=_infer_file_type(_rel))
 
         changes_summary = [
             {"path": r.path, "action": r.action, "status": r.status,
@@ -1573,6 +1766,8 @@ def _run_pipeline_bg(
             "blueprint": blueprint,
             "layout_plan": getattr(gen, "layout_plan", {}),
             "consistency_profile_id": getattr(gen, "consistency_profile_id", "") or (design_system or {}).get("consistency_profile_id", ""),
+            # Phase 1 v2: include brand spec in pipeline_complete event
+            "brand_spec": brand_spec.to_dict() if brand_spec is not None else None,
         }
 
         _bus.emit(job_id, {"type": "pipeline_complete", "result": response})
@@ -1630,6 +1825,12 @@ def builder_generate_start(
 
     existing_slug: str = (session_row or {}).get("slug", "")
 
+    # Detect new-project intent — reset slug so a fresh project is created
+    is_new_project = existing_slug and _is_new_project_request(msg)
+    if is_new_project:
+        existing_slug = ""
+    generation_mode = "new_project" if (is_new_project or not (session_row or {}).get("slug", "")) else "edit_existing"
+
     db_history = get_chat_history(request.session_id, limit=40)
     history = [{"role": m["role"], "content": m["content"]} for m in db_history]
 
@@ -1680,22 +1881,27 @@ def builder_generate_start(
             "job_id": None,
         }
 
+    active_file: str | None = request.active_file
+    brand_spec = None  # synthesized inside background thread now
+
     job_id = str(uuid.uuid4())
     _debug_log(
         f"pipeline_http_{job_id[:8]}",
         "H3",
         "api/server.py:builder_generate_start",
         "builder generate start accepted",
-        {"jobId": job_id, "sessionId": request.session_id, "messageLen": len(msg), "mockMode": request.mock_mode},
+        {"jobId": job_id, "sessionId": request.session_id, "messageLen": len(msg)},
     )
     owner_user_id = current_user.get("id") if _settings_mod.settings.auth_required else None
     t = threading.Thread(
         target=_run_pipeline_bg,
         args=(
             job_id, request.session_id, msg, slug,
-            history, existing_files, request.mock_mode,
+            history, existing_files,
             style_seed_dict, design_system_dict, operation,
             owner_user_id,
+            brand_spec,
+            active_file,
         ),
         daemon=True,
     )
@@ -1706,6 +1912,7 @@ def builder_generate_start(
         "slug": slug,
         "session_id": request.session_id,
         "credits": credit_meta,
+        "generation_mode": generation_mode,
     }
 
 
@@ -1765,6 +1972,24 @@ async def builder_generate_events(job_id: str) -> StreamingResponse:
             "Connection": "keep-alive",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Public auth config (for static pages that need Supabase client-side auth)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/config/auth")
+def auth_config_public() -> dict[str, Any]:
+    """Return the public Supabase config needed for client-side auth.
+
+    Only exposes the URL and publishable anon key — never secrets.
+    """
+    return {
+        "supabase_url": settings.supabase_url or "",
+        "supabase_anon_key": settings.supabase_anon_key or "",
+        "auth_required": settings.auth_required,
+    }
 
 
 # ---------------------------------------------------------------------------

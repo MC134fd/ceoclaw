@@ -5,18 +5,9 @@ import type { ChatResponse, Message, PipelineStage } from '../types';
 
 
 const STAGE_DEFS = [
-  { key: 'parse_intent',             label: 'Understanding your idea' },
-  { key: 'business_concept',         label: 'Defining business concept' },
-  { key: 'feature_architecture',     label: 'Planning feature architecture' },
-  { key: 'design_direction',         label: 'Selecting visual direction' },
-  { key: 'information_architecture', label: 'Mapping pages and user flow' },
-  { key: 'implementation_plan',      label: 'Preparing implementation plan' },
-  { key: 'generate_index',           label: 'Generating index page' },
-  { key: 'generate_pages',           label: 'Generating additional pages' },
-  { key: 'generate_assets',          label: 'Generating icons/visual assets' },
-  { key: 'wire_navigation',          label: 'Wiring buttons and navigation' },
-  { key: 'quality_check',            label: 'Validating quality and responsiveness' },
-  { key: 'complete',                 label: 'Complete' },
+  { key: 'thinking', label: 'Planning your app' },
+  { key: 'building', label: 'Building your app' },
+  { key: 'complete', label: 'Complete' },
 ] as const;
 
 function initialStages(): PipelineStage[] {
@@ -34,6 +25,8 @@ export function useChat(sessionId: string) {
   const [error, setError] = useState<string | null>(null);
   const [chatResponse, setChatResponse] = useState<ChatResponse | null>(null);
   const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>(initialStages());
+  const [generatingFiles, setGeneratingFiles] = useState<string[]>([]);
+  const [fileProgress, setFileProgress] = useState<{ current: string; index: number; total: number } | null>(null);
   const loadedSessionRef = useRef<string>('');
   const esRef = useRef<EventSource | null>(null);
   const typingTimerRef = useRef<number | null>(null);
@@ -98,7 +91,12 @@ export function useChat(sessionId: string) {
     [sessionId, stopTypingAnimation],
   );
 
-  // Load history when sessionId changes
+  // Load history when sessionId changes.
+  // Uses a functional setMessages so we never wipe an optimistic message that
+  // raced ahead of this fetch (e.g. dashboard → new session → auto-send):
+  //   • Server returned real history  → always apply it (source of truth)
+  //   • Server returned nothing       → keep whatever is already in state
+  //     (preserves the optimistic user bubble while the pipeline runs)
   useEffect(() => {
     if (!sessionId || loadedSessionRef.current === sessionId) return;
     loadedSessionRef.current = sessionId;
@@ -107,12 +105,13 @@ export function useChat(sessionId: string) {
     getSessionHistory(sessionId)
       .then((history) => {
         if (!cancelled) {
-          setMessages(history.messages ?? []);
+          const incoming = history.messages ?? [];
+          setMessages((prev) => (incoming.length > 0 ? incoming : prev));
           setError(null);
         }
       })
       .catch(() => {
-        if (!cancelled) setMessages([]);
+        // Leave messages untouched on fetch error — don't wipe optimistic sends.
       });
 
     return () => {
@@ -130,7 +129,7 @@ export function useChat(sessionId: string) {
 
   // Legacy direct send (kept for backward compat)
   const send = useCallback(
-    async (text: string, mockMode: boolean = false) => {
+    async (text: string) => {
       if (!text.trim() || isLoading) return;
       setIsLoading(true);
       setError(null);
@@ -145,7 +144,7 @@ export function useChat(sessionId: string) {
       setMessages((prev) => [...prev, optimisticUserMsg]);
 
       try {
-        const response = await sendMessage(sessionId, text, mockMode);
+        const response = await sendMessage(sessionId, text);
         setChatResponse(response);
         void appendAssistantMessageWithTyping(response.assistant_message);
       } catch (err) {
@@ -161,7 +160,7 @@ export function useChat(sessionId: string) {
 
   // Pipeline-backed send — streams 8 stage events then delivers final ChatResponse
   const sendViaPipeline = useCallback(
-    async (text: string, mockMode: boolean = false) => {
+    async (text: string, activeFile?: string | null) => {
       if (!text.trim() || isLoading) return;
 
       // Close any in-flight SSE
@@ -193,7 +192,11 @@ export function useChat(sessionId: string) {
         const startRes = await fetch('/builder/generate', {
           method: 'POST',
           headers: startHeaders,
-          body: JSON.stringify({ session_id: sessionId, message: text, mock_mode: mockMode }),
+          body: JSON.stringify({
+            session_id: sessionId,
+            message: text,
+            ...(activeFile ? { active_file: activeFile } : {}),
+          }),
         });
         if (!startRes.ok) {
           const body = await startRes.json().catch(() => ({}));
@@ -254,7 +257,17 @@ export function useChat(sessionId: string) {
                     : s,
                 ),
               );
+            } else if (event.type === 'file_progress') {
+              const fp = event as unknown as { file_path: string; file_index: number; total_files: number; status: string };
+              if (fp.status === 'generating') {
+                setGeneratingFiles((prev) => [...prev.filter((p) => p !== fp.file_path), fp.file_path]);
+                setFileProgress({ current: fp.file_path, index: fp.file_index, total: fp.total_files });
+              } else {
+                setGeneratingFiles((prev) => prev.filter((p) => p !== fp.file_path));
+              }
             } else if (event.type === 'pipeline_complete') {
+              setGeneratingFiles([]);
+              setFileProgress(null);
               es.close();
               esRef.current = null;
               const result = event.result as ChatResponse;
@@ -262,6 +275,8 @@ export function useChat(sessionId: string) {
               void appendAssistantMessageWithTyping(result.assistant_message);
               resolve();
             } else if (event.type === 'pipeline_error') {
+              setGeneratingFiles([]);
+              setFileProgress(null);
               es.close();
               esRef.current = null;
               reject(new Error((event.error as string) || 'Pipeline failed'));
@@ -293,6 +308,8 @@ export function useChat(sessionId: string) {
     setChatResponse(null);
     setError(null);
     setPipelineStages(initialStages());
+    setGeneratingFiles([]);
+    setFileProgress(null);
     loadedSessionRef.current = '';
   }, [stopTypingAnimation]);
 
@@ -306,5 +323,7 @@ export function useChat(sessionId: string) {
     error,
     chatResponse,
     resetMessages,
+    generatingFiles,
+    fileProgress,
   };
 }

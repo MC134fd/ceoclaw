@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lipsticks App — The smart saas platform for general users</title>
+  <style>
+    /* Fonts (design_direction): Cormorant Garamond (display) + DM Sans (body) */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      /* Palette: midnight (design system override) */
+      --color-primary: #6366f1;
+      --color-secondary: #a78bfa;
+      --color-accent-pink: #ec4899;
+      --accent-gradient: linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 50%,var(--color-accent-pink) 100%);
+      --color-bg: #0a0a0f;
+      --color-surface: #12121a;
+      --color-text: #f0f0ff;
+      --color-muted: #6b7280;
+      --color-border: rgba(255,255,255,0.06);
+
+      /* Design tokens */
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+
+      /* Spacing scale (clamp) */
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+
+      /* Container */
+      --container-width: clamp(320px, 90vw, 1200px);
+
+      /* Rhythm */
+      --gutter: var(--space-md);
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-text);margin:0;line-height:1.6;overflow-x:hidden}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:60;padding:var(--space-sm) var(--space-md);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--color-border);transition:all 220ms cubic-bezier(0.4,0,0.2,1)}
+    nav.scrolled{box-shadow:0 2px 8px rgba(0,0,0,.12)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:clamp(1rem,2.5vw,1.4rem);letter-spacing:-0.02em;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .nav-links{display:flex;gap:var(--space-lg);align-items:center;list-style:none;margin:0;padding:0}
+    .nav-links a{color:var(--color-text);opacity:.9;text-decoration:none;font-size:0.95rem}
+    .nav-cta{min-height:44px}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:calc(var(--space-sm) + 2px) var(--space-lg);border-radius:var(--radius-md);font-weight:600;text-decoration:none;cursor:pointer;transition:all 220ms cubic-bezier(0.4,0,0.2,1)}
+    .btn-primary{background:var(--accent-gradient);color:#fff;border:2px solid transparent}
+    .btn-primary:hover{transform:scale(1.02)}
+    .btn-secondary{background:transparent;border:1.5px solid rgba(255,255,255,0.06);color:var(--color-text)}
+
+    /* Container */
+    .container{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+
+    /* Hero */
+    .hero{padding-block:clamp(3rem,8vw,6rem);display:grid;grid-template-columns:1fr minmax(220px,420px);gap:var(--space-lg);align-items:center}
+    .hero-left{text-align:left}
+    .hero h1{font-family:var(--font-display);font-size:clamp(1.8rem,5vw,3.25rem);letter-spacing:-0.03em;margin:0 0 var(--space-md) 0}
+    .hero-sub{color:var(--color-muted);max-width:60ch;margin-bottom:var(--space-lg)}
+    .hero-actions{display:flex;gap:var(--space-md);flex-wrap:wrap}
+    .hero-visual{display:flex;align-items:center;justify-content:center}
+    .hero-img{max-width:100%;height:auto;border-radius:16px;box-shadow:var(--shadow-md);background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+
+    /* Features */
+    .features{padding-block:var(--space-2xl)}
+    .features h2{font-family:var(--font-display);text-align:center;font-size:clamp(1.25rem,3vw,2rem);letter-spacing:-0.02em;margin-bottom:var(--space-lg)}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:var(--space-lg)}
+    .card{background:rgba(255,255,255,0.02);border:1px solid var(--color-border);backdrop-filter:blur(6px);border-radius:var(--radius-md);padding:var(--space-lg);transition:all .2s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+    .card .icon{width:48px;height:48px;border-radius:12px;display:inline-grid;place-items:center;margin-bottom:var(--space-sm);background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+
+    /* Proof / metrics */
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:var(--space-md);margin-top:var(--space-lg)}
+    .metric{background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-md);border-radius:var(--radius-md);text-align:center}
+    .metric .num{font-family:var(--font-display);font-size:1.5rem;margin-top:.25rem}
+
+    /* Pricing */
+    #pricing{padding-block:var(--space-2xl)}
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:var(--space-lg)}
+    .price-card{background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-lg);border-radius:var(--radius-lg);text-align:left}
+    .price-pro{position:relative;border:2px solid transparent;background:var(--accent-gradient);color:#fff}
+    .price-pro .inner{background:linear-gradient(180deg,rgba(18,18,26,0.9),rgba(18,18,26,0.85));padding:var(--space-lg);border-radius:calc(var(--radius-lg) - 6px)}
+
+    /* CTA strip */
+    .cta-strip{background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));padding:var(--space-2xl);border-radius:var(--radius-lg);text-align:center;margin-block:var(--space-2xl)}
+
+    footer{padding-block:var(--space-xl);color:var(--color-muted);border-top:1px solid var(--color-border);text-align:center}
+
+    /* Reveal-on-scroll */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .4s ease,transform .4s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion:reduce){.reveal,.reveal.visible{opacity:1;transform:none;transition:none}}
+
+    /* Responsive */
+    @media (max-width:1024px){.hero{grid-template-columns:1fr} .nav-links{display:none}}
+    @media (max-width:640px){.container{padding-inline:var(--space-sm)} .hero{padding-block:var(--space-xl)} .hero h1{font-size:clamp(1.6rem,6vw,2rem)} .hero-left{text-align:center}}
+
+  </style>
+</head>
+<body>
+  <nav id="navbar">
+    <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg)">
+      <div class="nav-brand">Lipsticks App</div>
+      <div style="display:flex;gap:var(--space-md);align-items:center">
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+        <a href="pages/signup.html" class="btn btn-secondary nav-cta">Sign up</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-left">
+        <h1>Sell lipsticks smarter with <span>Lipsticks App</span></h1>
+        <p class="hero-sub">List shades, manage inventory, track orders, and grow lipstick sales from one beautiful dashboard — built for general users and small brands.</p>
+        <div class="hero-actions">
+          <!-- Primary CTA per blueprint: label must be "Start Tracking" and link to app.html -->
+          <a id="cta" href="app.html" class="btn btn-primary">Start Tracking</a>
+          <a href="pages/signup.html" class="btn btn-secondary">Create account</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <!-- assets/hero.svg exists in repo and must be referenced -->
+        <img src="assets/hero.svg" alt="Lipsticks App hero illustration" class="hero-img" style="max-width:100%;height:auto;">
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <h2 class="reveal">Everything you need to sell more lipsticks</h2>
+      <div class="cards">
+        <div class="card reveal">
+          <div class="icon"><img src="assets/icon-core-functionality.svg" alt="Core functionality icon" style="max-width:100%;height:auto;"></div>
+          <h3 style="font-family:var(--font-display);">Core listing</h3>
+          <p class="card-copy" style="color:var(--color-muted)">Create product pages for each shade with swatches, SKUs, pricing, and inventory controls.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><img src="assets/icon-user-dashboard.svg" alt="User dashboard icon" style="max-width:100%;height:auto;"></div>
+          <h3 style="font-family:var(--font-display);">Seller dashboard</h3>
+          <p style="color:var(--color-muted)">Monitor orders, view top-selling shades, and manage listings from one place.</p>
+        </div>
+        <div class="card reveal">
+          <div class="icon"><img src="assets/icon-data-export.svg" alt="Data export icon" style="max-width:100%;height:auto;"></div>
+          <h3 style="font-family:var(--font-display);">Data export</h3>
+          <p style="color:var(--color-muted)">Download orders and sales reports for accounting or ad insights.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal" id="proof">
+      <h2 style="font-family:var(--font-display);text-align:center;margin-bottom:var(--space-md)">Proof in numbers</h2>
+      <div class="metrics">
+        <div class="metric">
+          <div class="label" style="color:var(--color-muted)">Lipsticks sold</div>
+          <div class="num"><span class="counter" data-target="12482">0</span></div>
+        </div>
+        <div class="metric">
+          <div class="label" style="color:var(--color-muted)">Shades listed</div>
+          <div class="num"><span class="counter" data-target="3210">0</span></div>
+        </div>
+        <div class="metric">
+          <div class="label" style="color:var(--color-muted)">Daily orders</div>
+          <div class="num"><span class="counter" data-target="1204">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <h2 class="reveal">Pricing for sellers</h2>
+      <div class="pricing-grid">
+        <div class="price-card reveal">
+          <h3 style="font-family:var(--font-display);">Free</h3>
+          <p style="color:var(--color-muted)">Basic listings, manual order export, limited analytics.</p>
+          <p style="margin-top:var(--space-md);font-weight:700">$0 / mo</p>
+          <a href="pages/signup.html" class="btn btn-primary" style="margin-top:var(--space-sm);display:inline-block">Get started free</a>
+        </div>
+
+        <div class="price-card price-pro reveal">
+          <!-- Pro must use gradient background/border per tier-aware rules -->
+          <div class="inner">
+            <h3 style="font-family:var(--font-display);">Pro</h3>
+            <p style="color:rgba(255,255,255,0.9)">Full listings, priority support, advanced analytics, and export.</p>
+            <p style="margin-top:var(--space-md);font-weight:700">$29 / mo</p>
+            <a href="pages/signup.html" class="btn btn-white stripe-ready" style="margin-top:var(--space-sm);display:inline-block">Start free trial</a>
+          </div>
+        </div>
+
+        <div class="price-card reveal">
+          <h3 style="font-family:var(--font-display);">Enterprise</h3>
+          <p style="color:var(--color-muted)">Custom integrations, SLA, and dedicated success manager.</p>
+          <p style="margin-top:var(--space-md);font-weight:700">Contact us</p>
+          <a href="pages/signup.html" class="btn btn-secondary" style="margin-top:var(--space-sm);display:inline-block">Contact sales</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-strip reveal">
+      <h2 style="font-family:var(--font-display);">Ready to list your first shade?</h2>
+      <p style="color:var(--color-muted);margin-bottom:var(--space-md)">Create product pages, add swatches, and start selling lipsticks today.</p>
+      <a href="pages/signup.html" class="btn btn-primary">Create free account</a>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>© <strong>Lipsticks App</strong> — The smart saas platform for general users.</p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Sticky navbar
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', ()=>{
+      if(window.scrollY>14) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+    },{threshold:0.15});
+    reveals.forEach(r=>obs.observe(r));
+
+    // Animated counters
+    function animateCounter(el, target){
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduced){ el.textContent = target.toLocaleString(); return; }
+      let start=0,duration=1200, startTime=null;
+      function step(ts){
+        if(!startTime) startTime = ts;
+        const progress = Math.min((ts-startTime)/duration,1);
+        el.textContent = Math.floor(progress*target).toLocaleString();
+        if(progress<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    const counters = document.querySelectorAll('.counter');
+    const counterObs = new IntersectionObserver((entries,observer)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const el = entry.target; const target = parseInt(el.getAttribute('data-target'),10)||0;
+          animateCounter(el, target);
+          observer.unobserve(el);
+        }
+      });
+    },{threshold:0.2});
+    counters.forEach(c=>counterObs.observe(c));
+
+    // Testimonial carousel placeholder (no autoplay)
+    // (Per dynamic components contract, would be keyboard accessible and navigable in a fuller build.)
+  </script>
+</body>
+</html>

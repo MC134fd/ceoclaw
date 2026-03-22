@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Careers — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .job-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .job-card {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-md) var(--space-lg);
+      gap: var(--space-md); flex-wrap: wrap;
+    }
+    .job-info h4 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .job-meta { display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; }
+    .job-tag { font-size: 0.75rem; color: var(--color-text-muted); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 0.2rem 0.6rem; }
+    .perks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); }
+    .perk-card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .perk-card p { font-size: 0.85rem; color: var(--color-text-muted); max-width: unset; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start building</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-warm mb-md">We're hiring</div>
+    <h1>Build the future<br>of founder intelligence.</h1>
+    <p>Join a small, ambitious team shipping products that help thousands of founders worldwide move faster and build better.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-accent mb-md">Open roles</div>
+      <h2>Current openings</h2>
+    </div>
+    <div class="job-list">
+      <div class="card job-card">
+        <div class="job-info">
+          <h4>Senior Full-Stack Engineer</h4>
+          <div class="job-meta">
+            <span class="job-tag">Engineering</span>
+            <span class="job-tag">Remote</span>
+            <span class="job-tag">Full-time</span>
+          </div>
+        </div>
+        <a href="contact.html" class="btn btn-secondary btn-sm">Apply →</a>
+      </div>
+      <div class="card job-card">
+        <div class="job-info">
+          <h4>AI / ML Engineer</h4>
+          <div class="job-meta">
+            <span class="job-tag">Engineering</span>
+            <span class="job-tag">Remote</span>
+            <span class="job-tag">Full-time</span>
+          </div>
+        </div>
+        <a href="contact.html" class="btn btn-secondary btn-sm">Apply →</a>
+      </div>
+      <div class="card job-card">
+        <div class="job-info">
+          <h4>Product Designer (0→1)</h4>
+          <div class="job-meta">
+            <span class="job-tag">Design</span>
+            <span class="job-tag">Remote</span>
+            <span class="job-tag">Full-time</span>
+          </div>
+        </div>
+        <a href="contact.html" class="btn btn-secondary btn-sm">Apply →</a>
+      </div>
+      <div class="card job-card">
+        <div class="job-info">
+          <h4>Growth Lead</h4>
+          <div class="job-meta">
+            <span class="job-tag">Marketing</span>
+            <span class="job-tag">Remote</span>
+            <span class="job-tag">Full-time</span>
+          </div>
+        </div>
+        <a href="contact.html" class="btn btn-secondary btn-sm">Apply →</a>
+      </div>
+      <div class="card job-card" style="border-style:dashed; opacity:0.6;">
+        <div class="job-info">
+          <h4>Don't see your role?</h4>
+          <div class="job-meta"><span class="job-tag">Open application</span></div>
+        </div>
+        <a href="contact.html" class="btn btn-ghost btn-sm">Send your story →</a>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section" style="background: linear-gradient(180deg, transparent, rgba(23,37,84,0.2), transparent);">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-secondary mb-md">Benefits</div>
+      <h2>How we take care of you</h2>
+    </div>
+    <div class="perks-grid">
+      <div class="card perk-card"><div class="feature-icon feature-icon-primary mb-sm">💰</div><h4>Competitive compensation</h4><p>Market-rate salary + meaningful equity. We believe everyone who builds Buildflow should own a piece of it.</p></div>
+      <div class="card perk-card"><div class="feature-icon feature-icon-accent mb-sm">🏖</div><h4>Unlimited PTO</h4><p>Take the time you need. We track outcomes, not hours. Fully remote with async-first culture.</p></div>
+      <div class="card perk-card"><div class="feature-icon feature-icon-secondary mb-sm">🏥</div><h4>Full health coverage</h4><p>100% medical, dental, and vision for you and your family (US). International equivalents where available.</p></div>
+      <div class="card perk-card"><div class="feature-icon feature-icon-warm mb-sm">🖥</div><h4>Best-in-class setup</h4><p>$2,000 home office stipend + latest Mac. We invest in your environment because it matters.</p></div>
+      <div class="card perk-card"><div class="feature-icon feature-icon-primary mb-sm">📚</div><h4>Learning budget</h4><p>$1,500/year for courses, books, conferences, and anything that makes you sharper.</p></div>
+      <div class="card perk-card"><div class="feature-icon feature-icon-accent mb-sm">✈️</div><h4>Annual team offsite</h4><p>Once a year, the whole team gets together somewhere great. In-person energy matters.</p></div>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a>
+        <p>The AI-native operating system for ambitious founders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="mission.html">Mission</a></li>
+          <li><a href="careers.html">Careers</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="../product/features.html">Features</a></li>
+          <li><a href="../pages/pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="../legal/privacy.html">Privacy</a></li>
+          <li><a href="../legal/terms.html">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

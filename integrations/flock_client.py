@@ -1,29 +1,15 @@
 """
 FLock / OpenClaw model adapter — the canonical OpenClaw integration point.
 
-This module is CEOClaw's **OpenClaw boundary**: it wraps the FLock HTTP
-API (the model endpoint provided by the OpenClaw framework) as a standard
-LangChain ``BaseChatModel``.  Every model call in the CEOClaw agent loop
-goes through ``FlockChatModel``; nothing else in the codebase makes direct
-HTTP calls to the model layer.
+This module wraps the FLock HTTP API as a LangChain ``BaseChatModel``.
+All CEOClaw model calls go through ``FlockChatModel``.
 
-OpenClaw provides:
-  - The FLock HTTP endpoint (OpenAI-compatible chat completions)
-  - The LiteLLM / x-litellm-api-key auth strategy
-
-CEOClaw extends that with:
+Features:
   - Retry logic with exponential back-off
-  - Deterministic mock mode (for testing and demo without API credentials)
-  - Automatic fallback on retry exhaustion (``[FALLBACK]`` prefix)
+  - Deterministic template fallback on retry exhaustion (``[FALLBACK]`` prefix)
   - Structured ``response_metadata`` on every ``AIMessage``:
       model_mode, fallback_used, fallback_reason,
       tokens_estimated, external_calls_delta
-  - Budget accumulation so the graph can track spend per run
-
-Auth strategy (FLOCK_AUTH_STRATEGY):
-  "both"    — sends both Authorization: Bearer and x-litellm-api-key (default)
-  "bearer"  — OpenAI-style: Authorization: Bearer <key>
-  "litellm" — LiteLLM/OpenClaw VPS style: x-litellm-api-key: <key>
 """
 
 import json
@@ -44,53 +30,53 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Deterministic mock response library
+# Deterministic template fallback library
 # ---------------------------------------------------------------------------
 
 _DOMAIN_CYCLE = ["product", "marketing", "sales", "ops"]
 
-_MOCK_PLANNER_TEMPLATES = [
+_PLANNER_TEMPLATES = [
     {
         "selected_domain": "product",
         "selected_action": "build_landing_page",
-        "strategy_rationale": "[MOCK] Build a landing page to establish online presence.",
+        "strategy_rationale": "Build a landing page to establish online presence.",
         "priority_score": 0.90,
     },
     {
         "selected_domain": "marketing",
         "selected_action": "run_seo_analysis",
-        "strategy_rationale": "[MOCK] Optimise landing page for organic search traffic.",
+        "strategy_rationale": "Optimise landing page for organic search traffic.",
         "priority_score": 0.80,
     },
     {
         "selected_domain": "sales",
         "selected_action": "create_outreach_campaign",
-        "strategy_rationale": "[MOCK] Reach out to early adopters to generate first MRR.",
+        "strategy_rationale": "Reach out to early adopters to generate first MRR.",
         "priority_score": 0.85,
     },
     {
         "selected_domain": "ops",
         "selected_action": "record_baseline_metrics",
-        "strategy_rationale": "[MOCK] Capture baseline metrics before next growth cycle.",
+        "strategy_rationale": "Capture baseline metrics before next growth cycle.",
         "priority_score": 0.70,
     },
 ]
 
-_MOCK_EVALUATOR_TEMPLATE = {
+_EVALUATOR_TEMPLATE = {
     "kpi_snapshot": {"mrr": 0.0, "signups": 0, "traffic": 0},
     "progress_score": 0.0,
-    "recommendation": "[MOCK] Continue iterating — no revenue yet.",
+    "recommendation": "Continue iterating — no revenue yet.",
     "risk_flags": [],
 }
 
 
-def _mock_planner_response(cycle_index: int) -> str:
-    template = _MOCK_PLANNER_TEMPLATES[cycle_index % len(_MOCK_PLANNER_TEMPLATES)]
+def _template_planner_response(cycle_index: int) -> str:
+    template = _PLANNER_TEMPLATES[cycle_index % len(_PLANNER_TEMPLATES)]
     return json.dumps(template)
 
 
-def _mock_evaluator_response(progress_score: float = 0.0) -> str:
-    payload = dict(_MOCK_EVALUATOR_TEMPLATE)
+def _template_evaluator_response(progress_score: float = 0.0) -> str:
+    payload = dict(_EVALUATOR_TEMPLATE)
     payload["progress_score"] = round(progress_score, 4)
     return json.dumps(payload)
 
@@ -129,8 +115,7 @@ class FlockChatModel(BaseChatModel):
         auth_strategy:  Header strategy: "both" | "bearer" | "litellm".
         timeout:        HTTP request timeout in seconds.
         max_retries:    Number of retries on transient failures.
-        mock_mode:      When True, skip HTTP and return deterministic responses.
-        cycle_index:    Tracks which mock template to use (incremented externally).
+        cycle_index:    Tracks which fallback template to use (incremented externally).
     """
 
     endpoint: str = Field(default_factory=lambda: settings.flock_endpoint)
@@ -139,7 +124,6 @@ class FlockChatModel(BaseChatModel):
     auth_strategy: str = Field(default_factory=lambda: settings.flock_auth_strategy)
     timeout: int = Field(default_factory=lambda: settings.flock_timeout)
     max_retries: int = Field(default_factory=lambda: settings.flock_max_retries)
-    mock_mode: bool = Field(default_factory=lambda: settings.flock_mock_mode)
     cycle_index: int = Field(default=0)
 
     def __init__(self, **data: Any) -> None:
@@ -147,9 +131,6 @@ class FlockChatModel(BaseChatModel):
         self._log_startup()
 
     def _log_startup(self) -> None:
-        if self.mock_mode:
-            logger.info("[FLock] mode=MOCK  (deterministic responses, no HTTP calls)")
-            return
         host = urlparse(self.endpoint).netloc or self.endpoint or "(no endpoint set)"
         strategy = self.auth_strategy
         if self.api_key:
@@ -177,7 +158,6 @@ class FlockChatModel(BaseChatModel):
             "model_name": self.model,
             "endpoint": self.endpoint,
             "auth_strategy": self.auth_strategy,
-            "mock_mode": self.mock_mode,
         }
 
     # ------------------------------------------------------------------
@@ -191,9 +171,6 @@ class FlockChatModel(BaseChatModel):
         run_manager: Any = None,
         **kwargs: Any,
     ) -> ChatResult:
-        if self.mock_mode:
-            return self._mock_generate(messages, model_mode="mock")
-
         last_error: Optional[Exception] = None
         for attempt in range(self.max_retries):
             try:
@@ -207,7 +184,7 @@ class FlockChatModel(BaseChatModel):
                 if attempt < self.max_retries - 1:
                     time.sleep(0.5 * (attempt + 1))
 
-        # All retries exhausted — fall back to mock with warning marker
+        # All retries exhausted — fall back to deterministic templates.
         fallback_reason = f"{type(last_error).__name__}: {last_error}"
         logger.warning(
             "[FLock] FALLBACK activated after %d retries — "
@@ -219,7 +196,7 @@ class FlockChatModel(BaseChatModel):
             self.endpoint or "(empty)",
             self.model,
         )
-        return self._mock_generate(
+        return self._template_generate(
             messages,
             prefix="[FALLBACK] ",
             model_mode="fallback",
@@ -279,20 +256,20 @@ class FlockChatModel(BaseChatModel):
             "external_calls_delta": 1,
         })
 
-    def _mock_generate(
+    def _template_generate(
         self,
         messages: list[BaseMessage],
         prefix: str = "",
-        model_mode: str = "mock",
+        model_mode: str = "fallback",
         fallback_reason: Optional[str] = None,
         external_calls_delta: int = 0,
     ) -> ChatResult:
         """Return a deterministic response without making any HTTP call."""
         prompt_type = _classify_prompt(messages)
         if prompt_type == "evaluator":
-            content = prefix + _mock_evaluator_response()
+            content = prefix + _template_evaluator_response()
         else:
-            content = prefix + _mock_planner_response(self.cycle_index)
+            content = prefix + _template_planner_response(self.cycle_index)
         return _make_result(content, metadata={
             "model_mode": model_mode,
             "fallback_used": model_mode == "fallback",
@@ -334,6 +311,6 @@ def _make_result(content: str, metadata: dict | None = None) -> ChatResult:
     return ChatResult(generations=[ChatGeneration(message=msg)])
 
 
-def get_model(mock_mode: bool = False, cycle_index: int = 0) -> FlockChatModel:
+def get_model(cycle_index: int = 0) -> FlockChatModel:
     """Factory that returns a configured FlockChatModel instance."""
-    return FlockChatModel(mock_mode=mock_mode, cycle_index=cycle_index)
+    return FlockChatModel(cycle_index=cycle_index)

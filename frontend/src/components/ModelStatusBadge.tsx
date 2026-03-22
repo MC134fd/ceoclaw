@@ -22,13 +22,7 @@ function getBadgeConfig(model: ModelInfo | null): BadgeConfig {
     return { label: 'Live (Flock)', color: 'var(--success)', bg: 'rgba(34,197,94,0.12)', dot: 'var(--success)' };
   }
   if (model_mode === 'openai' || provider === 'openai') {
-    return { label: 'Live (OpenAI)', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', dot: '#3b82f6' };
-  }
-  if (model_mode === 'fallback_mock') {
-    return { label: 'Fallback Mock', color: 'var(--warning)', bg: 'rgba(245,158,11,0.12)', dot: 'var(--warning)' };
-  }
-  if (model_mode === 'mock' || provider === 'mock') {
-    return { label: 'Mock', color: 'var(--text-muted)', bg: 'var(--surface-2)', dot: 'var(--text-muted)' };
+    return { label: 'Live (OpenAI)', color: '#4FA3A5', bg: 'rgba(79,163,165,0.10)', dot: '#4FA3A5' };
   }
   // error / unknown
   return { label: 'Error', color: 'var(--error)', bg: 'rgba(239,68,68,0.12)', dot: 'var(--error)' };
@@ -46,14 +40,16 @@ export function ModelStatusBadge({ model }: Props) {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '3px 10px',
-        borderRadius: '20px',
+        padding: '3px 9px',
+        borderRadius: '4px',
         background: cfg.bg,
         color: cfg.color,
-        fontSize: '12px',
+        fontSize: '11.5px',
         fontWeight: 500,
+        letterSpacing: '0.01em',
         cursor: title ? 'help' : 'default',
         userSelect: 'none',
+        border: '1px solid rgba(0,0,0,0.05)',
       }}
     >
       <span

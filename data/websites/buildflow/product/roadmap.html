@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roadmap — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .roadmap-col h3 { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; margin-bottom: var(--space-md); }
+    .roadmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); }
+    .roadmap-item { padding: var(--space-md); margin-bottom: var(--space-sm); }
+    .roadmap-item h4 { font-size: 0.9rem; margin-bottom: 0.35rem; }
+    .roadmap-item p { font-size: 0.8rem; color: var(--color-text-muted); max-width: unset; }
+    .vote-btn { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--color-text-subtle); margin-top: var(--space-sm); cursor: pointer; border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 0.2rem 0.6rem; transition: all var(--transition); background: transparent; }
+    .vote-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    @media (max-width: 768px) { .roadmap-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-accent mb-md">Roadmap</div>
+    <h1>What we're building next.</h1>
+    <p>A transparent view into our priorities. Vote for features you want to see soonest. Last updated March 2026.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="roadmap-grid">
+      <div class="roadmap-col">
+        <h3 style="color:var(--color-accent);">✓ Shipped</h3>
+        <div class="card roadmap-item"><h4>Multi-agent orchestration</h4><p>Agents now share project context automatically — no copy-paste between tools.</p></div>
+        <div class="card roadmap-item"><h4>Notion integration</h4><p>Bidirectional sync for all pages, databases, and tasks.</p></div>
+        <div class="card roadmap-item"><h4>Brand voice training</h4><p>Upload writing samples and agents match your tone exactly.</p></div>
+        <div class="card roadmap-item"><h4>Sprint auto-planner</h4><p>From roadmap item to detailed sprint tasks in under 30 seconds.</p></div>
+      </div>
+      <div class="roadmap-col">
+        <h3 style="color:var(--color-warm);">⟳ In progress (Q2 2026)</h3>
+        <div class="card roadmap-item card-featured"><h4>Finance Agent v2</h4><p>Full P&L modeling, scenario analysis, and investor-ready dashboards. Includes Stripe auto-import.</p><button class="vote-btn">▲ 412 votes</button></div>
+        <div class="card roadmap-item"><h4>Team collaboration</h4><p>Invite co-founders and team members. Agent output approval workflows with comments.</p><button class="vote-btn">▲ 287 votes</button></div>
+        <div class="card roadmap-item"><h4>Zapier + Make integration</h4><p>Trigger any agent from external automation workflows.</p><button class="vote-btn">▲ 198 votes</button></div>
+      </div>
+      <div class="roadmap-col">
+        <h3 style="color:var(--color-primary);">◎ Planned (H2 2026)</h3>
+        <div class="card roadmap-item"><h4>Voice input for agents</h4><p>Dictate prompts, ideas, and tasks — agents transcribe and act immediately.</p><button class="vote-btn">▲ 521 votes</button></div>
+        <div class="card roadmap-item"><h4>Investor CRM</h4><p>Track investor relationships, stage conversations, and generate warm intro drafts.</p><button class="vote-btn">▲ 445 votes</button></div>
+        <div class="card roadmap-item"><h4>Custom agent builder</h4><p>Build and publish your own specialized agents to the Buildflow marketplace.</p><button class="vote-btn">▲ 334 votes</button></div>
+        <div class="card roadmap-item"><h4>Mobile app (iOS + Android)</h4><p>Full workspace on mobile — review agent output, approve tasks, and get nudges.</p><button class="vote-btn">▲ 612 votes</button></div>
+      </div>
+    </div>
+    <div class="text-center mt-xl">
+      <p style="color:var(--color-text-muted); font-size:0.9rem;">Have an idea we haven't listed? <a href="../company/contact.html">Tell us →</a></p>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="features.html">Features</a></li><li><a href="agents.html">Agents</a></li><li><a href="roadmap.html">Roadmap</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="../company/about.html">About</a></li><li><a href="../company/contact.html">Contact</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

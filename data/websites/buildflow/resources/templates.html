@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templates — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-lg); }
+    .template-card { padding: var(--space-lg); cursor: pointer; }
+    .template-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
+    .template-icon { font-size: 1.5rem; }
+    .template-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.35rem; }
+    .template-desc { font-size: 0.85rem; color: var(--color-text-muted); max-width: unset; margin-bottom: var(--space-sm); }
+    .template-footer { display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--color-text-subtle); }
+    .template-uses { font-family: var(--font-mono); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-warm mb-md">Templates</div>
+    <h1>Start fast with<br>battle-tested templates.</h1>
+    <p>Curated templates from successful founders — ready to use, customize, and ship in minutes.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="template-grid">
+      <div class="card template-card">
+        <div class="template-header"><span class="template-icon">📋</span><span class="badge badge-primary">Product</span></div>
+        <div class="template-title">SaaS PRD Template</div>
+        <div class="template-desc">Full product requirements document structure for B2B SaaS features — problem, solution, metrics, and edge cases.</div>
+        <div class="template-footer"><span>By Buildflow</span><span class="template-uses">2,840 uses</span></div>
+      </div>
+      <div class="card template-card">
+        <div class="template-header"><span class="template-icon">🚀</span><span class="badge badge-secondary">GTM</span></div>
+        <div class="template-title">Product Hunt Launch Playbook</div>
+        <div class="template-desc">12-week pre-launch checklist, maker post template, and follow-up email sequence that works for top launches.</div>
+        <div class="template-footer"><span>By Buildflow</span><span class="template-uses">1,920 uses</span></div>
+      </div>
+      <div class="card template-card">
+        <div class="template-header"><span class="template-icon">📧</span><span class="badge badge-accent">Sales</span></div>
+        <div class="template-title">Cold Email — SaaS Founders</div>
+        <div class="template-desc">3-touch outreach sequence for selling to solo founders and small teams. 34% avg open rate, 8% reply rate.</div>
+        <div class="template-footer"><span>By Rachel O'Brien</span><span class="template-uses">3,200 uses</span></div>
+      </div>
+      <div class="card template-card">
+        <div class="template-header"><span class="template-icon">💰</span><span class="badge badge-warm">Finance</span></div>
+        <div class="template-title">Pre-Seed Financial Model</div>
+        <div class="template-desc">Revenue projections, burn rate, and runway calculator for pre-revenue startups. 3 scenarios included.</div>
+        <div class="template-footer"><span>By Buildflow</span><span class="template-uses">1,650 uses</span></div>
+      </div>
+      <div class="card template-card">
+        <div class="template-header"><span class="template-icon">🎯</span><span class="badge badge-primary">Strategy</span></div>
+        <div class="template-title">ICP Definition Workbook</div>
+        <div class="template-desc">Structured framework to define, validate, and segment your ideal customer profile across 12 dimensions.</div>
+        <div class="template-footer"><span>By Buildflow</span><span class="template-uses">2,100 uses</span></div>
+      </div>
+      <div class="card template-card">
+        <div class="template-header"><span class="template-icon">🤝</span><span class="badge badge-secondary">Fundraising</span></div>
+        <div class="template-title">Warm Intro Request Template</div>
+        <div class="template-desc">The exact 3-sentence format that gets the most positive responses from investors and connectors.</div>
+        <div class="template-footer"><span>By Jordan Cole</span><span class="template-uses">4,100 uses</span></div>
+      </div>
+    </div>
+    <div class="text-center mt-xl">
+      <p style="color:var(--color-text-muted); font-size:0.9rem; margin-bottom:var(--space-md);">Browse 80+ templates in your Buildflow workspace after signing up.</p>
+      <a href="../pages/auth.html#signup" class="btn btn-primary">Access all templates →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Resources</h4><ul><li><a href="docs.html">Docs</a></li><li><a href="blog.html">Blog</a></li><li><a href="guides.html">Guides</a></li><li><a href="templates.html">Templates</a></li><li><a href="faq.html">FAQ</a></li></ul></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="../product/features.html">Features</a></li><li><a href="../product/agents.html">Agents</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

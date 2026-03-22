@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .faq-list { max-width: 760px; }
+    .faq-item { border-bottom: 1px solid var(--color-border-soft); }
+    .faq-q {
+      width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-lg) 0; font-family: var(--font-display); font-weight: 600;
+      font-size: 1rem; color: var(--color-text); gap: var(--space-md);
+    }
+    .faq-q:hover { color: var(--color-primary); }
+    .faq-icon { color: var(--color-primary); font-size: 1.25rem; flex-shrink: 0; transition: transform var(--transition); }
+    .faq-a { padding-bottom: var(--space-lg); color: var(--color-text-muted); font-size: 0.95rem; line-height: 1.75; display: none; }
+    .faq-a.open { display: block; }
+    .faq-a a { color: var(--color-primary); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">FAQ</div>
+    <h1>Common questions,<br>honest answers.</h1>
+    <p>Can't find what you're looking for? <a href="../company/contact.html">Reach out to our team →</a></p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What exactly is Buildflow?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Buildflow is an AI-native operating system for founders. It gives you access to six specialized AI agents — for product, marketing, sales, finance, tech, and operations — that share a unified understanding of your startup. Instead of asking a generic AI assistant a question, you're working with agents that already know your market, customers, and goals.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How is this different from ChatGPT or Claude?<span class="faq-icon">+</span></button>
+        <div class="faq-a">General AI assistants are powerful but context-free — you have to re-explain your startup every time. Buildflow's agents maintain persistent project context, specialize by domain, coordinate with each other, and are trained on startup-specific patterns. They're purpose-built operating tools, not chat interfaces.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is my startup idea safe with Buildflow?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Completely. All data is end-to-end encrypted. We never use your data to train AI models — ours or any third party's. We're SOC 2 Type II certified and GDPR compliant. Your ideas are yours alone. See our <a href="../legal/privacy.html">privacy policy</a> and <a href="../product/security.html">security page</a> for details.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What does "agent run" mean?<span class="faq-icon">+</span></button>
+        <div class="faq-a">One agent run is one task execution — e.g., "write a PRD for this feature," "generate 3 cold email variants," or "build a monthly financial model." Each run produces a complete, actionable output. On the Starter plan, you get 3 runs/day. Pro and Scale are unlimited.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Do I need technical skills to use Buildflow?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Not at all. Buildflow is designed for founders first — all interaction is natural language. You describe what you're building, what you need, and the agents handle the rest. No coding, no configuration, no setup complexity.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I use Buildflow with a team?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Yes. The Scale plan includes up to 5 seats. You can invite co-founders and team members, collaborate on agent outputs, and set approval workflows. Team collaboration features are on our Q2 2026 roadmap as well.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What integrations are available?<span class="faq-icon">+</span></button>
+        <div class="faq-a">Pro includes Notion, Linear, GitHub, Gmail, Google Calendar, and Slack. Scale unlocks 60+ integrations including Stripe, HubSpot, Salesforce, Figma, Jira, Mixpanel, and more. See the full list on our <a href="../product/integrations.html">integrations page</a>.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What's the refund policy?<span class="faq-icon">+</span></button>
+        <div class="faq-a">We offer a full refund within 14 days of your first paid charge if you're not satisfied. After that, cancellation takes effect at the end of your current billing period. No long-term contracts, no cancellation fees.</div>
+      </div>
+    </div>
+    <div class="mt-xl">
+      <p style="color:var(--color-text-muted); font-size:0.9rem;">Still have questions? <a href="../company/contact.html">Contact our team →</a></p>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Resources</h4><ul><li><a href="docs.html">Docs</a></li><li><a href="blog.html">Blog</a></li><li><a href="guides.html">Guides</a></li><li><a href="faq.html">FAQ</a></li></ul></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="../product/features.html">Features</a></li><li><a href="../pages/pricing.html">Pricing</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+<script>
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const icon = btn.querySelector('.faq-icon');
+    const isOpen = answer.classList.contains('open');
+    answer.classList.toggle('open', !isOpen);
+    icon.textContent = isOpen ? '+' : '−';
+    icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(0deg)';
+  }
+</script>
+</body>
+</html>

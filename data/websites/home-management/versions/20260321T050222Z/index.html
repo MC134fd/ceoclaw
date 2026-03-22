@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Management — Streamline your home, simply</title>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root{
+  --color-primary: #7c3aed;
+  --color-secondary: #a78bfa;
+  --color-accent-pink: #d946ef;
+  --color-bg: #08010f;
+  --color-surface: #161028;
+  --color-text: #efe6ff;
+  --color-muted: #9a8fb3;
+  --color-border: #dfd7ff;
+  --accent-gradient: linear-gradient(135deg, #7c3aed, #a78bfa);
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+  --spacing: 1.5;
+  }
+
+  /* Base */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: var(--font-body);
+    background: linear-gradient(180deg, rgba(2,11,24,1) 0%, var(--color-bg) 100%);
+    color: var(--color-text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.45;
+  }
+
+  a{color:inherit; text-decoration:none}
+  img{max-width:100%; display:block}
+
+  /* Layout spacing */
+  .container{
+    width: min(1200px, 94%);
+    margin: 0 auto;
+    padding: clamp(18px, calc(var(--spacing) * 1.6vh), 48px) 0;
+  }
+
+  header.navbar{
+    position: sticky;
+    top:0;
+    z-index:60;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding: clamp(10px, 1.6vw, 18px) min(6vw, 40px);
+    background: linear-gradient(180deg, rgba(6,182,212,0.03), transparent), var(--color-surface);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: all 220ms ease;
+    backface-visibility: hidden;
+    backdrop-filter: blur(6px) saturate(.95);
+  }
+
+  header.navbar.scrolled{
+    box-shadow: var(--shadow-md);
+    transform: translateY(-0px);
+    background: linear-gradient(180deg, rgba(6,182,212,0.03), rgba(15,25,41,0.82));
+    border-bottom-color: rgba(255,255,255,0.04);
+  }
+
+  .brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .logo{
+    width:44px;
+    height:44px;
+    border-radius:10px;
+    background: var(--accent-gradient);
+    display:inline-grid;
+    place-items:center;
+    font-weight:700;
+    color:#012;
+    box-shadow: var(--shadow-sm);
+    font-family: var(--font-display);
+    font-size:16px;
+  }
+  .brand h1{
+    margin:0;
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:0.2px;
+    color:var(--color-text);
+    font-family: var(--font-display);
+  }
+  nav.main-nav{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .nav-links{
+    display:flex;
+    gap:10px;
+    margin-left:12px;
+  }
+  .nav-links a{
+    color:var(--color-muted);
+    font-weight:500;
+    padding:8px 10px;
+    border-radius:8px;
+    transition: color 180ms ease, background 180ms ease;
+    font-size:14px;
+  }
+  .nav-links a:hover{ color:var(--color-text); background: rgba(255,255,255,0.02) }
+
+  /* Buttons */
+  .btn{
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding: 10px 14px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    border:0;
+    transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+    text-decoration:none;
+  }
+  .btn:active{ transform: translateY(1px) }
+  .btn-primary{
+    background: var(--accent-gradient);
+    color:#02121a;
+    box-shadow: 0 6px 18px rgba(6,182,212,0.12);
+  }
+  .btn-primary:hover{ transform: translateY(-2px) }
+  .btn-ghost{
+    background:transparent;
+    color:var(--color-text);
+    border:1px solid rgba(255,255,255,0.04);
+  }
+  .btn-outline{
+    background:transparent;
+    color:var(--color-text);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Hero */
+  .hero{
+    display:grid;
+    gap: clamp(18px, 2.6vw, 34px);
+    grid-template-columns: 1fr;
+    align-items:center;
+    padding: clamp(26px, 4.2vw, 64px) 0;
+  }
+  .hero-inner{
+    display:flex;
+    gap: clamp(18px, 3vw, 40px);
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .hero-copy{
+    flex:1 1 480px;
+    max-width:760px;
+  }
+  .hero h2{
+    margin:0 0 12px 0;
+    font-family:var(--font-display);
+    font-size:clamp(26px, 6.4vw, 48px);
+    line-height:1.02;
+    letter-spacing:-0.02em;
+    color:var(--color-text);
+  }
+  .hero p.lead{
+    margin:0 0 18px 0;
+    color:var(--color-muted);
+    font-size:16px;
+    max-width:62ch;
+  }
+
+  .hero-ctas{ display:flex; gap:12px; flex-wrap:wrap; }
+
+  .hero-visual{
+    flex: 1 1 320px;
+    min-width:260px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius: var(--radius-lg);
+    padding:18px;
+    box-shadow: var(--shadow-lg);
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .mock-dashboard{
+    background: linear-gradient(180deg, rgba(6,182,212,0.04), rgba(34,211,238,0.02));
+    border-radius: 12px;
+    padding:14px;
+    display:grid;
+    gap:12px;
+  }
+  .dash-top{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+  }
+  .dash-card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    border-radius: 10px;
+    padding:12px;
+    flex:1;
+    min-width:80px;
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .muted{ color:var(--color-muted); font-size:13px }
+
+  /* Bento grid */
+  .bento-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: clamp(12px, 2vw, 24px);
+  }
+
+  /* Features */
+  .features-section{ padding: clamp(12px, 2.2vw, 36px) 0; }
+  .feature-card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    border-radius: var(--radius-md);
+    padding:18px;
+    box-shadow: var(--shadow-sm);
+    border:1px solid rgba(255,255,255,0.02);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .feature-icon{
+    width:56px;
+    height:56px;
+    border-radius:10px;
+    background: linear-gradient(180deg, rgba(6,182,212,0.08), rgba(34,211,238,0.04));
+    display:grid;
+    place-items:center;
+    font-size:20px;
+    color:var(--color-primary);
+    flex-shrink:0;
+  }
+  .feature-title{ margin:0 0 6px 0; font-weight:600; color:var(--color-text) }
+  .feature-desc{ margin:0; color:var(--color-muted); font-size:14px }
+
+  /* Testimonials */
+  .testimonials{
+    margin-top: clamp(18px, 3.2vw, 36px);
+    display:grid;
+    gap: clamp(12px, 2vw, 20px);
+  }
+  .testimonial{
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    padding:16px;
+    border-radius: var(--radius-md);
+    border:1px solid rgba(255,255,255,0.02);
+    box-shadow: var(--shadow-sm);
+  }
+  .quote{ font-style:normal; color:var(--color-text); margin:0 0 8px 0 }
+  .author{ color:var(--color-muted); font-size:13px; margin:0 }
+
+  /* Pricing */
+  .pricing{
+    display:grid;
+    gap:18px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    margin-top: clamp(14px, 2.6vw, 28px);
+  }
+  .plan{
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    padding:18px;
+    border-radius: var(--radius-md);
+    border:1px solid rgba(255,255,255,0.03);
+    box-shadow: var(--shadow-sm);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .plan-header{ display:flex; justify-content:space-between; align-items:center }
+  .plan-name{ font-weight:700; color:var(--color-text) }
+  .plan-price{ font-family:var(--font-display); font-size:20px; color:var(--color-primary) }
+  .plan-features{ color:var(--color-muted); font-size:14px; display:flex; flex-direction:column; gap:8px }
+  .plan .btn{ width:100%; justify-content:center; }
+
+  /* Pre-footer CTA */
+  .pre-footer{
+    margin-top: clamp(18px, 3vw, 36px);
+    background: linear-gradient(90deg, rgba(6,182,212,0.06), rgba(236,72,153,0.03));
+    padding: clamp(18px, 3vw, 36px);
+    border-radius: var(--radius-lg);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .pre-footer h3{ margin:0; font-size:18px; color:var(--color-text); font-family:var(--font-display) }
+  .pre-footer p{ margin:0; color:var(--color-muted) }
+
+  /* Footer */
+  footer.site-foot{
+    margin-top: clamp(18px, 3vw, 36px);
+    padding: clamp(18px, 2.4vw, 30px) 0;
+    border-top:1px solid rgba(255,255,255,0.02);
+    color:var(--color-muted);
+  }
+  .foot-grid{
+    display:flex;
+    gap:18px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .foot-links{ display:flex; gap:12px; align-items:center }
+  .foot-links a{ color:var(--color-muted); font-size:14px }
+
+  /* Reveal animation */
+  .reveal{ opacity:0; transform: translateY(18px); transition: opacity 520ms ease, transform 520ms ease; will-change: transform, opacity }
+  .reveal.visible{ opacity:1; transform: none }
+
+  /* Responsive tweaks */
+  @media (min-width:1024px){
+    .hero-inner{ gap: clamp(20px, 3vw, 48px) }
+  }
+  @media (max-width:640px){
+    header.navbar{ padding:12px 16px }
+    .brand h1{ font-size:14px }
+    .nav-links{ display:none }
+    .hero h2{ font-size:28px }
+    .pre-footer{ flex-direction:column; align-items:flex-start }
+  }
+
+  </style>
+</head>
+<body>
+  <header class="navbar" role="banner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">HM</div>
+      <h1>Home Management</h1>
+    </div>
+
+    <nav class="main-nav" role="navigation" aria-label="Main">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="app.html">App</a>
+        <a href="pages/signup.html" class="btn-ghost btn">Sign up</a>
+      </div>
+
+      <a class="btn btn-primary" href="pages/signup.html" aria-label="Get Started — sign up">Get Started</a>
+    </nav>
+  </header>
+
+  <main class="container" id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner reveal" data-reveal>
+        <div class="hero-copy">
+          <h2>Take control of your home — simple, actionable, reliable.</h2>
+          <p class="lead">Home Management is an app that consolidates household inventory, schedules maintenance, and tracks bills so you spend less time managing and more time living. From a polished user dashboard to built-in data export, everything you need to run your home is in one place.</p>
+
+          <div class="hero-ctas">
+            <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+            <a class="btn btn-outline" href="app.html">Try the app demo</a>
+          </div>
+        </div>
+
+        <aside class="hero-visual" aria-hidden="true">
+          <div class="mock-dashboard" role="img" aria-label="Preview of Home Management dashboard">
+            <div class="dash-top">
+              <div class="dash-card">
+                <div class="muted">Next maintenance</div>
+                <div style="font-weight:700; margin-top:6px;">HVAC filter • 7 days</div>
+              </div>
+              <div class="dash-card">
+                <div class="muted">Outstanding bills</div>
+                <div style="font-weight:700; margin-top:6px;">2 due • $295</div>
+              </div>
+            </div>
+            <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr">
+              <div style="padding:12px; border-radius:8px; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.02)">
+                <div class="muted">Inventory</div>
+                <div style="font-weight:700; margin-top:6px;">78 items</div>
+              </div>
+              <div style="padding:12px; border-radius:8px; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.02)">
+                <div class="muted">Reports</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

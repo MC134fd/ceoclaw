@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign up — Blog Website App</title>
+  <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #94a3b8;
+      --color-secondary: #cbd5e1;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f172a;
+      --color-surface: #1e293b;
+      --color-text: #f8fafc;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #94a3b8, #cbd5e1);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base resets */
+    * { box-sizing: border-box; }
+    html,body { height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(148,163,184,0.08), transparent 12%),
+                  radial-gradient(900px 500px at 90% 90%, rgba(203,213,225,0.04), transparent 12%),
+                  var(--color-bg);
+      color: var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding: clamp(16px, calc(1rem * var(--spacing)), 40px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+    }
+
+    /* Navbar */
+    .nav {
+      position:fixed;
+      top:12px;
+      left:50%;
+      transform:translateX(-50%);
+      width:clamp(320px, 60%, 980px);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:8px clamp(12px, 2vw, 20px);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      box-shadow: var(--shadow-sm);
+      transition: all .28s ease;
+      z-index:50;
+      backdrop-filter: blur(6px) saturate(120%);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .nav.scrolled {
+      transform: translateX(-50%) translateY(-6px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(8px) saturate(120%);
+    }
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-family: var(--font-display);
+      font-weight:700;
+      color:var(--color-text);
+      text-decoration:none;
+      font-size:1rem;
+    }
+    .brand-mark {
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      background: var(--accent-gradient);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--color-bg);
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+      font-family: var(--font-display);
+    }
+    .nav-links {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .nav-links a {
+      color: var(--color-secondary);
+      text-decoration:none;
+      font-size:.95rem;
+      padding:6px 10px;
+      border-radius:8px;
+      transition: all .18s ease;
+    }
+    .nav-links a.active, .nav-links a:hover {
+      color: var(--color-text);
+      background: linear-gradient(90deg, rgba(148,163,184,0.06), rgba(203,213,225,0.03));
+    }
+
+    /* Layout wrapper */
+    .wrap {
+      width:100%;
+      max-width:980px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: clamp(18px, calc(8px * var(--spacing)), 28px);
+      align-items:start;
+    }
+
+    /* Card (glass) */
+    .card {
+      margin: clamp(40px, 6vh, 80px) auto;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(10px) saturate(120%);
+      padding: clamp(20px, calc(2rem * var(--spacing)), 36px);
+      display:grid;
+      gap: clamp(12px, calc(0.7rem * var(--spacing)), 18px);
+      max-width:720px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .card-header {
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      justify-content:space-between;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: clamp(20px, 2.2vw, 28px);
+      margin:0;
+      color:var(--color-text);
+      letter-spacing:-0.02em;
+    }
+    .card-sub {
+      color:var(--color-muted);
+      font-size:.95rem;
+      margin-top:6px;
+      max-width:60ch;
+    }
+
+    /* Form */
+    form {
+      display:grid;
+      gap:12px;
+      margin-top:6px;
+    }
+    .field-grid {
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    label {
+      font-size:.875rem;
+      color:var(--color-secondary);
+      display:block;
+      margin-bottom:6px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width:100%;
+      padding: clamp(10px, calc(0.9rem * var(--spacing)), 14px);
+      border-radius: var(--radius-sm);
+      border:1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color:var(--color-text);
+      font-size:1rem;
+      outline:none;
+      transition: box-shadow .16s ease, transform .14s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    input:focus {
+      box-shadow: 0 6px 22px rgba(148,163,184,0.06);
+      border:1px solid var(--color-primary);
+      transform: translateY(-1px);
+    }
+
+    .err {
+      color: var(--color-accent-pink);
+      font-size:.85rem;
+      margin-top:6px;
+      min-height:18px;
+    }
+
+    .actions {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-top:8px;
+    }
+    .btn {
+      appearance:none;
+      border:0;
+      cursor:pointer;
+      padding: 0 14px;
+      min-height:44px;
+      border-radius: 10px;
+      font-weight:600;
+      font-family:var(--font-display);
+      color: var(--color-bg);
+      background: var(--accent-gradient);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition: transform .14s ease, box-shadow .14s ease, opacity .12s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    }
+    .btn:hover { transform: translateY(-2px); opacity:0.98; }
+    .btn:active { transform: translateY(0); opacity:0.95; }
+
+    .ghost {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      color:var(--color-secondary);
+      font-weight:600;
+      min-height:44px;
+      padding:0 12px;
+      border-radius:10px;
+    }
+    .ghost:hover { background: rgba(255,255,255,0.02); color:var(--color-text); }
+
+    .small {
+      font-size:.92rem;
+      color:var(--color-muted);
+    }
+    .link-inline {
+      color:var(--color-accent-pink);
+      text-decoration:none;
+      font-weight:600;
+      margin-left:6px;
+    }
+
+    /* Features grid (fluid grid requirement) */
+    .features {
+      display:block;
+      margin-top:6px;
+      color:var(--color-secondary);
+      font-size:.95rem;
+    }
+    .features .grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .feature {
+      border-radius: var(--radius-md);
+      padding:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow: var(--shadow-sm);
+    }
+    .feature h4 {
+      margin:0 0 6px 0;
+      color:var(--color-text);
+      font-size:1rem;
+      font-family:var(--font-display);
+    }
+    .feature p {
+      margin:0;
+      color:var(--color-muted);
+      font-size:.9rem;
+    }
+
+    /* Reveal animation */
+    .reveal { opacity:0; transform: translateY(10px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1); will-change: transform, opacity; }
+    .reveal.active { opacity:1; transform: translateY(0); }
+
+    /* Footer note */
+    .note {
+      margin-top:8px;
+      color:var(--color-muted);
+      font-size:.85rem;
+    }
+
+    /* Responsive tweaks */
+    @media (min-width:1024px) {
+      .wrap { grid-template-columns: 1fr; }
+      .card { padding: clamp(24px, calc(2.4rem * var(--spacing)), 44px); }
+    }
+
+    @media (max-width:640px) {
+      .nav { width:calc(100% - 32px); left:50%; top:8px; transform:translateX(-50%); }
+      .card { margin: clamp(80px, 12vh, 140px) 12px; padding:18px; border-radius:14px; }
+      .card-header { flex-direction:column; align-items:flex-start; gap:8px; }
+      .brand { font-size:.95rem; }
+    }
+
+  </style>
+</head>
+<body>
+  <nav class="nav" id="topnav" aria-label="Primary">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark" aria-hidden="true">B</span>
+      Blog Website App
+    </a>
+    <div class="nav-links" role="navigation" aria-label="Secondary">
+      <a href="../index.html">Home</a>
+      <a class="active" href="signup.html" aria-current="page">Sign up</a>
+      <a href="../app.html">App</a>
+    </div>
+  </nav>
+
+  <main class="wrap" role="main">
+    <section class="card reveal" id="signupCard" aria-labelledby="signupTitle">
+      <header class="card-header">
+        <div>
+          <h1 id="signupTitle" class="card-title">Create your writer account</h1>
+          <p class="card-sub">Publish faster. Focus on content. Our core functionality includes a streamlined editor, integrated user dashboard, and reliable data export so your work stays portable.</p>
+        </div>
+        <div class="small">
+          <div style="text-align:right;">
+            <div style="font-weight:700; color:var(--color-secondary);">Editorial-ready</div>
+            <div class="small" style="margin-top:6px;">Glass UI · Fast onboarding</div>
+          </div>
+        </div>
+      </header>
+
+      <form id="signupForm" action="../app.html" method="get" novalidate>
+        <div class="field-grid">
+          <div>
+            <label for="fullname">Full name</label>
+            <input id="fullname" name="fullname" type="text" aria-label="Full name" required autocomplete="name" placeholder="Alex Rivera" />
+            <div role="alert" id="err-fullname" class="err" aria-live="assertive"></div>
+          </div>
+
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" aria-label="Email address" required autocomplete="email" placeholder="you@domain.com" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" />
+            <div role="alert" id="err-email" class="err" aria-live="assertive"></div>
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" aria-label="Password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password" />
+            <div role="alert" id="err-password" class="err" aria-live="assertive"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit" id="submitBtn">Get Started</button>
+          <a class="ghost" href="../index.html">Back</a>
+        </div>
+
+        <div class="note">
+          By signing up you get immediate access to the content editor, a personal user dashboard, and one-click data export. No credit card required.
+        </div>
+
+        <div style="margin-top:10px;">
+          <span class="small">Already have an account?</span>
+          <a class="link-inline" href="../index.html">Sign in</a>
+        </div>
+      </form>
+
+      <div class="features reveal" id="featuresBlock" style="margin-top:14px;">
+        <div class="grid" aria-hidden="false">
+          <div class="feature">
+            <h4>Focused editor</h4>
+            <p>Compose posts in a distraction-free interface built for fast workflows. Drafts autosave and publish with confidence.</p>
+          </div>
+          <div class="feature">
+            <h4>User dashboard</h4>
+            <p>Track posts, comments, and readership in your user dashboard. One place to manage everything content-related.</p>
+          </div>
+          <div class="feature">
+            <h4>Data export</h4>
+            <p>Export your content and metadata in standard formats so you own your work and can move it anytime.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Sticky navbar: add .scrolled when page Y > 14px
+    (function(){
+      const nav = document.getElementById('topnav');
+      const onScroll = () => {
+        if (window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // Reveal-on-scroll using IntersectionObserver
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        // fallback: reveal all
+        reveals.forEach(r => r.classList.add('active'));
+        return;
+      }
+      const obs = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      reveals.forEach(r => obs.observe(r));
+    })();
+
+    // Form client-side validation with friendly messages
+    (function(){
+      const form = document.getElementById('signupForm');
+      const full = document.getElementById('fullname');
+      const email = document.getElementById('email');
+      const pass = document.getElementById('password');
+
+      const errFull = document.getElementById('err-fullname');
+      const errEmail = document.getElementById('err-email');
+      const errPass = document.getElementById('err-password');
+
+      function clearErrors() {
+        errFull.textContent = '';
+        errEmail.textContent = '';
+        errPass.textContent = '';
+      }
+
+      function validateEmailFormat(value) {
+        // simple email regex mirrored from pattern attribute
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+
+      form.addEventListener('submit', function(e){
+        clearErrors();
+        let valid = true;
+
+        if (!full.value.trim()) {
+          errFull.textContent = 'Please enter your full name.';
+          valid = false;
+        }
+
+        if (!email.value.trim()) {
+          errEmail.textContent = 'Please provide an email address.';
+          valid = false;
+        } else if (!validateEmailFormat(email.value.trim())) {
+          errEmail.textContent = 'Enter a valid email like you@domain.com.';
+          valid = false;
+        }
+
+        if (!pass.value) {
+          errPass.textContent = 'Choose a secure password.';
+          valid = false;
+        } else if (pass.value.length < 8) {
+          errPass.textContent = 'Password must be at least 8 characters.';
+          valid = false;
+        }
+
+        if (!valid) {
+          e.preventDefault();
+          // focus first invalid field
+          const firstInvalid = form.querySelector('.err:not(:empty)');
+          if (firstInvalid) {
+            const input = firstInvalid.previousElementSibling;
+            if (input && typeof input.focus === 'function') input.focus();
+          }
+        } else {
+          // form is valid; allow submission to ../app.html
+          // show quick micro-feedback by disabling button briefly
+          const submitBtn = document.getElementById('submitBtn');
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.9';
+          setTimeout(() => submitBtn.disabled = false, 800);
+          // default submit proceeds
+        }
+      });
+
+      // Real-time clearing of individual errors
+      [full, email, pass].forEach(input => {
+        input.addEventListener('input', () => {
+          const id = input.id;
+          if (id === 'fullname') errFull.textContent = '';
+          if (id === 'email') errEmail.textContent = '';
+          if (id === 'password') errPass.textContent = '';
+        });
+      });
+
+    })();
+  </script>
+</body>
+</html>

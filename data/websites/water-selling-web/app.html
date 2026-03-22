@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Water Selling Web — App Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cal+Sans:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #14b8a6;
+      --color-secondary: #06b6d4;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0a1628;
+      --color-surface: #0f2340;
+      --color-text: #e0f7f7;
+      --color-muted: #6b9aaa;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #14b8a6, #06b6d4);
+      --font-display: 'Cal Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+      /* responsive spacing using clamp */
+      --sp-xxs: clamp(.25rem, .2rem + .2vw, .5rem);
+      --sp-xs: clamp(.5rem, .4rem + .4vw, .75rem);
+      --sp-sm: clamp(.75rem, .6rem + .6vw, 1rem);
+      --sp: clamp(1rem, .9rem + .8vw, 1.25rem);
+      --sp-lg: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+      --container-max: 1200px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background:linear-gradient(180deg, var(--color-bg) 0%, rgba(10,22,40,.98) 100%);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding:0;
+    }
+
+    a{color:inherit;text-decoration:none}
+
+    /* Topbar (sticky) */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      gap:var(--sp-sm);
+      padding:calc(var(--sp) * 0.6) var(--sp);
+      transition:all .22s ease;
+      backdrop-filter: blur(6px);
+      background:transparent;
+    }
+    .topbar.scrolled{
+      background: linear-gradient(90deg, rgba(20,184,166,0.06), rgba(6,182,212,0.04));
+      box-shadow:var(--shadow-sm);
+      border-bottom:1px solid rgba(255,255,255,0.02);
+      padding:calc(var(--sp) * 0.55) var(--sp);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:var(--sp-xs);
+      font-family:var(--font-display);
+      font-weight:700;
+      letter-spacing:0.2px;
+      color:var(--color-text);
+      font-size:clamp(1rem, 1rem + .6vw, 1.15rem);
+    }
+    .brand-badge{
+      width:40px;
+      height:40px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow-md);
+      color:white;
+      font-weight:700;
+      font-size:1rem;
+    }
+
+    /* Layout */
+    .app-wrap{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      gap:var(--sp-lg);
+      max-width:var(--container-max);
+      margin:calc(var(--sp) * 1.25) auto;
+      padding:0 var(--sp);
+      align-items:start;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.02);
+      padding:var(--sp);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-md);
+      height:fit-content;
+      position:sticky;
+      top:calc(72px);
+    }
+    .nav{
+      margin-top:var(--sp-sm);
+    }
+    .nav ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      gap:var(--sp-xs);
+    }
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap:var(--sp-xs);
+      padding:calc(var(--sp-sm) * 0.8) var(--sp-sm);
+      border-radius:var(--radius-sm);
+      color:var(--color-text);
+      font-weight:600;
+      transition:background .18s ease, transform .12s ease;
+      font-size:0.95rem;
+    }
+    .nav a:hover{background:rgba(255,255,255,0.02); transform:translateY(-1px)}
+    .nav a.active{
+      background:linear-gradient(90deg, rgba(20,184,166,0.12), rgba(6,182,212,0.08));
+      box-shadow:var(--shadow-sm);
+      border-left:4px solid var(--color-primary);
+      padding-left:calc(var(--sp-sm) - 6px);
+    }
+
+    /* Sidebar collapse toggle for mobile */
+    .sidebar-toggle{
+      display:none;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--color-text);
+      padding:8px 10px;
+      border-radius:8px;
+      min-height:44px;
+      transition:transform .12s ease, background .12s ease;
+    }
+    .sidebar-toggle:active{transform:translateY(1px)}
+    .sidebar-footer{
+      margin-top:var(--sp);
+      padding-top:var(--sp-sm);
+      border-top:1px dashed rgba(255,255,255,0.02);
+      font-size:0.9rem;
+      color:var(--color-muted);
+    }
+
+    /* Main content */
+    main{
+      min-height:60vh;
+    }
+    .page-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:var(--sp);
+      margin-bottom:var(--sp-lg);
+    }
+    .title-block h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size:clamp(1.4rem, 1.2rem + 1.4vw, 2rem);
+      letter-spacing:-0.4px;
+      color:var(--color-text);
+    }
+    .title-block p{
+      margin:var(--sp-xs) 0 0 0;
+      color:var(--color-muted);
+      max-width:66ch;
+    }
+    .actions{
+      display:flex;
+      gap:var(--sp-xs);
+      align-items:center;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:0.6rem;
+      padding:0 var(--sp-sm);
+      min-height:44px;
+      border-radius:10px;
+      cursor:pointer;
+      border:0;
+      font-weight:600;
+      transition:transform .14s ease, box-shadow .14s ease, opacity .14s ease;
+    }
+    .btn-primary{
+      background:var(--accent-gradient);
+      color:white;
+      box-shadow:var(--shadow-sm);
+    }
+    .btn-primary:hover{transform:translateY(-3px); box-shadow:var(--shadow-md)}
+    .btn-ghost{
+      background:transparent;
+      color:var(--color-text);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Metrics grid */
+    .metrics-grid{
+      display:grid;
+      gap:var(--sp-sm);
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      margin-bottom:var(--sp-lg);
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      padding:var(--sp);
+      border-radius:var(--radius-md);
+      border:1px solid rgba(255,255,255,0.02);
+      box-shadow:var(--shadow-sm);
+    }
+    .metric{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:var(--sp-sm);
+    }
+    .metric .meta{
+      color:var(--color-muted);
+      font-size:0.9rem;
+      font-weight:600;
+    }
+    .metric .value{
+      font-family:var(--font-display);
+      font-weight:700;
+      font-size:1.45rem;
+      color:var(--color-text);
+    }
+    .metric .delta{
+      font-size:0.85rem;
+      color:var(--color-accent-pink);
+      font-weight:700;
+      background:rgba(236,72,153,0.07);
+      padding:4px 8px;
+      border-radius:999px;
+    }
+
+    /* Feature and API section */
+    .grid-2{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:var(--sp-lg);
+      align-items:start;
+    }
+    .features-list ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      gap:var(--sp-xs);
+    }
+    .features-list li{
+      display:flex;
+      gap:var(--sp-sm);
+      align-items:flex-start;
+      padding:calc(var(--sp-xs) * 0.6);
+      border-radius:8px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.01), transparent);
+    }
+    .feature-bullet{
+      width:38px;
+      height:38px;
+      border-radius:8px;
+      background:linear-gradient(135deg, rgba(20,184,166,0.12), rgba(6,182,212,0.08));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--color-primary);
+      font-weight:700;
+      font-size:0.9rem;
+      flex-shrink:0;
+    }
+    .feature-text{
+      font-size:0.95rem;
+      color:var(--color-text);
+    }
+    .feature-sub{
+      font-size:0.85rem;
+      color:var(--color-muted);
+    }
+
+    /* Connect API card */
+    .connect-card form{
+      display:flex;
+      flex-direction:column;
+      gap:var(--sp-sm);
+    }
+    .token-input{
+      display:flex;
+      gap:var(--sp-xs);
+      align-items:center;
+      background:rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.02);
+      padding:6px;
+      border-radius:10px;
+    }
+    .token-input input{
+      border:0;
+      background:transparent;
+      color:var(--color-text);
+      padding:10px;
+      flex:1;
+      outline:0;
+      font-family:var(--font-body);
+    }
+    .small{
+      font-size:0.85rem;
+      color:var(--color-muted);
+    }
+
+    /* Reveal on scroll */
+    .reveal{
+      opacity:0;
+      transform:translateY(14px) scale(.995);
+      transition:opacity .6s cubic-bezier(.2,.9,.2,1), transform .6s cubic-bezier(.2,.9,.2,1);
+      will-change:opacity, transform;
+    }
+    .reveal.visible{
+      opacity:1;
+      transform:none;
+    }
+
+    /* Footer small note */
+    .note{
+      margin-top:var(--sp-lg);
+      color:var(--color-muted);
+      font-size:0.9rem;
+    }
+
+    /* Responsive: mobile styles */
+    @media (max-width: 640px){
+      .app-wrap{
+        grid-template-columns: 1fr;
+        margin-top:calc(var(--sp) * 0.6);
+      }
+      .sidebar{
+        display:none;
+      }
+      .sidebar-toggle{
+        display:inline-flex;
+      }
+      .topbar{
+        padding:calc(var(--sp-sm) * 0.6) var(--sp);
+      }
+      .page-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:var(--sp-sm);
+      }
+    }
+
+    @media (max-width: 1024px){
+      .app-wrap{
+        grid-template-columns: 220px 1fr;
+      }
+    }
+
+    /* small utilities */
+    .muted{color:var(--color-muted);}
+    .kbd{
+      background:rgba(255,255,255,0.02);
+      border-radius:6px;
+      padding:4px 8px;
+      font-size:0.85rem;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div style="display:flex;align-items:center;gap:var(--sp-sm);width:100%;max-width:var(--container-max);margin:0 auto;">
+      <div style="display:flex;align-items:center;gap:var(--sp-sm);flex:1;">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open navigation">☰</button>
+        <div class="brand" aria-hidden="true">
+          <div class="brand-badge">W</div>
+          <div>
+            <div style="font-size:0.95rem;">Water Selling Web</div>
+            <div style="font-size:0.78rem;color:var(--color-muted);margin-top:2px;">App dashboard for sellers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions" role="toolbar" aria-label="Primary actions">
+        <a class="btn btn-ghost" href="pages/signup.html" rel="noopener">Upgrade plan</a>
+        <a class="btn btn-primary" href="pages/signup.html" rel="noopener">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-wrap" id="container">
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:var(--sp-xs);">
+          <div class="brand-badge" aria-hidden="true">W</div>
+          <div style="font-weight:700;">Water Selling Web</div>
+        </div>
+        <div style="font-size:0.85rem;color:var(--color-muted);">Seller App</div>
+      </div>
+
+      <nav class="nav" aria-label="Main">
+        <ul>
+          <li><a class="active" href="app.html">Dashboard</a></li>
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="pages/signup.html">Settings</a></li>
+          <li><a href="index.html">Back to site</a></li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;">Plan: Starter</div>
+            <div class="muted" style="font-size:0.85rem;">Includes order tracking & basic reports</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="page-header">
+        <div class="title-block">
+          <h1>Welcome back — sales overview and tools</h1>
+          <p>
+            Use your user dashboard to track daily liters sold, monitor active orders, access revenue metrics,
+            and export transaction data. Water Selling Web surfaces core functionality for field sellers and
+            small distributors so you can focus on deliveries and customers.
+          </p>
+        </div>
+
+        <div class="actions" style="align-self:flex-start;">
+          <a class="btn btn-primary" href="pages/signup.html" rel="noopener">Get Started</a>
+          <a class="btn btn-ghost" href="index.html#features">View features</a>
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section class="metrics-grid">
+        <div class="card reveal">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="meta">Today's Volume</div>
+              <div class="value">1,280 L</div>
+              <div class="small muted" style="margin-top:6px;">Total liters sold across active routes</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="delta">+8.2%</div>
+              <div class="small muted" style="margin-top:6px;">vs yesterday</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card reveal">
+          <div class="metric">
+            <div>
+              <div class="meta">Active Orders</div>
+              <div class="value">42</div>
+              <div class="small muted" style="margin-top:6px;">Orders in progress and awaiting delivery</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="small muted">Avg fulfillment</div>
+              <div class="value" style="font-size:1.05rem;">1h 12m</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card reveal">
+          <div class="metric">
+            <div>
+              <div class="meta">Revenue (24h)</div>
+              <div class="value">$3,460</div>
+              <div class="small muted" style="margin-top:6px;">Payments reconciled today</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="small muted">Pending payouts</div>
+              <div class="value" style="font-size:1.05rem;">$420</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card reveal">
+          <div>
+            <div class="meta">Exports & Reports</div>
+            <div class="value">12 files</div>
+            <div class="small muted" style="margin-top:6px;">Recent data export activity (CSV/PDF)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features + Connect API -->
+      <section class="grid-2">
+        <div class="card features-list reveal" aria-labelledby="featuresHeading">
+          <h3 id="featuresHeading" style="margin:0 0 var(--sp-sm) 0;font-family:var(--font-display);">Platform capabilities</h3>
+          <p class="small muted" style="margin:0 0 var(--sp-sm) 0;">
+            Water Selling Web combines route management, payments, and reporting in one seller-friendly app.
+            Below are core features that power your day-to-day.
+          </p>
+          <ul>
+            <li>
+              <div class="feature-bullet">1</div>
+              <div>
+                <div class="feature-text">Order & route management</div>
+                <div class="feature-sub">Assign deliveries, prioritize urgent orders, and view route progress in real time.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="feature-bullet">2</div>
+              <div>
+                <div class="feature-text">User dashboard insights</div>
+                <div class="feature-sub">A centralized user dashboard surfaces daily volume, fulfillment times, and customer histories.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="feature-bullet">3</div>
+              <div>
+                <div class="feature-text">Secure payments & reconciliation</div>
+                <div class="feature-sub">Track payments per order and reconcile payouts with simple tools built for sellers.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="feature-bullet">4</div>
+              <div>
+                <div class="feature-text">Data export & reporting</div>
+                <div class="feature-sub">Export transaction logs, daily sales, and inventory snapshots for accounting or analysis.</div>
+              </div>
+            </li>
+
+            <li>
+              <div class="feature-bullet">5</div>
+              <div>
+                <div class="feature-text">API integration</div>
+                <div class="feature-sub">Connect your sales systems or POS via API to push orders and pull daily metrics programmatically.</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card connect-card reveal" aria-labelledby="connectHeading">
+          <h3 id="connectHeading" style="margin:0 0 var(--sp-sm) 0;font-family:var(--font-display);">Connect your API</h3>
+          <p class="small muted" style="margin:0 0 var(--sp-sm) 0;">
+            Integrate with your systems by pasting a secure token. Tokens are scoped to read orders, submit deliveries,
+            and trigger exports. Generate tokens in Settings if you haven't created one yet.
+          </p>
+
+          <form id="apiForm" onsubmit="return false;">
+            <label class="small muted">API token</label>
+            <div class="token-input" role="group" aria-label="API token input">
+              <input id="apiToken" type="password" placeholder="••••••••••••••••" aria-label="API token">
+              <button id="revealToken" type="button" class="btn btn-ghost" aria-pressed="false" title="Show token" style="min-height:36px;padding:6px 10px;">Show</button>
+              <button id="pasteExample" type="button" class="btn btn-ghost" title="Paste example token" style="min-height:36px;padding:6px 10px;">Example</button>
+            </div>
+
+            <div style="display:flex;gap:var(--sp-xs);margin-top:var(--sp-sm);">
+              <button id="connectBtn" class="btn btn-primary" type="button">Connect</button>
+              <button id="disconnectBtn" class="btn btn-ghost" type="button" style="display:none;">Disconnect</button>
+            </div>
+
+            <div class="note small muted">
+              Once connected, you can programmatically request data export files from the user dashboard and automate regular data export routines.
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <div class="note reveal" style="margin-top:var(--sp-lg);">
+        Tip: Use the "data export" feature in the user dashboard to download CSVs for accounting or to integrate with external reporting tools.
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Reveal on scroll
+    (function(){
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    })();
+
+    // Sticky topbar toggling .scrolled on scroll > 14px
+    (function(){
+      const topbar = document.getElementById('topbar');
+      function checkScroll(){
+        if(window.scrollY > 14){
+          topbar.classList.add('scrolled');
+        } else {
+          topbar.classList.remove('scrolled');
+        }
+      }
+      checkScroll();
+      window.addEventListener('scroll', checkScroll, {passive:true});
+      window.addEventListener('resize', checkScroll);
+    })();
+
+    // Sidebar toggle for mobile
+    (function(){
+      const sidebar = document.getElementById('sidebar');
+      const toggle = document.getElementById('sidebarToggle');
+      let open = false;
+      function showSidebar(){
+        if(window.matchMedia('(max-width:640px)').matches){
+          sidebar.style.display = open ? 'block' : 'none';
+          sidebar.style.position = open ? 'fixed' : '';
+          sidebar.style.left = open ? '8px' : '';
+          sidebar.style.top = open ? '80px' : '';
+          sidebar.style.width = open ? 'calc(100% - 16px)' : '';
+          sidebar.style.zIndex = open ? '60' : '';
+        } else {
+          sidebar.style.display = '';
+          sidebar.style.position = '';
+          sidebar.style.left = '';
+          sidebar.style.top = '';
+          sidebar.style.width = '';
+          sidebar.style.zIndex = '';
+        }
+      }
+      toggle.addEventListener('click', () => {
+        open = !open;
+        showSidebar();
+      });
+      // close sidebar on outside click
+      document.addEventListener('click', (e) => {
+        if(!open) return;
+        if(!sidebar.contains(e.target) && !toggle.contains(e.target)){
+          open = false;
+          showSidebar();
+        }
+      });
+      window.addEventListener('resize', showSidebar);
+      showSidebar();
+    })();
+
+    // Simple token input interactions
+    (function(){
+      const tokenInput = document.getElementById('apiToken');
+      const revealBtn = document.getElementById('revealToken');
+      const pasteBtn = document.getElementById('pasteExample');
+      const connectBtn = document.getElementById('connectBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+
+      revealBtn.addEventListener('click', () => {
+        const isShown = tokenInput.type === 'text';
+        tokenInput.type = isShown ? 'password' : 'text';
+        revealBtn.textContent = isShown ? 'Show' : 'Hide';
+        revealBtn.setAttribute('aria-pressed', String(!isShown));
+      });
+
+      pasteBtn.addEventListener('click', () => {
+        // Insert a safe example token for demonstration
+        tokenInput.value = 'demo_read_only_ABC123';
+      });
+
+      connectBtn.addEventListener('click', () => {
+        if(!tokenInput.value.trim()){
+          connectBtn.textContent = 'Enter token';
+          setTimeout(()=> connectBtn.textContent = 'Connect', 1200);
+          return;
+        }
+        connectBtn.style.display = 'none';
+        disconnectBtn.style.display = 'inline-flex';
+        connectBtn.dispatchEvent(new CustomEvent('connected', {detail:{token: tokenInput.value}}));
+      });
+
+      disconnectBtn.addEventListener('click', () => {
+        tokenInput.value = '';
+        disconnectBtn.style.display = 'none';
+        connectBtn.style.display = 'inline-flex';
+      });
+    })();
+  </script>
+</body>
+</html>

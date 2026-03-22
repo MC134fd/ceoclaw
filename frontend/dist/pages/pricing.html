@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — CEOClaw</title>
+  <meta name="description" content="Simple, transparent pricing for CEOClaw. Starter, Operator, and Scale plans to match where you are as a founder." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #EDE3D3; --color-bg-2: #E4D9C7;
+      --color-surface: rgba(250,246,238,0.72);
+      --color-surface-strong: rgba(250,246,238,0.92);
+      --color-text: #2E2A26; --color-text-dim: rgba(46,42,38,0.58);
+      --color-primary: #C96A2B; --color-secondary: #A86A3A;
+      --color-tertiary: #4FA3A5; --color-accent: #4FA3A5;
+      --shadow-soft: 0 20px 60px rgba(46,42,38,0.12);
+      --shadow-card: 0 16px 40px rgba(46,42,38,0.10);
+      --accent-gradient: linear-gradient(120deg,#C96A2B 0%,#A86A3A 50%,#8A5530 100%);
+      --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --transition: 0.28s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; overflow-x: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(201,106,43,0.09) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 20%, rgba(168,106,58,0.07) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+    h1,h2,h3,h4 { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; line-height: 1.12; letter-spacing: 0.01em; }
+    .container { width: min(100%, 1120px); margin-inline: auto; padding-inline: clamp(1rem,5vw,3rem); position: relative; z-index: 1; }
+    section { position: relative; z-index: 1; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    .gradient-text { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.70rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 1rem; opacity: 0.85; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; padding: 0.875rem 0; transition: background var(--transition), box-shadow var(--transition); }
+    nav.scrolled { background: rgba(250,246,238,0.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 1px 0 rgba(46,42,38,0.10), 0 4px 24px rgba(46,42,38,0.06); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .nav-logo { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 1.25rem; letter-spacing: 0.01em; color: var(--color-text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .nav-logo-mark { width: 28px; height: 28px; background: var(--accent-gradient); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #F8F5EF; flex-shrink: 0; }
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; align-items: center; }
+    .nav-links a { padding: 0.5rem 0.875rem; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition), background var(--transition); min-height: 44px; display: inline-flex; align-items: center; }
+    .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--color-text); background: var(--color-surface); }
+    .nav-actions { display: flex; align-items: center; gap: 0.625rem; }
+    .btn-ghost { padding: 0.5rem 1.125rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; border: 1px solid transparent; transition: all var(--transition); min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; background: none; }
+    .btn-ghost:hover { color: var(--color-text); border-color: rgba(46,42,38,0.22); background: var(--color-surface); }
+    .btn-ghost:focus-visible, .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .btn-primary { padding: 0.5rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; color: #F8F5EF; background: var(--accent-gradient); text-decoration: none; border: none; cursor: pointer; transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(168,106,58,0.32); }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(168,106,58,0.40); }
+    .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--color-text); }
+    @media (max-width: 1023px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-mobile-open .nav-links { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(250,246,238,0.97); backdrop-filter: blur(18px); padding: 1rem 1.5rem 1.5rem; border-top: 1px solid rgba(46,42,38,0.10); box-shadow: 0 8px 32px rgba(46,42,38,0.08); gap: 0.25rem; }
+      .nav-mobile-open .nav-links a { width: 100%; }
+    }
+
+    /* Page hero */
+    .page-hero { padding: clamp(4rem,10vw,7rem) 0 clamp(2rem,5vw,3.5rem); text-align: center; }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: 1.5rem; font-family: 'IBM Plex Mono', monospace; justify-content: center; }
+    .breadcrumb a { color: var(--color-primary); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { opacity: 0.5; }
+    .page-headline { font-size: clamp(2rem,5.5vw,3.75rem); font-weight: 800; letter-spacing: -0.025em; margin-bottom: 1rem; line-height: 1.1; }
+    .page-sub { font-size: clamp(1rem,2vw,1.15rem); color: var(--color-text-dim); max-width: 500px; margin-inline: auto; margin-bottom: 2.5rem; }
+
+    /* Toggle */
+    .billing-toggle { display: inline-flex; align-items: center; gap: 0.75rem; background: var(--color-surface-strong); border: 1px solid rgba(201,106,43,0.16); border-radius: 100px; padding: 0.375rem 0.75rem; margin-bottom: 3.5rem; }
+    .toggle-label { font-size: 0.875rem; font-weight: 500; color: var(--color-text-dim); cursor: pointer; transition: color var(--transition); min-height: 36px; display: flex; align-items: center; padding: 0 0.5rem; border-radius: 100px; }
+    .toggle-label.active { color: var(--color-text); background: #fff; box-shadow: 0 2px 8px rgba(46,42,38,0.1); }
+    .toggle-label:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .annual-badge { display: inline-flex; align-items: center; padding: 0.15rem 0.5rem; background: rgba(79,163,165,0.14); border: 1px solid rgba(79,163,165,0.3); border-radius: 100px; font-size: 0.7rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace; color: var(--color-accent); margin-left: 0.375rem; }
+
+    /* Pricing cards */
+    .pricing-section { padding: 0 0 clamp(4rem,10vw,7rem); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+    .plan-card { background: var(--color-surface-strong); border: 1px solid rgba(201,106,43,0.16); border-radius: var(--radius-lg); padding: 2.25rem; display: flex; flex-direction: column; transition: transform var(--transition), box-shadow var(--transition); position: relative; }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+    .plan-card.featured { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary), var(--shadow-soft); }
+    .featured-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent-gradient); color: #fff; font-size: 0.72rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; padding: 0.25rem 0.875rem; border-radius: 100px; white-space: nowrap; }
+    .plan-name { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 1rem; }
+    .plan-price { margin-bottom: 0.5rem; }
+    .price-amount { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-size: 2.75rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+    .price-amount.annual { display: none; }
+    .price-period { font-size: 0.875rem; color: var(--color-text-dim); margin-left: 0.25rem; }
+    .plan-desc { font-size: 0.875rem; color: var(--color-text-dim); margin-bottom: 1.75rem; line-height: 1.6; }
+    .plan-cta { display: block; text-align: center; padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; text-decoration: none; margin-bottom: 2rem; min-height: 44px; display: flex; align-items: center; justify-content: center; transition: all var(--transition); }
+    .plan-cta-outline { color: var(--color-text); border: 1px solid rgba(201,106,43,0.25); background: transparent; }
+    .plan-cta-outline:hover { border-color: var(--color-primary); background: rgba(201,106,43,0.04); transform: translateY(-1px); }
+    .plan-cta-filled { color: #fff; background: var(--accent-gradient); border: none; box-shadow: 0 4px 16px rgba(168,106,58,0.32); }
+    .plan-cta-filled:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(168,106,58,0.40); }
+    .plan-cta:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; }
+    .plan-feature { display: flex; gap: 0.625rem; align-items: flex-start; font-size: 0.875rem; }
+    .feat-check { width: 18px; height: 18px; border-radius: 5px; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .feat-check svg { width: 10px; height: 10px; }
+    .feat-x { width: 18px; height: 18px; border-radius: 5px; background: rgba(90,98,128,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; color: var(--color-text-dim); font-size: 0.75rem; }
+    .feat-label { color: var(--color-text-dim); }
+    .feat-label.strong { color: var(--color-text); font-weight: 500; }
+    .plan-divider { height: 1px; background: rgba(201,106,43,0.1); margin: 1.5rem 0; }
+    @media (max-width: 1023px) { .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; } }
+    @media (max-width: 639px) { .pricing-grid { max-width: 100%; } .plan-card { width: 100%; } }
+
+    /* FAQ */
+    .faq-section { padding: clamp(3rem,8vw,6rem) 0; }
+    .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 2.5rem; }
+    .faq-item { background: var(--color-surface); border: 1px solid rgba(201,106,43,0.12); border-radius: var(--radius-md); padding: 1.5rem; }
+    .faq-q { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.625rem; }
+    .faq-a { font-size: 0.875rem; color: var(--color-text-dim); line-height: 1.65; }
+    @media (max-width: 639px) { .faq-grid { grid-template-columns: 1fr; } }
+
+    /* CTA */
+    .pricing-cta { padding: clamp(3rem,8vw,6rem) 0; }
+    .pricing-cta-inner { background: var(--accent-gradient); border-radius: var(--radius-lg); padding: clamp(2.5rem,7vw,5rem); text-align: center; position: relative; overflow: hidden; }
+    .pricing-cta-inner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%); }
+    .pricing-cta-inner > * { position: relative; }
+    .cta-headline { font-size: clamp(1.5rem,4vw,2.5rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.875rem; }
+    .cta-sub { font-size: 1rem; color: rgba(255,255,255,0.82); margin-bottom: 1.75rem; }
+    .btn-white { padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; color: var(--color-primary); background: #fff; text-decoration: none; border: none; cursor: pointer; transition: transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .btn-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    /* Footer */
+    footer { padding: clamp(2rem,5vw,3.5rem) 0 2rem; border-top: 1px solid rgba(201,106,43,0.1); }
+    .footer-nav-sm { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 1.5rem; }
+    .footer-nav-sm a { font-size: 0.875rem; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition); }
+    .footer-nav-sm a:hover { color: var(--color-text); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-dim); flex-wrap: wrap; gap: 0.75rem; }
+    .footer-bottom-links { display: flex; gap: 1.5rem; }
+    .footer-bottom-links a { color: var(--color-text-dim); text-decoration: none; }
+    .footer-bottom-links a:hover { color: var(--color-text); }
+    .footer-nav-sm a:focus-visible,
+    .footer-bottom-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .nav-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-logo:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+    .nav-hamburger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .btn-ghost:focus-visible, .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  </style>
+</head>
+<body>
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo" aria-label="CEOClaw home">
+        <span class="nav-logo-mark" aria-hidden="true">C</span>CEOClaw
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="platform.html">Platform</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="pricing.html" aria-current="page">Pricing</a></li>
+        <li><a href="docs.html">Docs</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="auth.html" class="btn-ghost">Sign In</a>
+        <a href="auth.html" class="btn-primary">Start Free</a>
+      </div>
+      <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect y="3" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="9" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="15" width="20" height="2" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+  <section class="page-hero" aria-labelledby="pricing-headline">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Pricing</span>
+      </nav>
+      <div class="reveal">
+        <p class="section-label">Plans &amp; pricing</p>
+        <h1 class="page-headline" id="pricing-headline">Simple pricing.<br /><span class="gradient-text">No hidden complexity.</span></h1>
+        <p class="page-sub">Start free, scale as your revenue grows. Every plan includes all five operators.</p>
+      </div>
+
+      <!-- Billing toggle -->
+      <div class="billing-toggle reveal" role="group" aria-label="Billing period">
+        <button class="toggle-label active" id="toggle-monthly" aria-pressed="true">Monthly</button>
+        <button class="toggle-label" id="toggle-annual" aria-pressed="false">
+          Annual <span class="annual-badge">–20%</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing-section" aria-labelledby="plans-heading">
+    <div class="container">
+      <h2 id="plans-heading" class="sr-only">Pricing plans</h2>
+      <div class="pricing-grid reveal">
+
+        <!-- Starter -->
+        <article class="plan-card" aria-labelledby="plan-starter-name">
+          <p class="plan-name" id="plan-starter-name">Starter</p>
+          <div class="plan-price">
+            <span class="price-amount monthly" aria-label="$0 per month">$0</span>
+            <span class="price-amount annual" aria-label="$0 per year, free">$0</span>
+            <span class="price-period">/mo</span>
+          </div>
+          <p class="plan-desc">For founders exploring the platform. Five operators, real output, no card required.</p>
+          <a href="auth.html" class="plan-cta plan-cta-outline">Get Started Free</a>
+          <ul class="plan-features" aria-label="Starter plan features">
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label strong">5 AI operators</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">8 cycles per month</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">1 active project</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Website operator</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-x" aria-label="Not included" aria-hidden="true">–</span>
+              <span class="feat-label">Outreach sequences</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-x" aria-label="Not included" aria-hidden="true">–</span>
+              <span class="feat-label">Export &amp; summaries</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Operator (featured) -->
+        <article class="plan-card featured" aria-labelledby="plan-operator-name">
+          <span class="featured-badge" aria-label="Most popular plan">Most Popular</span>
+          <p class="plan-name" id="plan-operator-name">Operator</p>
+          <div class="plan-price">
+            <span class="price-amount monthly" aria-label="$49 per month">$49</span>
+            <span class="price-amount annual" aria-label="$39 per month, billed annually">$39</span>
+            <span class="price-period">/mo</span>
+          </div>
+          <p class="plan-desc">For active founders running one or two products. Unlimited cycles, full operator access, and exports.</p>
+          <a href="auth.html" class="plan-cta plan-cta-filled">Choose Operator &rarr;</a>
+          <ul class="plan-features" aria-label="Operator plan features">
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label strong">All 5 operators, full access</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label strong">Unlimited cycles</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Up to 3 active projects</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Outreach sequences</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Markdown export &amp; summaries</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Priority generation</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Scale -->
+        <article class="plan-card" aria-labelledby="plan-scale-name">
+          <p class="plan-name" id="plan-scale-name">Scale</p>
+          <div class="plan-price">
+            <span class="price-amount monthly" aria-label="$149 per month">$149</span>
+            <span class="price-amount annual" aria-label="$119 per month, billed annually">$119</span>
+            <span class="price-period">/mo</span>
+          </div>
+          <p class="plan-desc">For agencies and teams running multiple client projects with shared operator context.</p>
+          <a href="auth.html" class="plan-cta plan-cta-outline">Choose Scale</a>
+          <ul class="plan-features" aria-label="Scale plan features">
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label strong">Everything in Operator</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label strong">Unlimited projects</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Team seat (up to 5 users)</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">API access</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Custom operator config</span>
+            </li>
+            <li class="plan-feature">
+              <span class="feat-check" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="feat-label">Priority support</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">FAQ</p>
+        <h2 id="faq-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;">Common questions.</h2>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-item reveal">
+          <h3 class="faq-q">Do I need a credit card to start?</h3>
+          <p class="faq-a">No. The Starter plan is free forever — no credit card required. Upgrade only when you're ready to scale cycles and projects.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h3 class="faq-q">What counts as a "cycle"?</h3>
+          <p class="faq-a">One cycle is a full pass through the CEOClaw loop: planner → router → operator execution → evaluator assessment. Starter plans include 8 cycles per month.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h3 class="faq-q">Can I switch plans at any time?</h3>
+          <p class="faq-a">Yes. Upgrade or downgrade at any time. Upgrades are prorated immediately. Downgrades take effect at the next billing cycle.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h3 class="faq-q">What is the annual discount?</h3>
+          <p class="faq-a">Choosing annual billing saves 20% compared to the monthly rate. The discount is applied upfront — you're charged the full annual amount once per year.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h3 class="faq-q">Is my data private?</h3>
+          <p class="faq-a">Yes. Your project context, generated content, and operator outputs are scoped to your account. We don't use your data to train models.</p>
+        </div>
+        <div class="faq-item reveal">
+          <h3 class="faq-q">What does "custom operator config" mean in Scale?</h3>
+          <p class="faq-a">Scale users can set domain-specific prompting preferences, adjust operator routing weights, and configure the goal target per project — rather than using system defaults.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing-cta" aria-labelledby="pricing-cta-heading">
+    <div class="container">
+      <div class="pricing-cta-inner reveal">
+        <h2 class="cta-headline" id="pricing-cta-heading">Start building today.</h2>
+        <p class="cta-sub">Free to start. No credit card. Your execution layer is live in seconds.</p>
+        <a href="auth.html" class="btn-white">Start Free &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-nav-sm" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="platform.html">Platform</a>
+        <a href="about.html">About</a>
+        <a href="pricing.html" aria-current="page">Pricing</a>
+        <a href="docs.html">Docs</a>
+        <a href="auth.html">Sign Up</a>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CEOClaw. All rights reserved.</span>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      // Nav
+      var nav=document.getElementById('main-nav');
+      if(nav){
+        window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>12);},{passive:true});
+        var btn=nav.querySelector('.nav-hamburger');
+        if(btn){
+          btn.addEventListener('click',function(){var open=nav.classList.toggle('nav-mobile-open');btn.setAttribute('aria-expanded',String(open));});
+          document.addEventListener('click',function(e){if(nav.classList.contains('nav-mobile-open')&&!nav.contains(e.target)){nav.classList.remove('nav-mobile-open');btn.setAttribute('aria-expanded','false');}});
+        }
+      }
+      // Billing toggle
+      var btnMonthly=document.getElementById('toggle-monthly');
+      var btnAnnual=document.getElementById('toggle-annual');
+      var monthlyPrices=document.querySelectorAll('.price-amount.monthly');
+      var annualPrices=document.querySelectorAll('.price-amount.annual');
+      function setMonthly(){
+        btnMonthly.classList.add('active');btnMonthly.setAttribute('aria-pressed','true');
+        btnAnnual.classList.remove('active');btnAnnual.setAttribute('aria-pressed','false');
+        monthlyPrices.forEach(function(el){el.style.display='';});
+        annualPrices.forEach(function(el){el.style.display='none';});
+      }
+      function setAnnual(){
+        btnAnnual.classList.add('active');btnAnnual.setAttribute('aria-pressed','true');
+        btnMonthly.classList.remove('active');btnMonthly.setAttribute('aria-pressed','false');
+        annualPrices.forEach(function(el){el.style.display='';});
+        monthlyPrices.forEach(function(el){el.style.display='none';});
+      }
+      btnMonthly.addEventListener('click',setMonthly);
+      btnAnnual.addEventListener('click',setAnnual);
+      setMonthly(); // initial state
+      // Reveal
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible');});return;
+      }
+      var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -32px 0px'});
+      document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+    }());
+  </script>
+</body>
+</html>

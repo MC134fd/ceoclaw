@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { deleteSession, listSessions } from '../services/api';
 import type { Session } from '../types';
 
@@ -20,7 +19,6 @@ function formatDate(iso: string): string {
 
 export function SessionSidebar({ currentSessionId, onSelectSession, onNewSession, onSessionDeleted }: Props) {
   const queryClient = useQueryClient();
-  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ['sessions'],
@@ -32,7 +30,6 @@ export function SessionSidebar({ currentSessionId, onSelectSession, onNewSession
     mutationFn: (sessionId: string) => deleteSession(sessionId),
     onSuccess: (_data, sessionId) => {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      setConfirmId(null);
       onSessionDeleted?.(sessionId);
     },
   });
@@ -54,7 +51,6 @@ export function SessionSidebar({ currentSessionId, onSelectSession, onNewSession
         )}
         {sessions.map((session) => {
           const isActive = session.session_id === currentSessionId;
-          const isConfirming = confirmId === session.session_id;
           const isDeleting = deleteMutation.isPending && deleteMutation.variables === session.session_id;
 
           return (
@@ -79,32 +75,16 @@ export function SessionSidebar({ currentSessionId, onSelectSession, onNewSession
                 <span className="sidebar-item-date">{formatDate(session.updated_at)}</span>
               </button>
 
-              {/* Delete controls — always visible */}
+              {/* Delete control (shows on hover) */}
               {!isDeleting && (
-                isConfirming ? (
-                  <div className="sidebar-confirm">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(session.session_id); }}
-                      className="sidebar-confirm-delete"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setConfirmId(null); }}
-                      className="sidebar-confirm-cancel"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmId(session.session_id); }}
-                    title="Delete session"
-                    className="sidebar-delete-btn"
-                  >
-                    ✕
-                  </button>
-                )
+                <button
+                  onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(session.session_id); }}
+                  title="Delete session"
+                  className="sidebar-delete-btn"
+                  aria-label={`Delete ${session.product_name || session.slug || 'session'}`}
+                >
+                  ✕
+                </button>
               )}
             </div>
           );

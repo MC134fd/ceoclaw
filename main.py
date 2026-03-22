@@ -2,9 +2,9 @@
 CEOClaw entry point  – v0.4 (demo-ready subcommands).
 
 Subcommands:
-    python main.py run    [--cycles N] [--mock-model] [--continuous] [--goal-mrr X]
+    python main.py run    [--cycles N] [--continuous] [--goal-mrr X]
     python main.py export [--run-id UUID]      # omit --run-id to export most recent run
-    python main.py demo   [--cycles N] [--mock-model] [--goal-mrr X]
+    python main.py demo   [--cycles N] [--goal-mrr X]
 """
 
 import argparse
@@ -22,10 +22,9 @@ def _cmd_run(args: argparse.Namespace) -> None:
         cycles=args.cycles,
         continuous=args.continuous,
         goal_mrr=args.goal_mrr,
-        mock_mode=args.mock_model,
         max_cycles=args.max_cycles,
     )
-    _print_final_summary(final_state, mock_mode=args.mock_model)
+    _print_final_summary(final_state)
 
 
 # ---------------------------------------------------------------------------
@@ -72,13 +71,12 @@ def _cmd_demo(args: argparse.Namespace) -> None:
     print("\n" + "=" * 66)
     print("  CEOClaw  –  Autonomous Founder Agent  –  Demo Mode")
     print("=" * 66)
-    print(f"  goal=${args.goal_mrr:.0f} MRR | cycles={args.cycles} | mock={args.mock_model}")
+    print(f"  goal=${args.goal_mrr:.0f} MRR | cycles={args.cycles}")
     print("-" * 66)
 
     final_state = run_graph(
         cycles=args.cycles,
         goal_mrr=args.goal_mrr,
-        mock_mode=args.mock_model,
         max_cycles=args.cycles,
         quiet=True,
     )
@@ -89,7 +87,7 @@ def _cmd_demo(args: argparse.Namespace) -> None:
     _print_cycle_table(run_id)
 
     # Final KPI summary (run_id always visible)
-    _print_final_summary(final_state, mock_mode=args.mock_model)
+    _print_final_summary(final_state)
 
     # Auto-export — failure never crashes the display
     print("  Exporting run summary…")
@@ -141,15 +139,13 @@ def _print_cycle_table(run_id: str) -> None:
     print(sep)
 
 
-def _print_final_summary(final_state: dict, *, mock_mode: bool = False) -> None:
+def _print_final_summary(final_state: dict) -> None:
     evaluation = final_state.get("evaluation", {})
     metrics = final_state.get("latest_metrics", {})
     run_id = final_state.get("run_id", "n/a")
     errors = len(final_state.get("errors", []))
-    mode_tag = "  Mode        : mock (deterministic — no FLock API)\n" if mock_mode else ""
     print(
         f"\n  Run ID      : {run_id}\n"
-        f"{mode_tag}"
         f"  Cycles      : {final_state.get('cycle_count', 0)}\n"
         f"  MRR         : ${metrics.get('mrr', 0.0):.2f}"
         f"  (goal ${final_state.get('goal_mrr', 100.0):.2f})\n"
@@ -204,8 +200,6 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                        help="Target MRR in USD (default: 100.0).")
     run_p.add_argument("--max-cycles", type=int, default=20, dest="max_cycles",
                        help="Hard cycle ceiling (default: 20).")
-    run_p.add_argument("--mock-model", action="store_true", dest="mock_model",
-                       help="Use deterministic mock responses (no FLock API).")
 
     # --- export ---
     exp_p = sub.add_parser("export", help="Export a Markdown run summary.")
@@ -218,9 +212,6 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="Cycles to run (default: 8).")
     demo_p.add_argument("--goal-mrr", type=float, default=100.0, dest="goal_mrr",
                         help="Target MRR in USD (default: 100.0).")
-    demo_p.add_argument("--mock-model", action="store_true", dest="mock_model",
-                        help="Use deterministic mock responses (no FLock API).")
-
     return parser.parse_args(argv)
 
 

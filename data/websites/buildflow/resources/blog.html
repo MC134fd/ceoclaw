@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-lg); }
+    .blog-card { overflow: hidden; padding: 0; }
+    .blog-image { height: 180px; background: linear-gradient(135deg, var(--color-surface), var(--color-surface-soft)); display: flex; align-items: center; justify-content: center; font-size: 3rem; border-bottom: 1px solid var(--color-border); }
+    .blog-body { padding: var(--space-lg); }
+    .blog-meta { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 0.75rem; }
+    .blog-tag { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-pill); font-weight: 600; letter-spacing: 0.04em; }
+    .blog-date { font-size: 0.75rem; color: var(--color-text-subtle); font-family: var(--font-mono); }
+    .blog-title { font-size: 1.1rem; font-family: var(--font-display); font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
+    .blog-excerpt { font-size: 0.875rem; color: var(--color-text-muted); max-width: unset; }
+    .blog-author { display: flex; align-items: center; gap: 0.6rem; margin-top: var(--space-md); }
+    .blog-author-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #0F172A; flex-shrink: 0; }
+    .blog-author-name { font-size: 0.8rem; color: var(--color-text-muted); }
+    .blog-read-time { font-size: 0.75rem; color: var(--color-text-subtle); margin-left: auto; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-links">
+      <a href="docs.html">Docs</a>
+      <a href="guides.html">Guides</a>
+      <a href="../pages/pricing.html">Pricing</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-secondary mb-md">Blog</div>
+    <h1>Founder intelligence,<br>delivered weekly.</h1>
+    <p>Tactical insights on building, growing, and funding startups — from the team at Buildflow and the founders we work with.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="blog-grid">
+      <a href="#" class="card blog-card" style="text-decoration:none; color:inherit;">
+        <div class="blog-image">🧠</div>
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span class="blog-tag badge-primary badge">Strategy</span>
+            <span class="blog-date">Mar 15, 2026</span>
+          </div>
+          <div class="blog-title">Why most AI tools fail founders (and what actually works)</div>
+          <div class="blog-excerpt">Generic AI gives generic output. Here's how purpose-built agents with startup context change the equation for solo founders.</div>
+          <div class="blog-author">
+            <div class="blog-author-avatar">JC</div>
+            <div class="blog-author-name">Jordan Cole</div>
+            <div class="blog-read-time">8 min read</div>
+          </div>
+        </div>
+      </a>
+      <a href="#" class="card blog-card" style="text-decoration:none; color:inherit;">
+        <div class="blog-image">🚀</div>
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span class="blog-tag badge-accent badge">GTM</span>
+            <span class="blog-date">Mar 10, 2026</span>
+          </div>
+          <div class="blog-title">The cold email playbook that got us 200 beta users in 2 weeks</div>
+          <div class="blog-excerpt">Exact templates, subject lines, and follow-up sequences we used to fill our beta list — plus what we'd do differently.</div>
+          <div class="blog-author">
+            <div class="blog-author-avatar">RO</div>
+            <div class="blog-author-name">Rachel O'Brien</div>
+            <div class="blog-read-time">6 min read</div>
+          </div>
+        </div>
+      </a>
+      <a href="#" class="card blog-card" style="text-decoration:none; color:inherit;">
+        <div class="blog-image">💰</div>
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span class="blog-tag badge-warm badge">Fundraising</span>
+            <span class="blog-date">Mar 5, 2026</span>
+          </div>
+          <div class="blog-title">How to model your startup's financials before you have any revenue</div>
+          <div class="blog-excerpt">A step-by-step guide to building a believable financial model when all you have is assumptions and ambition.</div>
+          <div class="blog-author">
+            <div class="blog-author-avatar">AS</div>
+            <div class="blog-author-name">Anya Sharma</div>
+            <div class="blog-read-time">11 min read</div>
+          </div>
+        </div>
+      </a>
+      <a href="#" class="card blog-card" style="text-decoration:none; color:inherit;">
+        <div class="blog-image">🎯</div>
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span class="blog-tag badge-secondary badge">Product</span>
+            <span class="blog-date">Feb 28, 2026</span>
+          </div>
+          <div class="blog-title">ICP frameworks that actually help you build the right thing</div>
+          <div class="blog-excerpt">The difference between a vague ICP and one that drives product decisions, pricing, and messaging simultaneously.</div>
+          <div class="blog-author">
+            <div class="blog-author-avatar">ML</div>
+            <div class="blog-author-name">Marcus Liu</div>
+            <div class="blog-read-time">9 min read</div>
+          </div>
+        </div>
+      </a>
+      <a href="#" class="card blog-card" style="text-decoration:none; color:inherit;">
+        <div class="blog-image">⚡</div>
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span class="blog-tag badge-primary badge">AI</span>
+            <span class="blog-date">Feb 20, 2026</span>
+          </div>
+          <div class="blog-title">Multi-agent AI: the biggest unlock since the personal computer</div>
+          <div class="blog-excerpt">Why the shift from single AI queries to coordinated agent teams changes what's possible for one-person startups.</div>
+          <div class="blog-author">
+            <div class="blog-author-avatar">AS</div>
+            <div class="blog-author-name">Anya Sharma</div>
+            <div class="blog-read-time">14 min read</div>
+          </div>
+        </div>
+      </a>
+      <a href="#" class="card blog-card" style="text-decoration:none; color:inherit;">
+        <div class="blog-image">📈</div>
+        <div class="blog-body">
+          <div class="blog-meta">
+            <span class="blog-tag badge-accent badge">Growth</span>
+            <span class="blog-date">Feb 14, 2026</span>
+          </div>
+          <div class="blog-title">How Nearwave hit $1M ARR in 11 months with a team of 2</div>
+          <div class="blog-excerpt">A deep-dive into the systems, decisions, and tools that Sarah Kim used to build one of our fastest-growing customers.</div>
+          <div class="blog-author">
+            <div class="blog-author-avatar">JC</div>
+            <div class="blog-author-name">Jordan Cole</div>
+            <div class="blog-read-time">18 min read</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a><p>The AI-native operating system for ambitious founders.</p></div>
+      <div class="footer-col"><h4>Resources</h4><ul><li><a href="docs.html">Docs</a></li><li><a href="blog.html">Blog</a></li><li><a href="guides.html">Guides</a></li><li><a href="faq.html">FAQ</a></li></ul></div>
+      <div class="footer-col"><h4>Product</h4><ul><li><a href="../product/features.html">Features</a></li><li><a href="../product/agents.html">Agents</a></li></ul></div>
+      <div class="footer-col"><h4>Legal</h4><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

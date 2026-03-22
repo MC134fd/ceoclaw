@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Dogblogger People App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root{
+      --color-primary:#16a34a;--color-secondary:#15803d;--color-bg:#f0fdf4;--color-surface:#ffffff;--color-text:#14532d;--accent-gradient:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);
+      --space-sm: clamp(0.5rem,1vw,0.75rem);--space-md: clamp(0.75rem,1.5vw,1.25rem);--space-lg: clamp(1rem,2vw,1.75rem);--container-width: clamp(320px,90vw,1200px);--radius:12px;
+    }
+    body{margin:0;font-family:'DM Sans',sans-serif;background:var(--color-bg);color:var(--color-text);}
+    .app-wrap{display:flex;min-height:100vh}
+    aside{width:260px;background:var(--color-surface);border-right:1px solid rgba(20,83,45,0.04);padding:var(--space-md);}
+    main{flex:1;padding:var(--space-md);max-width:var(--container-width);margin-inline:auto}
+    .brand{font-family:'Cormorant Garamond',serif;font-weight:600;margin-bottom:var(--space-md)}
+    .nav{display:flex;flex-direction:column;gap:var(--space-sm)}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius);border:1px solid rgba(20,83,45,0.04);box-shadow:0 4px 16px rgba(0,0,0,0.04)}
+    .metrics{display:flex;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-md)}
+    .metric{flex:1;min-width:160px;padding:var(--space-md);background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.85));border-radius:10px}
+    label{font-weight:600;font-size:0.95rem;display:block;margin-bottom:0.35rem}
+    input[type=password]{width:100%;padding:0.6rem;border-radius:8px;border:1px solid rgba(20,83,45,0.06)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:var(--space-sm) var(--space-md);border-radius:10px;border:0}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);font-weight:600}
+    @media (max-width:1024px){aside{width:220px}}
+    @media (max-width:640px){.app-wrap{flex-direction:column}aside{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="app-wrap">
+    <aside>
+      <div class="brand">Dogblogger People App</div>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="index.html#features">Features</a>
+        <a href="pages/pricing.html">Pricing</a>
+        <a href="pages/signup.html">Account</a>
+      </nav>
+      <div style="margin-top:var(--space-md);">
+        <div class="card" style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          <div style="font-weight:600">Quick actions</div>
+          <button class="btn btn-primary" style="width:100%">New listing</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <h1 style="font-family:'Cormorant Garamond',serif;margin-top:0">Dashboard</h1>
+      <p style="color:rgba(20,83,45,0.6)">Manage listings, review leads in your user dashboard, and export data when you need it.</p>
+
+      <div class="metrics">
+        <div class="metric card">
+          <div style="font-size:0.9rem;color:var(--color-muted)">Active listings</div>
+          <div style="font-family:'Cormorant Garamond',font-size:1.6rem;margin-top:6px;">24</div>
+        </div>
+        <div class="metric card">
+          <div style="font-size:0.9rem;color:var(--color-muted)">Pending inquiries</div>
+          <div style="font-family:'Cormorant Garamond',font-size:1.6rem;margin-top:6px;">7</div>
+        </div>
+        <div class="metric card">
+          <div style="font-size:0.9rem;color:var(--color-muted)">Listings exported</div>
+          <div style="font-family:'Cormorant Garamond',font-size:1.6rem;margin-top:6px;">12</div>
+        </div>
+      </div>
+
+      <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--space-md)">
+        <div class="card">
+          <h3 style="margin-top:0">Connect your account</h3>
+          <p style="color:var(--color-muted);margin-top:0">Provide an API token to enable exports and marketplace integrations.</p>
+          <label for="apiToken">API token</label>
+          <input id="apiToken" type="password" placeholder="sk-..." aria-label="API token" />
+          <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm)">
+            <button class="btn btn-primary">Connect</button>
+            <button class="btn btn-secondary" style="border:1.5px solid var(--color-primary);background:transparent;color:var(--color-primary)">Disconnect</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">Recent activity</h3>
+          <ul style="margin:0;padding-left:1rem;color:var(--color-muted)">
+            <li>New listing: "Labrador pup" — 2h ago</li>
+            <li>Export completed — yesterday</li>
+            <li>Message from buyer — 3 days ago</li>
+          </ul>
+        </div>
+      </section>
+
+      <section style="margin-top:var(--space-lg);">
+        <div class="card">
+          <h3 style="margin-top:0">Listings table</h3>
+          <div style="overflow:auto;margin-top:var(--space-sm)">
+            <table style="width:100%;border-collapse:collapse;font-size:0.95rem">
+              <thead style="text-align:left;color:var(--color-muted)"><tr><th>Title</th><th>Status</th><th>Price</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td>Golden Retriever pup</td><td>Active</td><td>$1,200</td><td><a href="#">View</a></td></tr>
+                <tr><td>Beagle pair</td><td>Pending</td><td>$600</td><td><a href="#">View</a></td></tr>
+                <tr><td>French Bulldog</td><td>Sold</td><td>$2,500</td><td><a href="#">Archive</a></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Basic app interactions: input focus style, no external deps
+    (function(){
+      const token = document.getElementById('apiToken');
+      if(token){ token.addEventListener('input', ()=>{ token.style.borderColor = token.value ? 'var(--color-secondary)' : 'rgba(20,83,45,0.06)'; }); }
+    })();
+  </script>
+</body>
+</html>

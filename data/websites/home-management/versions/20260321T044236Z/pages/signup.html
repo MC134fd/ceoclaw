@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — Home Management</title>
+  <meta name="description" content="Sign up for Home Management — streamlined core functionality, a clean user dashboard, and safe data export for homeowners." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-accent-pink: #ec4899;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --color-border: #bbf7d0;
+      --accent-gradient: linear-gradient(135deg, #16a34a, #15803d);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background:var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding:clamp(12px, calc(12px + var(--spacing) * 2px), 28px);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+
+    /* Navbar */
+    .nav {
+      position:sticky;
+      top:12px;
+      width:100%;
+      max-width:1100px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding:10px 14px;
+      background:transparent;
+      border-radius:calc(var(--radius-md) - 2px);
+      transition:all .22s ease;
+      z-index:30;
+    }
+    .nav-inner{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:8px;
+      border-radius:var(--radius-md);
+    }
+    .brand{
+      font-family:var(--font-display);
+      font-size:clamp(18px, 2.2vw, 26px);
+      color:var(--color-primary);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+    }
+    .brand .logo {
+      width:40px; height:40px;
+      display:inline-grid;
+      place-items:center;
+      background:var(--accent-gradient);
+      color:white;
+      font-weight:700;
+      border-radius:10px;
+      box-shadow:var(--shadow-sm);
+      font-family:var(--font-body);
+    }
+    .nav-links{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .nav a{
+      font-size:14px;
+      text-decoration:none;
+      color:var(--color-text);
+      padding:8px 10px;
+      border-radius:8px;
+      transition:background .18s ease,color .18s ease,transform .12s ease;
+    }
+    .nav a:hover{ background:rgba(22,163,74,0.06); color:var(--color-primary); transform:translateY(-1px) }
+    .nav.scrolled .nav-inner{
+      background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.82));
+      box-shadow:var(--shadow-sm);
+      border:1px solid var(--color-border);
+      backdrop-filter: blur(6px);
+    }
+
+    /* Center card */
+    .container{
+      width:100%;
+      max-width:920px;
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:clamp(14px, calc(var(--spacing) * 6px), 28px);
+      align-items:start;
+    }
+
+    .card {
+      background:var(--color-surface);
+      border-radius:var(--radius-lg);
+      padding: clamp(18px, calc(var(--spacing) * 10px), 36px);
+      box-shadow:var(--shadow-lg);
+      border:1px solid var(--color-border);
+    }
+
+    /* Bento grid for features below form */
+    .bento-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: clamp(12px, calc(var(--spacing) * 8px), 24px);
+      margin-top:16px;
+    }
+
+    .feature{
+      background:linear-gradient(180deg, rgba(22,163,74,0.03), transparent);
+      border-radius:var(--radius-md);
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .feature .icon{
+      min-width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--color-primary);
+      color:white;
+      display:grid;
+      place-items:center;
+      font-weight:600;
+      box-shadow:var(--shadow-sm);
+      font-family:var(--font-body);
+    }
+    .feature h4{ margin:0; font-size:15px; color:var(--color-text) }
+    .feature p{ margin:4px 0 0 0; color:var(--color-muted); font-size:13px }
+
+    /* Form */
+    form{ display:grid; gap:12px; margin-top:8px }
+    label{ font-size:13px; color:var(--color-text); display:block; margin-bottom:6px; font-weight:500 }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      padding:12px 14px;
+      border-radius:var(--radius-sm);
+      border:1px solid rgba(20,83,45,0.08);
+      background:linear-gradient(180deg, white, #fbfff8);
+      color:var(--color-text);
+      font-size:15px;
+      outline:none;
+      transition:box-shadow .12s ease, border-color .12s ease, transform .06s ease;
+      box-shadow:var(--shadow-sm);
+    }
+    input:focus{
+      box-shadow:0 6px 22px rgba(21,128,61,0.08);
+      border-color:var(--color-primary);
+      transform:translateY(-1px);
+    }
+
+    .helper{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:44px;
+      min-width:140px;
+      padding:10px 16px;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      font-weight:600;
+      font-size:15px;
+      color:white;
+      background:var(--accent-gradient);
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      box-shadow:var(--shadow-md);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+    }
+    .btn:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lg) }
+    .btn:active{ transform:translateY(0); opacity:.95 }
+    .btn.ghost{
+      background:transparent;
+      color:var(--color-primary);
+      border:1px solid rgba(22,163,74,0.12);
+      box-shadow:none;
+    }
+
+    .signin-link{
+      font-size:14px;
+      color:var(--color-muted);
+      margin-top:6px;
+    }
+    .signin-link a{ color:var(--color-primary); text-decoration:none; font-weight:600 }
+
+    .note{
+      font-size:13px;
+      color:var(--color-muted);
+      margin-top:8px;
+    }
+
+    /* Reveal on scroll */
+    .reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1) }
+    .reveal.revealed{ opacity:1; transform:none }
+
+    /* Small form error feedback */
+    .error{
+      color:var(--color-accent-pink);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    /* Footer */
+    .footer{
+      margin-top:12px;
+      color:var(--color-muted);
+      font-size:13px;
+    }
+
+    /* Responsive breakpoints */
+    @media (min-width: 640px){
+      .container{ grid-template-columns: 1fr; }
+      .nav{ top:16px }
+      body{ padding:clamp(14px, calc(var(--spacing) * 8px), 36px) }
+    }
+    @media (min-width: 1024px){
+      .container{ grid-template-columns: 1fr; }
+      .card{ padding: clamp(24px, calc(var(--spacing) * 14px), 48px) }
+      .nav{ top:20px }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="siteNav" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="../index.html">
+        <span class="logo" aria-hidden="true">HM</span>
+        <span>Home Management</span>
+      </a>
+      <div class="nav-links" role="navigation" aria-label="Main navigation">
+        <a href="../index.html">Overview</a>
+        <a href="signup.html" aria-current="page">Sign up</a>
+        <a href="../app.html">Open app</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" id="mainContent">
+    <section class="card reveal" aria-labelledby="signupTitle">
+      <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div>
+          <h1 id="signupTitle" style="margin:0;font-family:var(--font-display);font-size:22px;color:var(--color-text);">Create your Home Management account</h1>
+          <p class="helper" style="margin-top:6px">Fast setup. Focus on core functionality: a clean user dashboard, easy task tracking, and secure data export when you need it.</p>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;color:var(--color-muted)">Secure • Efficient</div>
+          <div style="font-size:12px;color:var(--color-muted);margin-top:6px">No credit card required</div>
+        </div>
+      </header>
+
+      <form id="signupForm" action="../app.html" method="post" novalidate>
+        <div class="field">
+          <label for="fullname">Full name</label>
+          <input id="fullname" name="fullname" type="text" aria-label="Full name" autocomplete="name" required />
+          <div id="err-name" class="error" aria-live="polite"></div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" aria-label="Email address" autocomplete="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" />
+          <div id="err-email" class="error" aria-live="polite"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" aria-label="Password" required minlength="8" autocomplete="new-password" />
+          <div id="err-password" class="error" aria-live="polite"></div>
+          <div class="helper">Minimum 8 characters — required to protect your home data and export settings.</div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn" id="submitBtn">Get Started</button>
+          <a class="btn ghost" href="../index.html" role="button">Back to Overview</a>
+        </div>
+
+        <div class="signin-link">
+          Already have an account? <a href="../index.html">Sign in</a>
+        </div>
+
+        <div class="note">
+          By signing up you agree to store your project data securely. Home Management supports CSV and JSON data export from your user dashboard whenever you need portability.
+        </div>
+      </form>
+
+      <div class="bento-grid reveal" style="margin-top:18px;">
+        <div class="feature">
+          <div class="icon" aria-hidden="true">⚙️</div>
+          <div>
+            <h4>Focused core functionality</h4>
+            <p>Essential tools: task lists, maintenance schedules, and inventory — uncluttered and reliable.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="icon" aria-hidden="true">📊</div>
+          <div>
+            <h4>Clear user dashboard</h4>
+            <p>One view for priorities, recent activity, and upcoming home maintenance items.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="icon" aria-hidden="true">⬇️</div>
+          <div>
+            <h4>Data export</h4>
+            <p>Export your data on demand in CSV or JSON formats for backups or migration.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <div class="icon" aria-hidden="true">🔒</div>
+          <div>
+            <h4>Privacy-first</h4>
+            <p>Your home records are encrypted in transit and stored with strict access controls.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer reveal" style="text-align:center;">
+      <div>Home Management • Hands-on tools for homeowners</div>
+      <div style="margin-top:6px">Need help? Visit <a href="../index.html" style="color:var(--color-primary);text-decoration:none;">Overview</a> or open the <a href="../app.html" style="color:var(--color-primary);text-decoration:none;">app</a>.</div>
+    </footer>
+  </main>
+
+  <script>
+    // Sticky navbar: toggle .scrolled when scrollTop > 14px
+    (function(){
+      const nav = document.getElementById('siteNav');
+      const onScroll = () => {
+        if (window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // Reveal on scroll using IntersectionObserver
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        reveals.forEach(r => r.classList.add('revealed'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      reveals.forEach(r => io.observe(r));
+    })();
+
+    // Form validation
+    (function(){
+      const form = document.getElementById('signupForm');
+      const nameField = document.getElementById('fullname');
+      const emailField = document.getElementById('email');
+      const passwordField = document.getElementById('password');
+
+      const errName = document.getElementById('err-name');
+      const errEmail = document.getElementById('err-email');
+      const errPassword = document.getElementById('err-password');
+
+      function validateName(){
+        const v = nameField.value.trim();
+        if (!v) { errName.textContent = 'Please enter your full name.'; return false }
+        errName.textContent = '';
+        return true;
+      }
+
+      function validateEmail(){
+        const v = emailField.value.trim();
+        // simple client-side email regex
+        const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        if (!v) { errEmail.textContent = 'Email is required.'; return false }
+        if (!ok) { errEmail.textContent = 'Enter a valid email address.'; return false }
+        errEmail.textContent = '';
+        return true;
+      }
+
+      function validatePassword(){
+        const v = passwordField.value || '';
+        if (!v) { errPassword.textContent = 'Choose a password.'; return false }
+        if (v.length < 8) { errPassword.textContent = 'Password must be at least 8 characters.'; return false }
+        errPassword.textContent = '';
+        return true;
+      }
+
+      nameField.addEventListener('input', validateName);
+      emailField.addEventListener('input', validateEmail);
+      passwordField.addEventListener('input', validatePassword);
+
+      form.addEventListener('submit', function(e){
+        const okName = validateName();
+        const okEmail = validateEmail();
+        const okPassword = validatePassword();
+        if (!(okName && okEmail && okPassword)) {
+          e.preventDefault();
+          // focus first invalid
+          if (!okName) nameField.focus();
+          else if (!okEmail) emailField.focus();
+          else passwordField.focus();
+          return false;
+        }
+        // Let the form submit to ../app.html (server-side or client-side will handle)
+        // But to ensure smooth navigation in static demo, perform a redirect.
+        // Note: removing redirect would let normal form submission handle it.
+        // We allow native submission; no preventDefault here.
+      });
+    })();
+  </script>
+</body>
+</html>

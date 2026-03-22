@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agents — Buildflow</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .agent-detail { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-2xl); margin-bottom: var(--space-2xl); padding-bottom: var(--space-2xl); border-bottom: 1px solid var(--color-border-soft); }
+    .agent-detail:last-child { border-bottom: none; }
+    .agent-sidebar { }
+    .agent-badge-large { width: 64px; height: 64px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: var(--space-md); }
+    .agent-name { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin-bottom: 0.35rem; }
+    .agent-domain { font-size: 0.8rem; color: var(--color-text-subtle); margin-bottom: var(--space-md); }
+    .capability-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .capability { font-size: 0.875rem; color: var(--color-text-muted); display: flex; align-items: flex-start; gap: 0.5rem; }
+    .capability::before { content: '→'; color: var(--color-primary); flex-shrink: 0; }
+    .sample-output { background: var(--color-surface-soft); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); }
+    .output-label { font-size: 0.7rem; font-family: var(--font-mono); color: var(--color-text-subtle); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: var(--space-sm); display: flex; align-items: center; gap: 0.5rem; }
+    .output-content { font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.7; }
+    .output-content strong { color: var(--color-text); }
+    @media (max-width: 768px) { .agent-detail { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="../index.html" class="navbar-logo"><div class="logo-mark">BF</div> Buildflow</a>
+    <div class="navbar-links">
+      <a href="features.html">Features</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="../pages/pricing.html">Pricing</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="../pages/auth.html" class="btn btn-ghost btn-sm">Sign in</a>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-sm">Start free</a>
+    </div>
+  </div>
+</nav>
+<section class="page-header section-sm">
+  <div class="container">
+    <div class="badge badge-primary mb-md">AI Agents</div>
+    <h1>Your whole team,<br>built into one system.</h1>
+    <p>Six specialized agents. One shared context. Infinite leverage for founders building without a full team.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <!-- Product Agent -->
+    <div class="agent-detail">
+      <div class="agent-sidebar">
+        <div class="agent-badge-large feature-icon-primary">🧠</div>
+        <div class="agent-name">Product Agent</div>
+        <div class="agent-domain">Strategy · Roadmap · PRD</div>
+        <div class="badge badge-primary mb-md">Core agent</div>
+        <div class="capability-list">
+          <div class="capability">Full PRD generation from one-liners</div>
+          <div class="capability">Feature prioritization (RICE, MoSCoW)</div>
+          <div class="capability">User story & acceptance criteria writing</div>
+          <div class="capability">Competitive feature gap analysis</div>
+          <div class="capability">Sprint planning and roadmap</div>
+        </div>
+      </div>
+      <div>
+        <div class="sample-output">
+          <div class="output-label">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);display:inline-block;"></span>
+            Sample output — Product Agent
+          </div>
+          <div class="output-content">
+            <strong>Feature: Smart Onboarding Flow</strong><br><br>
+            <strong>Problem:</strong> 68% of trial users drop before completing setup, citing confusion about first steps.<br><br>
+            <strong>Proposed solution:</strong> An adaptive onboarding wizard that detects startup type and stage, then serves a personalized 5-step activation path. Each step has a ≤90s time-to-value target.<br><br>
+            <strong>Success metrics:</strong> Onboarding completion rate ↑ from 32% → 60%. Activation (value moment hit within 7 days) ↑ from 41% → 70%.<br><br>
+            <strong>Effort:</strong> M (8 story points) · <strong>Impact:</strong> H · <strong>Priority:</strong> P1
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marketing Agent -->
+    <div class="agent-detail">
+      <div class="agent-sidebar">
+        <div class="agent-badge-large feature-icon-secondary">🚀</div>
+        <div class="agent-name">Marketing Agent</div>
+        <div class="agent-domain">GTM · Content · Outreach</div>
+        <div class="badge badge-secondary mb-md">Core agent</div>
+        <div class="capability-list">
+          <div class="capability">Cold email sequences (multi-variant)</div>
+          <div class="capability">Landing page copy and CTA testing</div>
+          <div class="capability">SEO strategy and content briefs</div>
+          <div class="capability">Launch campaign playbooks</div>
+          <div class="capability">Social and ad creative frameworks</div>
+        </div>
+      </div>
+      <div>
+        <div class="sample-output">
+          <div class="output-label">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);display:inline-block;"></span>
+            Sample output — Marketing Agent
+          </div>
+          <div class="output-content">
+            <strong>Cold email — Variant A (Problem-led)</strong><br><br>
+            Subject: You're probably managing your startup on 6 different tools<br><br>
+            Hi {{first_name}},<br><br>
+            Most solo founders I talk to have the same stack: Notion for notes, Figma for design, Linear for tasks, some spreadsheet for finances, another for outreach…<br><br>
+            The problem isn't the tools. It's the coordination tax — the cognitive overhead of switching contexts 40 times a day.<br><br>
+            Buildflow collapses that into one workspace with AI agents that actually know your startup's context. Would you spend 15 minutes this week to see it?
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Agent -->
+    <div class="agent-detail">
+      <div class="agent-sidebar">
+        <div class="agent-badge-large feature-icon-accent">🎯</div>
+        <div class="agent-name">Sales Agent</div>
+        <div class="agent-domain">Pipeline · Proposals · CRM</div>
+        <div class="badge badge-accent mb-md">Core agent</div>
+        <div class="capability-list">
+          <div class="capability">Lead qualification and scoring</div>
+          <div class="capability">Custom proposal generation</div>
+          <div class="capability">Follow-up sequence automation</div>
+          <div class="capability">Objection handling frameworks</div>
+          <div class="capability">Pipeline health reporting</div>
+        </div>
+      </div>
+      <div>
+        <div class="sample-output">
+          <div class="output-label">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-warm);display:inline-block;"></span>
+            Sample output — Sales Agent
+          </div>
+          <div class="output-content">
+            <strong>Pipeline summary — Week of Mar 17</strong><br><br>
+            🔴 <strong>Needs action (3):</strong> Acme Corp (follow-up overdue 4 days), Velaris (proposal not opened), Stackrift (no response to demo invite).<br><br>
+            🟡 <strong>Active (8):</strong> $46,000 combined pipeline value. Average deal age: 12 days.<br><br>
+            🟢 <strong>Likely to close (2):</strong> Nearwave ($4,200/yr, verbal yes), Axiom ($8,400/yr, contracts out).<br><br>
+            <strong>Recommended actions:</strong> Send Acme a case study; call Velaris directly; offer Stackrift a recorded demo link.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Put your agents to work.</h2>
+      <p class="text-muted mt-md" style="max-width:40ch; margin-inline:auto;">All agents are available on the Pro plan. 30-day free trial included.</p>
+      <a href="../pages/auth.html#signup" class="btn btn-primary btn-lg mt-lg">Start building free →</a>
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="navbar-logo" style="display:inline-flex;"><div class="logo-mark">BF</div> Buildflow</a>
+        <p>The AI-native operating system for ambitious founders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="agents.html">Agents</a></li>
+          <li><a href="integrations.html">Integrations</a></li>
+          <li><a href="roadmap.html">Roadmap</a></li>
+          <li><a href="changelog.html">Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="../company/about.html">About</a></li>
+          <li><a href="../company/careers.html">Careers</a></li>
+          <li><a href="../company/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="../legal/privacy.html">Privacy</a></li>
+          <li><a href="../legal/terms.html">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 Buildflow, Inc. All rights reserved.</p></div>
+  </div>
+</footer>
+</body>
+</html>

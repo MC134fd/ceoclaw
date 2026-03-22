@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — Make A Web App</title>
+  <meta name="description" content="Create your account for Make A Web App. Access the user dashboard, export data, and leverage core functionality to transform an idea into an app." />
+  <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #14b8a6;
+      --color-secondary: #06b6d4;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0a1628;
+      --color-surface: #0f2340;
+      --color-text: #e0f7f7;
+      --color-muted: #6b9aaa;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #14b8a6, #06b6d4);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+      /* spacing helpers */
+      --space-xxs: clamp(.25rem, calc(.2rem + .2vw), .5rem);
+      --space-xs: clamp(.5rem, calc(.4rem + .4vw), .75rem);
+      --space-sm: calc(var(--spacing) * .5rem);
+      --space-md: calc(var(--spacing) * 1rem);
+      --space-lg: calc(var(--spacing) * 1.5rem);
+      --max-width: 980px;
+    }
+
+    /* Base */
+    * { box-sizing: border-box; }
+    html,body { height:100%; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(20,184,166,0.06), transparent 8%),
+                  radial-gradient(900px 500px at 90% 90%, rgba(6,182,212,0.04), transparent 6%),
+                  var(--color-bg);
+      color:var(--color-text);
+      font-family:var(--font-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding: clamp(1rem, 2.5vw, 2rem);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+    }
+
+    /* Header / sticky navbar */
+    header{
+      position:sticky;
+      top:0;
+      width:100%;
+      max-width:var(--max-width);
+      margin:0 auto clamp(.5rem, 1.2vw, 1rem);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-sm);
+      padding: calc(var(--space-xs)) calc(var(--space-sm));
+      border-radius:var(--radius-md);
+      background:transparent;
+      transition:all .22s ease;
+      z-index:20;
+    }
+    header.scrolled{
+      background: linear-gradient(180deg, rgba(15,35,64,.6), rgba(15,35,64,.85));
+      box-shadow:var(--shadow-sm);
+      backdrop-filter: blur(6px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:calc(var(--space-xs) * 1.2);
+      text-decoration:none;
+      color:var(--color-text);
+    }
+    .brand-mark{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background:var(--accent-gradient);
+      box-shadow:var(--shadow-md);
+      font-family:var(--font-display);
+      font-weight:600;
+      color:white;
+      letter-spacing:-0.02em;
+    }
+    nav a{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:0.95rem;
+      padding:6px 10px;
+      border-radius:8px;
+      transition:color .18s ease, background .18s ease;
+    }
+    nav a:hover{ color:var(--color-text); background:rgba(255,255,255,0.02); }
+
+    /* Layout: centered card */
+    main{
+      width:100%;
+      max-width:var(--max-width);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:var(--space-lg);
+      align-items:center;
+      justify-items:center;
+    }
+
+    .card{
+      width:100%;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius-lg);
+      padding:clamp(1rem, 2.2vw, 2rem);
+      box-shadow:var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.03);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:var(--space-lg);
+      align-items:start;
+      overflow:hidden;
+    }
+
+    /* Bento grid area for content blocks using fluid grid */
+    .bento{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap:var(--space-md);
+      width:100%;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008));
+      border-radius:var(--radius-md);
+      padding:var(--space-md);
+      box-shadow:var(--shadow-sm);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    /* Intro storytelling */
+    .intro{
+      font-family:var(--font-display);
+      color:var(--color-text);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+    }
+    .intro h1{
+      margin:0;
+      font-size:clamp(1.4rem, 2.6vw, 1.85rem);
+      line-height:1.05;
+      letter-spacing:-0.02em;
+    }
+    .intro p{
+      margin:0;
+      color:var(--color-muted);
+      font-size:0.98rem;
+    }
+    .feature-list{
+      margin-top:var(--space-sm);
+      display:flex;
+      gap:var(--space-xs);
+      flex-wrap:wrap;
+    }
+    .chip{
+      background:transparent;
+      border:1px dashed rgba(255,255,255,0.03);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:0.85rem;
+      color:var(--color-text);
+    }
+
+    /* Form styles */
+    form{
+      display:grid;
+      gap:var(--space-md);
+      min-width:260px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+    }
+    label{
+      font-size:0.88rem;
+      color:var(--color-muted);
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"]{
+      appearance:none;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      padding:12px 14px;
+      border-radius:var(--radius-sm);
+      color:var(--color-text);
+      font-size:1rem;
+      outline:none;
+      transition: box-shadow .15s ease, border-color .15s ease, transform .08s ease;
+      box-shadow:var(--shadow-sm);
+    }
+    input:focus{
+      border-color:var(--color-primary);
+      box-shadow:0 6px 18px rgba(20,184,166,0.08);
+      transform:translateY(-1px);
+    }
+    .hint{
+      font-size:0.86rem;
+      color:var(--color-muted);
+    }
+
+    .errors{
+      color:#ffccd5;
+      font-size:0.88rem;
+    }
+
+    .actions{
+      display:flex;
+      gap:var(--space-sm);
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    button.primary{
+      min-height:44px;
+      background:var(--accent-gradient);
+      color:white;
+      border:none;
+      padding:10px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:1rem;
+      box-shadow:var(--shadow-md);
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+    }
+    button.primary:hover{ transform:translateY(-2px); box-shadow:var(--shadow-lg); opacity:0.98; }
+    button.primary:active{ transform:translateY(0); box-shadow:var(--shadow-sm); }
+
+    a.secondary{
+      color:var(--color-muted);
+      text-decoration:none;
+      font-size:0.95rem;
+      padding:8px;
+    }
+    a.secondary:hover{ color:var(--color-text); }
+
+    /* Reveal on scroll */
+    .reveal{
+      opacity:0;
+      transform: translateY(12px) scale(.995);
+      transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.3,1);
+      will-change: opacity, transform;
+    }
+    .reveal.revealed{
+      opacity:1;
+      transform: none;
+    }
+
+    /* small footer note */
+    .note{
+      font-size:0.86rem;
+      color:var(--color-muted);
+      text-align:center;
+    }
+
+    /* responsive tweaks */
+    @media (min-width:1024px){
+      main{ grid-template-columns: 1fr; }
+      .card{ grid-template-columns: 1fr 420px; gap:var(--space-lg); align-items:stretch; }
+      .intro{ padding-right:var(--space-sm); }
+    }
+
+    @media (max-width:640px){
+      header{ padding:calc(var(--space-xs) * .8) calc(var(--space-xs)); }
+      .brand-mark{ width:40px; height:40px; }
+      .card{ padding:clamp(.9rem, 2.2vw, 1.2rem); border-radius:12px; }
+      .intro h1{ font-size:1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <header id="site-header" class="reveal">
+    <a class="brand" href="../index.html" aria-label="Go to Make A Web App homepage">
+      <div class="brand-mark" aria-hidden="true">MWA</div>
+      <div style="display:flex;flex-direction:column;line-height:1;">
+        <strong style="font-family:var(--font-display);font-size:1rem;">Make A Web App</strong>
+        <small style="color:var(--color-muted);font-size:0.78rem;">build • iterate • ship</small>
+      </div>
+    </a>
+    <nav aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="../app.html">Product</a>
+      <a href="signup.html" style="font-weight:600;color:var(--color-text);">Sign up</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="card reveal" aria-labelledby="signup-heading">
+      <div class="panel" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div class="intro">
+            <h1 id="signup-heading">Create an account — Start building today</h1>
+            <p>Make A Web App guides non-technical creators and experienced builders alike through every step. From core functionality to the user dashboard and seamless data export, we manage the plumbing so your idea can breathe and grow.</p>
+            <div class="feature-list" aria-hidden="true">
+              <span class="chip">Core functionality</span>
+              <span class="chip">User dashboard</span>
+              <span class="chip">Data export</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:var(--space-md);">
+          <p class="hint">Already imagining workflows, reports, or a quick MVP? Sign up to explore templates and a dashboard built for clarity.</p>
+        </div>
+      </div>
+
+      <aside class="panel" aria-labelledby="form-title" style="display:flex;flex-direction:column;justify-content:center;">
+        <h2 id="form-title" style="margin:0 0 var(--space-md) 0;">Start your free account</h2>
+
+        <form id="signup-form" action="../app.html" method="post" novalidate>
+          <div class="field">
+            <label for="fullname">Full name</label>
+            <input id="fullname" name="fullname" type="text" aria-label="Full name" required autocomplete="name" placeholder="Ava Roberts" />
+            <div id="fullname-error" class="errors" role="status" aria-live="polite"></div>
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" aria-label="Email address" required placeholder="name@company.com" pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" autocomplete="email" />
+            <div id="email-error" class="errors" role="status" aria-live="polite"></div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" aria-label="Password" required minlength="8" placeholder="Minimum 8 characters" autocomplete="new-password" />
+            <div id="password-error" class="errors" role="status" aria-live="polite"></div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="primary" id="submit-btn">Get Started</button>
+            <a class="secondary" href="../index.html">Already have an account? Sign in</a>
+          </div>
+
+          <div class="note" style="margin-top:var(--space-sm);">
+            By creating an account you can access your user dashboard, save projects, and export data when you're ready to ship.
+          </div>
+        </form>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    // Sticky header: add .scrolled when scroll > 14px
+    (function(){
+      const header = document.getElementById('site-header');
+      function onScroll(){
+        if(window.scrollY > 14) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+      onScroll();
+      window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+
+    // Reveal-on-scroll for any .reveal
+    (function(){
+      const items = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window && items.length){
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting){
+              entry.target.classList.add('revealed');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, {threshold: 0.12});
+        items.forEach(i => obs.observe(i));
+      } else {
+        // fallback
+        items.forEach(i => i.classList.add('revealed'));
+      }
+    })();
+
+    // Form validation and user-friendly inline errors
+    (function(){
+      const form = document.getElementById('signup-form');
+      const fullname = document.getElementById('fullname');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+
+      const fullnameError = document.getElementById('fullname-error');
+      const emailError = document.getElementById('email-error');
+      const passwordError = document.getElementById('password-error');
+
+      function resetErrors(){
+        fullnameError.textContent = '';
+        emailError.textContent = '';
+        passwordError.textContent = '';
+      }
+
+      function validateEmailFormat(value){
+        // simple regex mirrored from pattern attr
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+
+      form.addEventListener('submit', function(e){
+        resetErrors();
+        let valid = true;
+
+        if(!fullname.value.trim()){
+          fullnameError.textContent = 'Please enter your full name so we can personalize your dashboard.';
+          valid = false;
+        }
+
+        if(!email.value.trim()){
+          emailError.textContent = 'An email is required to create your account and receive project updates.';
+          valid = false;
+        } else if(!validateEmailFormat(email.value.trim())){
+          emailError.textContent = 'Enter a valid email like name@company.com.';
+          valid = false;
+        }
+
+        if(!password.value){
+          passwordError.textContent = 'Choose a password to secure your account.';
+          valid = false;
+        } else if(password.value.length < 8){
+          passwordError.textContent = 'Password must be at least 8 characters for account safety.';
+          valid = false;
+        }
+
+        if(!valid){
+          e.preventDefault();
+          // focus first invalid field
+          const firstInvalid = document.querySelector('.errors:not(:empty)');
+          if(firstInvalid){
+            const field = firstInvalid.previousElementSibling;
+            if(field && field.focus) field.focus();
+          }
+        } else {
+          // Allow the form to submit to ../app.html; we can show a small client-side animation
+          const btn = document.getElementById('submit-btn');
+          btn.disabled = true;
+          btn.style.opacity = '0.9';
+          btn.textContent = 'Creating account...';
+          // let the browser submit the form naturally
+        }
+      });
+
+      // Live validation to clear errors as user types
+      [fullname, email, password].forEach(field=>{
+        field.addEventListener('input', () => {
+          if(field === fullname && fullnameError.textContent){
+            if(fullname.value.trim()) fullnameError.textContent = '';
+          }
+          if(field === email && emailError.textContent){
+            if(validateEmailFormat(email.value.trim())) emailError.textContent = '';
+          }
+          if(field === password && passwordError.textContent){
+            if(password.value.length >= 8) passwordError.textContent = '';
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

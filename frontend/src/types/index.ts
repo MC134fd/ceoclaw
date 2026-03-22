@@ -99,7 +99,7 @@ export interface SessionHistory {
 export interface ProviderStatus {
   flock: { configured: boolean; reachable: boolean; error: string | null };
   openai: { configured: boolean; reachable: boolean; error: string | null };
-  active_provider: 'openai' | 'mock';  // flock removed from union
+  active_provider: 'openai' | 'unavailable';
 }
 
 export type PreviewTab = 'landing' | 'app';
@@ -136,4 +136,26 @@ export interface ClarificationResponse {
   questions: string[];
   reason: string;
   job_id: null;
+}
+
+export interface ProjectFile {
+  file_path: string;
+  file_type: 'text' | 'binary' | 'directory';
+  size_bytes: number;
+  updated_at: string;
+}
+
+export interface FileTreeNode {
+  name: string;
+  path: string;
+  type: 'file' | 'folder';
+  children?: FileTreeNode[];
+}
+
+export interface FileProgressEvent {
+  type: 'file_progress';
+  file_path: string;
+  file_index: number;
+  total_files: number;
+  status: 'generating' | 'done' | 'error';
 }

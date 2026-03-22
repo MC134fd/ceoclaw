@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App Calculator — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #06b6d4;
+      --color-secondary: #22d3ee;
+      --color-accent-pink: #ec4899;
+      --color-bg: #020b18;
+      --color-surface: #0f1929;
+      --color-text: #e2f3ff;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #06b6d4, #22d3ee);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    * {box-sizing: border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, rgba(2,11,24,1) 0%, rgba(15,25,41,1) 100%);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.35;
+      padding-top:68px; /* header height fallback */
+    }
+
+    /* Topbar / header (sticky) */
+    .topbar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:68px;
+      display:flex;
+      align-items:center;
+      gap:clamp(12px, calc(12px + var(--spacing) * 2), 22px);
+      padding:0 clamp(16px, calc(16px + var(--spacing) * 2), 32px);
+      background:transparent;
+      transition:background .24s ease, box-shadow .24s ease, transform .18s ease;
+      z-index:60;
+      backdrop-filter: blur(6px);
+    }
+    .topbar.scrolled{
+      background: linear-gradient(90deg, rgba(6,182,212,0.06), rgba(34,211,238,0.03));
+      box-shadow: var(--shadow-sm);
+      transform: translateY(0);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-family:var(--font-display);
+      font-weight:600;
+      letter-spacing:0.2px;
+      color:var(--color-text);
+      text-decoration:none;
+    }
+    .brand .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:inline-grid;
+      place-items:center;
+      color:rgba(3,7,11,0.95);
+      font-weight:700;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .topbar .actions{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:8px 14px;
+      border-radius:10px;
+      font-weight:600;
+      cursor:pointer;
+      border:1px solid transparent;
+      transition:transform .12s ease, box-shadow .18s ease, background .18s ease, opacity .12s ease;
+      text-decoration:none;
+      color:var(--color-text);
+    }
+    .btn.primary{
+      background:var(--accent-gradient);
+      box-shadow:var(--shadow-md);
+      color:#021220;
+    }
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(226,232,240,0.06);
+      color:var(--color-text);
+    }
+    .btn:active{ transform:translateY(1px) }
+    .btn:hover{ box-shadow:var(--shadow-lg) }
+
+    /* Layout */
+    .layout{
+      display:flex;
+      gap:24px;
+      max-width:1200px;
+      margin:28px auto;
+      padding:0 20px 80px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      width:260px;
+      min-width:220px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:var(--radius-md);
+      padding:18px;
+      box-shadow:var(--shadow-sm);
+      position:sticky;
+      top:88px;
+      height:calc(100vh - 120px);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      border:1px solid rgba(226,232,240,0.03);
+    }
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:6px;
+    }
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 12px;
+      border-radius:8px;
+      color:var(--color-text);
+      text-decoration:none;
+      font-weight:500;
+      transition:background .12s ease, transform .08s ease;
+      border:1px solid transparent;
+    }
+    .nav a:hover{ background: rgba(226,232,240,0.02); transform:translateX(4px) }
+    .nav a.active{
+      background: linear-gradient(90deg, rgba(6,182,212,0.08), rgba(34,211,238,0.06));
+      border:1px solid rgba(6,182,212,0.12);
+    }
+    .nav .muted { color:var(--color-muted); font-size:13px; font-weight:500 }
+
+    .sidebar .footer{
+      margin-top:auto;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* Main content */
+    .main{
+      flex:1 1 auto;
+      min-width:0;
+    }
+    .welcome{
+      display:flex;
+      align-items:flex-start;
+      gap:18px;
+      margin-bottom:20px;
+    }
+    .welcome h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:clamp(18px, 2.4vw, 28px);
+      color:var(--color-text);
+      letter-spacing:0.2px;
+    }
+    .welcome p{
+      margin:4px 0 0 0;
+      color:var(--color-muted);
+      font-size:14px;
+    }
+
+    /* Metrics row */
+    .metrics{
+      display:grid;
+      gap:14px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      margin-bottom:18px;
+    }
+    .card{
+      background:var(--color-surface);
+      border-radius:var(--radius-md);
+      padding:14px;
+      border:1px solid rgba(226,232,240,0.04);
+      box-shadow:var(--shadow-sm);
+      transition:transform .12s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .card h3{
+      margin:0;
+      font-size:13px;
+      color:var(--color-muted);
+      font-weight:600;
+    }
+    .metric-value{
+      margin-top:8px;
+      font-size:22px;
+      font-weight:700;
+      color:var(--color-text);
+      letter-spacing:0.3px;
+    }
+    .metric-meta{
+      margin-top:6px;
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* Secondary area (bento) */
+    .bento{
+      display:grid;
+      gap:14px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      align-items:start;
+    }
+
+    /* Feature list card specifics */
+    .features-list ul{
+      margin:12px 0 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:10px;
+    }
+    .features-list li{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      padding:10px;
+      border-radius:8px;
+      border:1px dashed rgba(226,232,240,0.02);
+      font-size:14px;
+      color:var(--color-text);
+    }
+    .chip{
+      width:34px;
+      height:34px;
+      border-radius:8px;
+      display:inline-grid;
+      place-items:center;
+      color:#021220;
+      background:var(--accent-gradient);
+      font-weight:700;
+      flex:0 0 34px;
+    }
+
+    /* API card */
+    .api-card form{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:8px;
+    }
+    .input{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      background:transparent;
+      border-radius:8px;
+      border:1px solid rgba(226,232,240,0.06);
+      padding:8px;
+    }
+    .input input{
+      background:transparent;
+      border:0;
+      outline:0;
+      color:var(--color-text);
+      font-size:14px;
+      width:100%;
+    }
+    .api-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:6px;
+    }
+    .muted-note{ font-size:13px; color:var(--color-muted) }
+
+    /* Footer small */
+    footer{
+      margin-top:26px;
+      color:var(--color-muted);
+      font-size:13px;
+    }
+
+    /* Reveal on scroll initial state */
+    .reveal { opacity:0; transform:translateY(14px); transition:opacity .48s ease, transform .48s cubic-bezier(.2,.9,.2,1) }
+    .reveal.revealed{ opacity:1; transform:none }
+
+    /* Responsive rules */
+    @media (max-width:1024px){
+      .layout{ max-width:920px }
+      .sidebar{ position:relative; top:0; height:auto; }
+      body{ padding-top:72px }
+    }
+    @media (max-width:640px){
+      body{ padding-top:76px }
+      .layout{ flex-direction:column; margin:16px auto; padding:0 16px 80px }
+      .sidebar{ display:none } /* collapses on mobile */
+      .topbar .menu-toggle{ display:inline-flex }
+      .topbar .brand .hide-mobile{ display:none }
+      .welcome{ flex-direction:column; align-items:flex-start }
+      .bento{ grid-template-columns: 1fr }
+    }
+
+    /* Menu toggle for mobile */
+    .menu-toggle{
+      display:none;
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(226,232,240,0.02);
+      cursor:pointer;
+      color:var(--color-text);
+    }
+    /* Mobile sidebar overlay */
+    .mobile-sidebar{
+      position:fixed;
+      inset:0;
+      background:linear-gradient(180deg, rgba(2,11,24,0.85), rgba(2,11,24,0.95));
+      z-index:120;
+      display:none;
+      padding:26px;
+      overflow:auto;
+    }
+    .mobile-sidebar.open{ display:block }
+    .mobile-sidebar .close{
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:8px;
+    }
+    .mobile-sidebar .panel{
+      background:var(--color-surface);
+      padding:14px;
+      border-radius:12px;
+      border:1px solid rgba(226,232,240,0.03);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <a href="index.html" class="brand" aria-label="App Calculator Home">
+      <span class="logo">AC</span>
+      <span class="hide-mobile">App Calculator</span>
+    </a>
+
+    <div class="actions">
+      <button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button>
+      <a href="pages/signup.html" class="btn primary">Get Started</a>
+      <a href="pages/signup.html" class="btn ghost">Upgrade</a>
+    </div>
+  </header>
+
+  <div class="layout" id="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:var(--color-accent-pink)"></div>
+        <div style="font-weight:700">App Calculator</div>
+      </div>
+
+      <nav class="nav" aria-label="Sidebar">
+        <a href="app.html" class="active" aria-current="page">Dashboard</a>
+        <a href="app.html#features">Features</a>
+        <a href="app.html#settings">Settings</a>
+        <a href="index.html">Back to site</a>
+      </nav>
+
+      <div class="footer">
+        <div style="font-size:13px;color:var(--color-muted)">Signed in as</div>
+        <div style="margin-left:auto;font-weight:600">user@example.com</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="welcome reveal">
+        <div>
+          <h1>Welcome to the App Calculator dashboard</h1>
+          <p>Access core functionality, review recent calculations, and manage exports from your user dashboard.</p>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Key metrics">
+        <div class="card reveal" role="article">
+          <h3>Active Calculations</h3>
+          <div class="metric-value">1,248</div>
+          <div class="metric-meta">Concurrent and queued calculations in the last 24 hours</div>
+        </div>
+
+        <div class="card reveal" role="article">
+          <h3>Average Response Time</h3>
+          <div class="metric-value">128 ms</div>
+          <div class="metric-meta">Mean execution latency for calculation requests</div>
+        </div>
+
+        <div class="card reveal" role="article">
+          <h3>Exported Files</h3>
+          <div class="metric-value">3,402</div>
+          <div class="metric-meta">Data export operations (CSV/JSON) completed this month</div>
+        </div>
+
+        <div class="card reveal" role="article">
+          <h3>Connected Integrations</h3>
+          <div class="metric-value">8</div>
+          <div class="metric-meta">APIs and third-party integrations linked to your account</div>
+        </div>
+      </section>
+
+      <section class="bento" aria-label="Platform capabilities">
+        <article class="card features-list reveal" id="features">
+          <h3>Platform capabilities</h3>
+          <p class="muted-note" style="margin-top:8px">Technical overview of core functionality and export options.</p>
+          <ul>
+            <li><span class="chip">CF</span><div><strong>Core functionality</strong><div style="color:var(--color-muted);font-size:13px">Real-time calculation engine with deterministic outputs.</div></div></li>
+            <li><span class="chip">UD</span><div><strong>User dashboard</strong><div style="color:var(--color-muted);font-size:13px">Customizable views, activity logs, and quick access to recent results.</div></div></li>
+            <li><span class="chip">DX</span><div><strong>Data export</strong><div style="color:var(--color-muted);font-size:13px">CSV and JSON export with metadata and timestamps for audits.</div></div></li>
+            <li><span class="chip">RT</span><div><strong>Real-time analytics</strong><div style="color:var(--color-muted);font-size:13px">Stream metrics to monitor throughput and latency.</div></div></li>
+            <li><span class="chip">AL</span><div><strong>Audit logs</strong><div style="color:var(--color-muted);font-size:13px">Immutable records for calculation runs and exports.</div></div></li>
+            <li><span class="chip">RB</span><div><strong>Role-based access</strong><div style="color:var(--color-muted);font-size:13px">Granular permissions for team and API access control.</div></div></li>
+          </ul>
+        </article>
+
+        <article class="card api-card reveal" id="settings">
+          <h3>Connect your API</h3>
+          <p class="muted-note">Provide a token to enable programmatic access to calculations and data export endpoints.</p>
+
+          <form id="apiForm" onsubmit="return false;">
+            <label class="muted-note" for="token">API Token</label>
+            <div class="input" role="group" aria-label="API token input">
+              <input id="token" name="token" type="password" autocomplete="off" placeholder="Enter token" />
+            </div>
+
+            <div class="api-actions">
+              <button type="submit" class="btn primary" id="saveToken">Save</button>
+              <button type="button" class="btn ghost" id="revokeToken">Revoke</button>
+            </div>
+
+            <div style="margin-top:8px">
+              <div class="muted-note">When saved, your API token will be used by the calculation engine and data export service. You can revoke it at any time.</div>
+            </div>
+          </form>
+        </article>
+      </section>
+
+      <footer class="reveal" style="margin-top:18px">
+        <div>Pro-tip: Use the user dashboard to schedule bulk data export jobs and review export logs for compliance.</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="mobile-sidebar" id="mobileSidebar" aria-hidden="true">
+    <div class="close">
+      <button class="btn ghost" id="closeMobile">Close</button>
+    </div>
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div class="logo" style="width:40px;height:40px;border-radius:9px"></div>
+        <div style="font-weight:700">App Calculator</div>
+      </div>
+      <nav style="display:flex;flex-direction:column;gap:10px;">
+        <a href="app.html" style="color:var(--color-text);text-decoration:none;padding:8px;border-radius:8px;background:rgba(226,232,240,0.01)">Dashboard</a>
+        <a href="app.html#features" style="color:var(--color-text);text-decoration:none;padding:8px;border-radius:8px">Features</a>
+        <a href="app.html#settings" style="color:var(--color-text);text-decoration:none;padding:8px;border-radius:8px">Settings</a>
+        <a href="index.html" style="color:var(--color-text);text-decoration:none;padding:8px;border-radius:8px">Back to site</a>
+      </nav>
+      <div style="margin-top:14px;color:var(--color-muted);font-size:13px">Signed in as user@example.com</div>
+    </div>
+  </div>
+
+  <script>
+    // Sticky topbar: toggle .scrolled when scrolled more than 14px
+    (function(){
+      var topbar = document.getElementById('topbar');
+      function onScroll(){
+        if(window.scrollY > 14) topbar.classList.add('scrolled');
+        else topbar.classList.remove('scrolled');
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Reveal on scroll using IntersectionObserver
+    (function(){
+      var reveals = document.querySelectorAll('.reveal');
+      if('IntersectionObserver' in window){
+        var obs = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){
+            if(e.isIntersecting){
+              e.target.classList.add('revealed');
+              obs.unobserve(e.target);
+            }
+          });
+        }, {root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.08});
+        reveals.forEach(function(r){ obs.observe(r) });
+      } else {
+        // fallback
+        reveals.forEach(function(r){ r.classList.add('revealed') });
+      }
+    })();
+
+    // Mobile sidebar toggle
+    (function(){
+      var menuToggle = document.getElementById('menuToggle');
+      var mobileSidebar = document.getElementById('mobileSidebar');
+      var closeMobile = document.getElementById('closeMobile');
+
+      menuToggle && menuToggle.addEventListener('click', function(){
+        mobileSidebar.classList.add('open');
+        mobileSidebar.setAttribute('aria-hidden', 'false');
+      });
+      closeMobile && closeMobile.addEventListener('click', function(){
+        mobileSidebar.classList.remove('open');
+        mobileSidebar.setAttribute('aria-hidden', 'true');
+      });
+    })();
+
+    // API token form behavior (client-side simulation)
+    (function(){
+      var form = document.getElementById('apiForm');
+      var tokenInput = document.getElementById('token');
+      var saveBtn = document.getElementById('saveToken');
+      var revokeBtn = document.getElementById('revokeToken');
+
+      saveBtn && saveBtn.addEventListener('click', function(){
+        var token = tokenInput.value.trim();
+        if(!token){
+          saveBtn.textContent = 'Enter token';
+          setTimeout(function(){ saveBtn.textContent = 'Save'; }, 1200);
+          return;
+        }
+        // Simulate saving token (never persist in client)
+        saveBtn.textContent = 'Saved';
+        saveBtn.disabled = true;
+        tokenInput.value = '';
+        setTimeout(function(){
+          saveBtn.textContent = 'Save';
+          saveBtn.disabled = false;
+        }, 1400);
+      });
+
+      revokeBtn && revokeBtn.addEventListener('click', function(){
+        revokeBtn.textContent = 'Revoked';
+        revokeBtn.disabled = true;
+        setTimeout(function(){
+          revokeBtn.textContent = 'Revoke';
+          revokeBtn.disabled = false;
+        }, 1200);
+      });
+
+      // Prevent real form submission
+      form && form.addEventListener('submit', function(e){ e.preventDefault(); });
+    })();
+  </script>
+</body>
+</html>

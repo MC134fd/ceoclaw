@@ -32,18 +32,17 @@ START → PlannerNode → RouterNode → [Product | Marketing | Sales | Ops] Exe
 
 **Terminal A:**
 ```bash
-python main.py demo --cycles 8 --mock-model
+python main.py demo --cycles 8
 ```
 
 While it runs, narrate:
-- "8 autonomous cycles running — no API key needed in mock mode"
+- "8 autonomous cycles running"
 - Point at the cycle table as it prints: domain, action, MRR, weighted score, trend
 - When ⏸ stagnant flag appears: "Here — the agent detected MRR stagnation. Watch it rotate domains."
 - When trend shows `up`: "And here — MRR grew. The weighted score jumped."
 
 After completion, point at:
 - **Run ID** — unique per run, links everything
-- **Mode: mock** — transparent, never confused for live
 - **Errors: 0** — clean run
 - **Report path** — auto-exported
 
@@ -84,7 +83,7 @@ curl http://localhost:8000/summary/latest | python3 -m json.tool
 
 Point out in the JSON:
 - `"status": "ok"` — API never returns 500
-- `"model_mode": "mock"` — transparent about run mode
+- `"model_mode"` — transparent about run mode
 - `"final_mrr"`, `"final_weighted_score"` — quick scorecard
 - `"kpi_trend"` array — full per-cycle history
 - `"recent_artifacts"` — what the agent built
@@ -137,7 +136,7 @@ Expected output:
 
 ## Minute 6:15–7:00 — Live Mode + Closing
 
-**Say:** "In live mode, you set `FLOCK_ENDPOINT` and `FLOCK_API_KEY` in .env and drop the `--mock-model` flag. The FlockChatModel hits the real FLock endpoint, tracks actual token usage, and automatically falls back with a `[FALLBACK]` tag if the endpoint is unreachable."
+**Say:** "In live mode, you set `FLOCK_ENDPOINT` and `FLOCK_API_KEY` in .env. The FlockChatModel hits the real FLock endpoint, tracks actual token usage, and automatically falls back with a `[FALLBACK]` tag if the endpoint is unreachable."
 
 ```bash
 # Show .env.example
@@ -163,7 +162,7 @@ curl http://localhost:8001/health
 ```bash
 # Reset DB and rerun
 rm data/ceoclaw.db
-python main.py demo --cycles 8 --mock-model
+python main.py demo --cycles 8
 ```
 
 **If tests fail:**

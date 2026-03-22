@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build A App — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
+    :root{--accent-gradient:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 50%,#ec4899 100%);--color-bg:#f1f5f9;--color-surface:#fff;--color-sidebar:#0f172a;--color-text:#0f172a;--color-muted:#64748b;--color-border:#e2e8f0;--color-primary:#3b82f6;--font-display:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;--radius-md:12px;--space-md:1rem;--space-lg:1.5rem;}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-text);min-height:100vh;display:flex}
+    .sidebar{width:240px;background:var(--color-sidebar);color:#f8fafc;padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-lg);min-height:100vh;flex-shrink:0}
+    .sidebar-brand{font-family:var(--font-display);font-weight:700;font-size:1.1rem;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .sidebar-nav{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+    .sidebar-nav a{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;border-radius:8px;color:rgba(248,250,252,.7);text-decoration:none;font-size:.875rem;transition:all .2s;min-height:44px}
+    .sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(255,255,255,.1);color:#fff}
+    .main{flex:1;padding:var(--space-lg);overflow-y:auto}
+    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)}
+    .top-bar h1{font-family:var(--font-display);font-size:1.4rem;font-weight:700}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);margin-bottom:var(--space-lg)}
+    .metric-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md)}
+    .metric-label{font-size:.8rem;color:var(--color-muted);margin-bottom:.25rem}
+    .metric-value{font-family:var(--font-display);font-size:1.75rem;font-weight:700}
+    .metric-value.accent{background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg)}
+    .card h2{font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:var(--space-md)}
+    .feature-list{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+    .feature-list li{font-size:.9rem;color:var(--color-muted);padding:.25rem 0}
+    .connect-card{border:2px dashed var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);text-align:center;margin-top:var(--space-md)}
+    .connect-card input[type=password]{width:100%;max-width:320px;padding:.5rem .75rem;border:1.5px solid var(--color-border);border-radius:8px;font-family:var(--font-body);margin-bottom:.75rem;min-height:44px}
+    @media(max-width:640px){.sidebar{display:none}.main{padding:var(--space-md)}.metrics{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">Build A App</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="active">&#128202; Dashboard</a></li>
+      <li><a href="#">&#9889; Features</a></li>
+      <li><a href="#">&#9881;&#65039; Settings</a></li>
+      <li><a href="index.html">&#8592; Back to site</a></li>
+    </ul>
+  </aside>
+  <main class="main">
+    <div class="top-bar">
+      <h1>Welcome to Build A App</h1>
+    </div>
+    <div class="metrics">
+      <div class="metric-card"><div class="metric-label">Active Users</div><div class="metric-value accent">0</div></div>
+      <div class="metric-card"><div class="metric-label">This Week</div><div class="metric-value">—</div></div>
+      <div class="metric-card"><div class="metric-label">Revenue</div><div class="metric-value">$0</div></div>
+      <div class="metric-card"><div class="metric-label">Status</div><div class="metric-value" style="font-size:1rem;color:#10b981">&#9679; Live</div></div>
+    </div>
+    <div class="card">
+      <h2>Platform features</h2>
+      <ul class="feature-list"><li>&#10003; core functionality</li><li>&#10003; user dashboard</li><li>&#10003; data export</li></ul>
+    </div>
+    <div class="connect-card">
+      <p style="margin-bottom:.75rem;font-size:.9rem;color:var(--color-muted)">Connect your API to get started</p>
+      <input type="password" placeholder="sk-..." aria-label="API token">
+      <br><button style="padding:.5rem 1.25rem;background:var(--accent-gradient);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;min-height:44px">Connect</button>
+    </div>
+  </main>
+</body>
+</html>

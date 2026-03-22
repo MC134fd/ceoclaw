@@ -814,22 +814,20 @@ function loadPreviewPage(page) {
 }
 
 // ─── Model status check ─────────────────────────────────────────────────────
-async function checkModelStatus(mockMode = true) {
+async function checkModelStatus() {
   setStatus('', 'Checking…');
   try {
     const res = await fetch('/model/check', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({mock_mode: mockMode}),
+      body: JSON.stringify({}),
     });
     const data = await res.json();
     state.modelMode = data.model_mode || 'heuristic';
 
     if (data.status === 'ok') {
       const mode = data.model_mode;
-      if (mode === 'mock') {
-        setStatus('warn', 'Mock mode');
-      } else if (data.fallback_used) {
+      if (data.fallback_used) {
         setStatus('warn', `Fallback (${data.fallback_reason || 'model unreachable'})`);
       } else {
         setStatus('ok', `Live · ${mode}`);
@@ -864,7 +862,6 @@ async function sendMessage(text) {
       body: JSON.stringify({
         session_id: state.sessionId,
         message: text,
-        mock_mode: false,
       }),
     });
 
@@ -885,9 +882,7 @@ async function sendMessage(text) {
       state.modelMode = meta.model_mode;
       const mode = meta.model_mode;
       const provider = meta.provider || '';
-      if (mode === 'mock') {
-        setStatus('warn', 'Template mode — add API key');
-      } else if (mode === 'flock_live') {
+      if (mode === 'flock_live') {
         setStatus('ok', 'Flock live');
       } else if (mode === 'openai') {
         setStatus('ok', 'OpenAI live');
@@ -954,7 +949,7 @@ function buildAssistantHtml(data) {
   const mode = (data.model || {}).model_mode;
   if (versionId || provider) {
     const vStr = versionId ? `v${versionId}` : '';
-    const pStr = provider && provider !== 'mock' ? `${provider}` : (mode === 'mock' ? 'template' : '');
+    const pStr = provider ? `${provider}` : '';
     const badges = [vStr, pStr].filter(Boolean).join(' · ');
     if (badges) {
       html += `<br><span style="font-size:11px;color:#6e6e73;margin-top:4px;display:inline-block;">

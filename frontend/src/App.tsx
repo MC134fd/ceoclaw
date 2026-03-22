@@ -2,7 +2,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BuildLog } from './components/BuildLog';
 import { ChatMessage } from './components/ChatMessage';
+import { CodeEditor } from './components/CodeEditor';
+import { ComingSoon } from './components/ComingSoon';
 import { Composer } from './components/Composer';
+import { Dashboard } from './components/Dashboard';
+import { DashboardSidebar } from './components/DashboardSidebar';
+import type { DashboardView } from './components/DashboardSidebar';
+import { EditorTabs } from './components/EditorTabs';
+import { FileExplorer } from './components/FileExplorer';
+import { HomePage } from './components/HomePage';
 import { LandingPage } from './components/LandingPage';
 import { ModelStatusBadge } from './components/ModelStatusBadge';
 import { PreviewPane } from './components/PreviewPane';
@@ -15,25 +23,29 @@ import { isAuthEnabled } from './lib/supabase';
 import { InsufficientCreditsError, getSessionHistory } from './services/api';
 import type { Message, ModelInfo, Session } from './types';
 
-const QUICK_PROMPTS = [
-  'Build a premium SaaS landing page for a dog training app',
-  'Turn this into a multi-page site with pricing, blog, and contact',
-  'Add Stripe-ready pricing cards and signup CTA flow',
-] as const;
-
 export default function App() {
   const queryClient = useQueryClient();
-  const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
+  const { user, isLoading: authLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut } = useAuth();
   const { sessionId, setSessionId, clearSession } = useSession();
-  const { messages, sendViaPipeline, pipelineStages, isLoading, isTyping, error, chatResponse, resetMessages } =
+  const { messages, sendViaPipeline, pipelineStages, isLoading, isTyping, error, chatResponse, resetMessages, generatingFiles, fileProgress } =
     useChat(sessionId);
 
+  const [showHome, setShowHome] = useState(true);
+  const [view, setView] = useState<'dashboard' | 'chat'>('dashboard');
+  const [dashboardView, setDashboardView] = useState<DashboardView>('home');
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   const [landingUrl, setLandingUrl] = useState<string | null>(null);
   const [appUrl, setAppUrl] = useState<string | null>(null);
   const [lastModel, setLastModel] = useState<ModelInfo | null>(null);
   const [isSessionDrawerOpen, setIsSessionDrawerOpen] = useState(false);
   const [isOutOfCredits, setIsOutOfCredits] = useState(false);
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [centerView, setCenterView] = useState<'preview' | 'code'>('preview');
+  const [fileRefreshToken, setFileRefreshToken] = useState(0);
+  const [openFiles, setOpenFiles] = useState<string[]>([]);
+  const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set());
+  const [editorRefreshToken, setEditorRefreshToken] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +63,57 @@ export default function App() {
     }
   }, [chatResponse]);
 
+  // Refresh file explorer when a generation completes
+  useEffect(() => {
+    if (chatResponse?.version_id) {
+      setFileRefreshToken((t) => t + 1);
+    }
+  }, [chatResponse?.version_id]);
+
+  // Refresh editor content when AI finishes generating
+  useEffect(() => {
+    if (chatResponse?.version_id) {
+      setEditorRefreshToken((t) => t + 1);
+    }
+  }, [chatResponse?.version_id]);
+
+  const handleFileSelect = useCallback((path: string) => {
+    setSelectedFile(path);
+    setCenterView('code');
+    setOpenFiles((prev) => prev.includes(path) ? prev : [...prev, path]);
+  }, []);
+
+  const handleCloseTab = useCallback((path: string) => {
+    setOpenFiles((prev) => {
+      const next = prev.filter((p) => p !== path);
+      if (path === selectedFile) {
+        const idx = prev.indexOf(path);
+        const newActive = next[Math.min(idx, next.length - 1)] ?? null;
+        setSelectedFile(newActive);
+        if (!newActive) setCenterView('preview');
+      }
+      return next;
+    });
+    setDirtyFiles((prev) => {
+      const next = new Set(prev);
+      next.delete(path);
+      return next;
+    });
+  }, [selectedFile]);
+
+  const handleDirtyChange = useCallback((path: string, isDirty: boolean) => {
+    setDirtyFiles((prev) => {
+      const next = new Set(prev);
+      if (isDirty) next.add(path);
+      else next.delete(path);
+      return next;
+    });
+  }, []);
+
+  const handleEditorSave = useCallback(() => {
+    setFileRefreshToken((t) => t + 1);
+  }, []);
+
   // Derive current generation phase from the active pipeline stage
   const generationPhase =
     pipelineStages.find((s) => s.status === 'running')?.stage_label ?? 'Generating...';
@@ -59,14 +122,14 @@ export default function App() {
     async (text: string) => {
       setIsOutOfCredits(false);
       try {
-        await sendViaPipeline(text, false);
+        await sendViaPipeline(text, selectedFile);
       } catch (err) {
         if (err instanceof InsufficientCreditsError) {
           setIsOutOfCredits(true);
         }
       }
     },
-    [sendViaPipeline],
+    [sendViaPipeline, selectedFile],
   );
 
   const handleNewSession = useCallback(() => {
@@ -77,6 +140,11 @@ export default function App() {
     setAppUrl(null);
     setLastModel(null);
     setIsOutOfCredits(false);
+    setSelectedFile(null);
+    setCenterView('preview');
+    setOpenFiles([]);
+    setDirtyFiles(new Set());
+    setEditorRefreshToken(0);
     void queryClient.invalidateQueries({ queryKey: ['sessions'] });
   }, [clearSession, resetMessages, queryClient]);
 
@@ -98,6 +166,11 @@ export default function App() {
       setLandingUrl(null);
       setAppUrl(null);
       setLastModel(null);
+      setSelectedFile(null);
+      setCenterView('preview');
+      setOpenFiles([]);
+      setDirtyFiles(new Set());
+      setFileRefreshToken((t) => t + 1);
 
       try {
         const history = await getSessionHistory(session.session_id);
@@ -112,6 +185,32 @@ export default function App() {
     },
     [setSessionId, resetMessages],
   );
+
+  const handleDashboardSelectSession = useCallback(
+    async (session: Session) => {
+      await handleSelectSession(session);
+      setView('chat');
+    },
+    [handleSelectSession],
+  );
+
+  const handleDashboardNewChat = useCallback(
+    (text: string) => {
+      handleNewSession();
+      setPendingPrompt(text);
+      setView('chat');
+    },
+    [handleNewSession],
+  );
+
+  // Auto-send the pending prompt after switching to chat view
+  useEffect(() => {
+    if (pendingPrompt && view === 'chat') {
+      const prompt = pendingPrompt;
+      setPendingPrompt(null);
+      void handleSend(prompt);
+    }
+  }, [pendingPrompt, view, handleSend]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -131,9 +230,15 @@ export default function App() {
     return -1;
   })();
 
+  // ── Home page gate: show marketing homepage first ──
+  // Skip for returning authenticated users — take them straight to their dashboard.
+  if (showHome && !(isAuthEnabled && !authLoading && user)) {
+    return <HomePage onGetStarted={() => setShowHome(false)} />;
+  }
+
   // ── Auth gate: show landing page when Supabase is configured but user is not signed in ──
   if (isAuthEnabled && !authLoading && !user) {
-    return <LandingPage onSignIn={signInWithGoogle} />;
+    return <LandingPage onSignIn={signInWithGoogle} onEmailSignIn={signInWithEmail} onEmailSignUp={signUpWithEmail} />;
   }
   if (isAuthEnabled && authLoading) {
     return (
@@ -143,26 +248,106 @@ export default function App() {
     );
   }
 
+  // ── Dashboard gate ──
+  if (view === 'dashboard') {
+    const COMING_SOON_VIEWS = ['integrations', 'community'] as const;
+    const comingSoonTitle: Record<string, string> = {
+      integrations: 'Integrations',
+      community: 'Community',
+    };
+
+    return (
+      <div className="dashboard-layout">
+        <DashboardSidebar
+          currentView={dashboardView}
+          onNavigate={setDashboardView}
+          onSelectSession={handleDashboardSelectSession}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+          {/* Dashboard topbar */}
+          <header style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 28px',
+            height: 52,
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface)',
+            flexShrink: 0,
+          }}>
+            <div className="app-brand">
+              CEO<span style={{ color: 'var(--accent-bronze)' }}>Claw</span>
+            </div>
+            <button
+              onClick={async () => { await signOut(); setShowHome(true); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '5px 12px',
+                borderRadius: 4,
+                border: '1px solid var(--border-strong)',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                fontSize: 12,
+                fontFamily: 'var(--font)',
+                letterSpacing: '0.01em',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface-2)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 12L6 8l4-4" />
+              </svg>
+              Back to Home
+            </button>
+          </header>
+          {(COMING_SOON_VIEWS as readonly string[]).includes(dashboardView) ? (
+            <ComingSoon title={comingSoonTitle[dashboardView] ?? dashboardView} />
+          ) : (
+            <Dashboard
+              view={dashboardView === 'all-apps' ? 'all-apps' : 'home'}
+              onSelectSession={handleDashboardSelectSession}
+              onNewChat={handleDashboardNewChat}
+              onViewAllApps={() => setDashboardView('all-apps')}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Chat view ──
   return (
     <div className="app-root">
       {/* Topbar */}
       <header className="app-topbar">
         <div className="app-topbar-left">
           <button
-            onClick={() => setIsSessionDrawerOpen((open) => !open)}
-            className={
-              isSessionDrawerOpen
-                ? 'app-chats-button app-chats-button--active'
-                : 'app-chats-button'
-            }
-            aria-label="Toggle sessions panel"
+            onClick={() => setView('dashboard')}
+            className="app-back-btn"
+            aria-label="Back to dashboard"
           >
-            <span style={{ fontSize: 14, lineHeight: 1 }}>☰</span>
-            Chats
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 12L6 8l4-4" />
+            </svg>
           </button>
           <div className="app-brand">
-            CEO<span style={{ color: 'var(--accent)' }}>Claw</span>
+            CEO<span style={{ color: 'var(--accent-bronze)' }}>Claw</span>
           </div>
+          {currentSlug && (
+            <span className="app-project-label">
+              {chatResponse?.product_name || currentSlug}
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ModelStatusBadge model={lastModel} />
@@ -172,9 +357,8 @@ export default function App() {
 
       {/* Workspace */}
       <div className="app-workspace">
-        {/* Chat panel */}
+        {/* Chat panel — left side */}
         <div className="app-chat-panel">
-          {/* Error banner */}
           {error && (
             <div className="app-error-banner">
               <span>⚠</span>
@@ -182,28 +366,11 @@ export default function App() {
             </div>
           )}
 
-          {/* Messages — scrollable region */}
           <div className="app-messages">
-            {/* Welcome message */}
             {messages.length === 0 && (
-              <>
-                <div className="app-welcome-message">
-                  Describe your product — I&apos;ll build a live preview instantly.
-                </div>
-                <div className="app-quick-prompts" aria-label="Quick prompts">
-                  {QUICK_PROMPTS.map((prompt) => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      className="app-quick-prompt"
-                      onClick={() => handleSend(prompt)}
-                      disabled={isLoading}
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              </>
+              <div className="app-welcome-message">
+                Describe your product — I&apos;ll build a live preview instantly.
+              </div>
             )}
 
             {messages.map((msg: Message, idx: number) => (
@@ -215,11 +382,22 @@ export default function App() {
               />
             ))}
 
+            {isLoading && fileProgress && (
+              <div className="file-progress-indicator">
+                <span className="file-progress-dot" />
+                <span className="file-progress-text">
+                  Writing <code>{fileProgress.current}</code>
+                </span>
+                <span className="file-progress-count">
+                  {fileProgress.index}/{fileProgress.total}
+                </span>
+              </div>
+            )}
+
             {isLoading && <BuildLog stages={pipelineStages} />}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Composer — always rendered, sticky at bottom */}
           <Composer
             onSubmit={handleSend}
             disabled={isLoading}
@@ -228,16 +406,67 @@ export default function App() {
           />
         </div>
 
-        {/* Preview pane */}
-        <PreviewPane
-          slug={currentSlug}
-          landingUrl={landingUrl}
-          appUrl={appUrl}
-          sessionId={sessionId}
-          isGenerating={isLoading}
-          generationPhase={generationPhase}
-          completionToken={chatResponse?.version_id ?? null}
-        />
+        {/* Center panel */}
+        <div className="app-center-panel">
+          {/* View toggle tabs */}
+          <div className="app-center-tabs">
+            <button
+              className={`app-center-tab${centerView === 'preview' ? ' app-center-tab--active' : ''}`}
+              onClick={() => setCenterView('preview')}
+            >
+              Preview
+            </button>
+            <button
+              className={`app-center-tab${centerView === 'code' ? ' app-center-tab--active' : ''}`}
+              onClick={() => setCenterView('code')}
+            >
+              Code
+            </button>
+          </div>
+
+          <div style={{ display: centerView === 'preview' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <PreviewPane
+              slug={currentSlug}
+              landingUrl={landingUrl}
+              appUrl={appUrl}
+              sessionId={sessionId}
+              isGenerating={isLoading}
+              generationPhase={generationPhase}
+              completionToken={chatResponse?.version_id ?? null}
+            />
+          </div>
+
+          <div style={{ display: centerView === 'code' ? 'flex' : 'none', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            {/* File explorer embedded inside code view */}
+            {currentSlug && (
+              <div className="app-code-file-explorer">
+                <FileExplorer
+                  sessionId={sessionId}
+                  onFileSelect={handleFileSelect}
+                  selectedFile={selectedFile}
+                  generatingFiles={generatingFiles}
+                  refreshToken={fileRefreshToken}
+                />
+              </div>
+            )}
+            <div className="app-code-editor-area">
+              <EditorTabs
+                openFiles={openFiles}
+                activeFile={selectedFile}
+                dirtyFiles={dirtyFiles}
+                onSelectTab={setSelectedFile}
+                onCloseTab={handleCloseTab}
+              />
+              <CodeEditor
+                sessionId={sessionId}
+                filePath={selectedFile}
+                onDirtyChange={handleDirtyChange}
+                onSave={handleEditorSave}
+                refreshToken={editorRefreshToken}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Session drawer — always mounted; CSS handles open/close transition */}
         <div

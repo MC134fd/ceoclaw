@@ -1,8 +1,8 @@
 """
 Intent parser — extracts structured product intent from a raw chat message.
 
-No model call required: uses regex + keyword heuristics so it works in
-mock mode and doesn't burn API budget for intent extraction.
+No model call required: uses regex + keyword heuristics to avoid API
+budget burn for intent extraction.
 
 Returns a ProductIntent dict that is persisted into CEOClawState and
 available to every downstream node.
@@ -19,6 +19,8 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 _TYPE_KEYWORDS: dict[str, list[str]] = {
+    "ecommerce": ["sell", "shop", "store", "ecommerce", "e-commerce", "buy", "product listing",
+                  "cart", "checkout", "merchandise", "retail"],
     "saas": ["saas", "subscription", "platform", "dashboard", "tracker", "manager",
              "scheduler", "planner", "crm", "analytics", "monitoring"],
     "marketplace": ["marketplace", "directory", "listing", "connect buyers", "two-sided"],
@@ -36,6 +38,7 @@ _USER_KEYWORDS: dict[str, list[str]] = {
     "small businesses": ["small business", "smb", "freelancer", "consultant", "agency"],
     "enterprises": ["enterprise", "team", "company", "b2b", "corporate"],
     "students": ["student", "education", "learning", "school", "university"],
+    "customers": ["customer", "buyer", "shopper", "client"],
 }
 
 _FEATURE_KEYWORDS: list[tuple[str, str]] = [
@@ -57,6 +60,10 @@ _FEATURE_KEYWORDS: list[tuple[str, str]] = [
     (r"progress", "progress tracking"),
     (r"remind\w*", "reminders"),
     (r"integrat\w*", "third-party integrations"),
+    (r"cart|checkout|basket", "shopping cart & checkout"),
+    (r"product\w*\s+listing|catalog", "product catalog"),
+    (r"order\w*", "order management"),
+    (r"inventor\w*|stock", "inventory management"),
 ]
 
 _ENDPOINT_TEMPLATES: dict[str, list[str]] = {
@@ -66,6 +73,8 @@ _ENDPOINT_TEMPLATES: dict[str, list[str]] = {
                 "/api/reports/daily", "/api/reports/weekly"],
     "marketplace": ["/api/health", "/api/listings", "/api/listings/{id}",
                     "/api/users", "/api/search", "/api/transactions"],
+    "ecommerce": ["/api/health", "/api/products", "/api/products/{id}",
+                  "/api/cart", "/api/orders", "/api/checkout"],
     "tool": ["/api/health", "/api/process", "/api/results/{id}"],
     "default": ["/api/health", "/api/data", "/api/user"],
 }
@@ -111,11 +120,21 @@ def parse_intent(message: str) -> dict[str, Any]:
         1.0,
     )
 
+    # Sensible defaults per product type when no features detected
+    if not core_features:
+        if product_type == "ecommerce":
+            core_features = ["product catalog", "shopping cart & checkout", "order management"]
+        elif product_type == "marketplace":
+            core_features = ["listings", "search", "user profiles"]
+        elif product_type == "content":
+            core_features = ["content publishing", "categories", "search"]
+        # else leave empty — the LLM will infer from raw_message
+
     return {
         "product_type": product_type,
         "product_name": product_name,
         "target_user": target_user,
-        "core_features": core_features or ["core functionality", "user dashboard", "data export"],
+        "core_features": core_features,
         "nonfunctional_reqs": nonfunctional,
         "desired_endpoints": endpoints,
         "tech_stack": tech_stack,
@@ -137,10 +156,20 @@ def _detect_type(msg: str) -> str:
 
 def _extract_product_name(raw: str, msg: str) -> str:
     """Try to extract a product name from common patterns."""
+    # Pattern: "sell <product>" / "store for <product>" / "shop for <product>"
+    m = re.search(
+        r"(?:sell(?:ing)?|store\s+for|shop\s+for)\s+([\w\s]+?)(?:\s+online|\s+app|\s+website|$)",
+        msg, re.IGNORECASE,
+    )
+    if m:
+        subject = m.group(1).strip().title()
+        if 1 <= len(subject.split()) <= 4 and len(subject) > 2:
+            return f"{subject} Store"
+
     # Pattern: "build me a <name> saas/app/tool"
     m = re.search(
         r"(?:build|create|make|launch|start)\s+(?:me\s+)?(?:a|an)\s+([\w\s]+?)\s+"
-        r"(?:saas|app|tool|platform|tracker|manager|dashboard|service|startup)",
+        r"(?:saas|app|tool|platform|tracker|manager|dashboard|service|startup|store|shop)",
         msg, re.IGNORECASE,
     )
     if m:
@@ -148,9 +177,9 @@ def _extract_product_name(raw: str, msg: str) -> str:
         if 2 <= len(name.split()) <= 4:
             return name
 
-    # Pattern: "<name> tracker/dashboard/app"
+    # Pattern: "<name> tracker/dashboard/app/store"
     m2 = re.search(
-        r"([\w\s]+?)\s+(?:tracker|dashboard|app|platform|tool|manager)\b",
+        r"([\w\s]+?)\s+(?:tracker|dashboard|app|platform|tool|manager|store|shop)\b",
         msg, re.IGNORECASE,
     )
     if m2:

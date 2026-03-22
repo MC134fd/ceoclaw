@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Management — App Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-accent-pink: #ec4899;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --color-border: #bbf7d0;
+      --accent-gradient: linear-gradient(135deg, #16a34a, #15803d);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font-body);
+      background:var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding: clamp(12px, calc(var(--spacing) * 1rem), 28px);
+    }
+
+    /* Header / navbar */
+    header.app-header{
+      position:sticky;
+      top:0;
+      z-index:60;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      padding: clamp(10px, calc(var(--spacing) * 0.6rem), 16px);
+      background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+      backdrop-filter: blur(6px);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .25s ease, transform .18s ease;
+    }
+    header.app-header.scrolled{
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+      background:var(--color-surface);
+    }
+    .brand{
+      display:flex;
+      gap:.75rem;
+      align-items:center;
+      text-decoration:none;
+      color:var(--color-text);
+    }
+    .brand .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-family:var(--font-display);
+      font-weight:600;
+      box-shadow:var(--shadow-sm);
+    }
+    .brand .title{
+      font-weight:600;
+      font-family:var(--font-display);
+      letter-spacing:.2px;
+    }
+
+    .header-actions{
+      display:flex;
+      gap:.5rem;
+      align-items:center;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      padding:0 clamp(10px, calc(var(--spacing) * 0.4rem), 16px);
+      min-height:44px;
+      border-radius:10px;
+      border:1px solid transparent;
+      cursor:pointer;
+      background:var(--color-primary);
+      color:#fff;
+      font-weight:600;
+      text-decoration:none;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      box-shadow:var(--shadow-sm);
+      font-family:var(--font-body);
+    }
+    .btn.secondary{
+      background:transparent;
+      color:var(--color-text);
+      border:1px solid var(--color-border);
+      box-shadow:none;
+    }
+    .btn:focus{outline:3px solid rgba(22,163,74,.12); outline-offset:2px}
+    .btn:hover{transform:translateY(-2px)}
+    .btn:active{transform:translateY(0)}
+    .ghost{
+      background:transparent;
+      border: none;
+      color:var(--color-text);
+      font-weight:600;
+    }
+
+    /* Layout wrapper with sidebar + main */
+    .layout{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap: clamp(12px, calc(var(--spacing) * 0.8rem), 20px);
+      margin-top: clamp(12px, calc(var(--spacing) * 0.3rem), 18px);
+    }
+
+    /* Sidebar */
+    nav.sidebar{
+      background:var(--color-surface);
+      border-radius:var(--radius-lg);
+      padding: clamp(12px, calc(var(--spacing) * 0.6rem), 18px);
+      box-shadow:var(--shadow-md);
+      height:calc(100vh - 140px);
+      position:sticky;
+      top:74px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .nav-links{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:6px;
+    }
+    .nav-links a{
+      display:flex;
+      gap:.75rem;
+      align-items:center;
+      padding:10px;
+      border-radius:8px;
+      text-decoration:none;
+      color:var(--color-text);
+      font-weight:600;
+      background:transparent;
+      transition: background .12s ease, transform .12s ease;
+    }
+    .nav-links a:hover{background:linear-gradient(90deg, rgba(22,163,74,0.06), rgba(21,128,61,0.04)); transform:translateX(3px)}
+    .nav-foot{
+      margin-top:auto;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    /* Mobile: hide sidebar below 640px */
+    .sidebar-toggle{
+      display:none;
+      background:transparent;
+      border:none;
+      font-size:18px;
+      padding:8px;
+      border-radius:8px;
+    }
+
+    /* Main content */
+    main.content{
+      min-height:60vh;
+      display:flex;
+      flex-direction:column;
+      gap: clamp(12px, calc(var(--spacing) * 0.8rem), 20px);
+    }
+    .hero{
+      background:var(--color-surface);
+      padding: clamp(14px, calc(var(--spacing) * 0.9rem), 24px);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .hero .left{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .status-chip{
+      background:var(--color-border);
+      color:var(--color-secondary);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:600;
+      font-size:13px;
+    }
+    .hero h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-weight:600;
+      font-size: clamp(20px, 2.5vw, 28px);
+    }
+    .hero p{
+      margin:0;
+      color:var(--color-muted);
+      font-weight:500;
+    }
+
+    /* Bento grid area for cards */
+    .bento-grid{
+      display:grid;
+      gap: clamp(12px, calc(var(--spacing) * 0.8rem), 20px);
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    /* Metrics row: 4 cards */
+    .metrics{
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+    .card{
+      background:var(--color-surface);
+      padding: clamp(12px, calc(var(--spacing) * 0.8rem), 18px);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border:1px solid transparent;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .card:hover{transform:translateY(-4px); box-shadow:var(--shadow-md)}
+    .metric-value{
+      font-size:1.5rem;
+      font-weight:700;
+      color:var(--color-text);
+    }
+    .metric-label{
+      color:var(--color-muted);
+      font-weight:600;
+      font-size:13px;
+    }
+    .metric-footnote{font-size:13px; color:var(--color-muted)}
+
+    /* Feature list card */
+    .features-list ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .features-list li{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:8px;
+      border-radius:8px;
+      background:linear-gradient(90deg, rgba(22,163,74,0.03), rgba(236,72,153,0.01));
+    }
+    .feature-tag{
+      min-width:34px;
+      height:34px;
+      border-radius:8px;
+      background:var(--color-primary);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-weight:700;
+      font-family:var(--font-display);
+      box-shadow:var(--shadow-sm);
+    }
+    .feature-body{
+      display:flex;
+      flex-direction:column;
+      line-height:1.2;
+    }
+    .feature-body strong{font-weight:700}
+
+    /* Connect API card */
+    .connect-card form{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .input{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      background:var(--color-bg);
+      padding:8px;
+      border-radius:8px;
+      border:1px dashed var(--color-border);
+    }
+    .input input{
+      border:0;
+      background:transparent;
+      outline:none;
+      font-weight:600;
+      color:var(--color-text);
+      width:100%;
+    }
+    .small{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* Reveal animations */
+    .reveal{opacity:0; transform:translateY(12px); transition: opacity .6s ease, transform .6s ease}
+    .reveal.visible{opacity:1; transform:translateY(0)}
+
+    /* Footer actions row */
+    .actions-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    /* Responsive rules */
+    @media (max-width: 1024px){
+      .layout{grid-template-columns: 220px 1fr}
+      header.app-header{padding:12px}
+    }
+    @media (max-width: 640px){
+      body{padding:12px}
+      .layout{grid-template-columns: 1fr}
+      nav.sidebar{display:none}
+      .sidebar-toggle{display:inline-flex}
+      header.app-header{border-radius:12px}
+      .hero{flex-direction:column; align-items:flex-start}
+      .brand .title{font-size:16px}
+      .header-actions{gap:6px}
+    }
+
+    /* Offcanvas sidebar when open on mobile */
+    .mobile-sidebar{
+      position:fixed;
+      inset:0;
+      display:none;
+      z-index:80;
+      background:rgba(5,10,7,0.4);
+      align-items:flex-start;
+      padding:20px;
+    }
+    .mobile-sidebar.open{display:flex}
+    .mobile-sidebar .panel{
+      width:280px;
+      max-width:90%;
+      background:var(--color-surface);
+      border-radius:var(--radius-md);
+      padding:16px;
+      box-shadow:var(--shadow-lg);
+      height:calc(100vh - 60px);
+      overflow:auto;
+    }
+
+  </style>
+</head>
+<body>
+  <header class="app-header" id="siteHeader" role="banner">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="sidebar-toggle ghost" id="openSidebar" aria-label="Open navigation menu">☰</button>
+      <a class="brand" href="index.html">
+        <div class="logo" aria-hidden="true">HM</div>
+        <div>
+          <div class="title">Home Management</div>
+          <div style="font-size:12px;color:var(--color-muted);margin-top:2px">Practical home oversight</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-actions">
+      <a class="btn secondary" href="app.html" aria-current="page">Dashboard</a>
+      <a class="btn" href="pages/signup.html">Get Started</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Primary navigation">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-weight:700;font-family:var(--font-display);font-size:18px;color:var(--color-text)">Workspace</div>
+      </div>
+
+      <div class="nav-links">
+        <a href="app.html" class="reveal">Dashboard</a>
+        <a href="app.html#features" class="reveal">Features</a>
+        <a href="app.html#settings" class="reveal">Settings</a>
+      </div>
+
+      <div class="nav-foot">
+        <a class="btn secondary" href="pages/signup.html">Invite a household</a>
+        <a class="btn" href="index.html">Back to site</a>
+      </div>
+    </nav>
+
+    <main class="content" id="mainContent">
+      <section class="hero reveal" aria-labelledby="welcomeHeading">
+        <div class="left">
+          <div class="status-chip">Live</div>
+          <div>
+            <h1 id="welcomeHeading">Control your home in one place</h1>
+            <p>Fast access to core functionality, the user dashboard and scheduled tasks — see what's due and export useful reports.</p>
+          </div>
+        </div>
+        <div class="actions-row">
+          <a class="btn secondary" href="pages/signup.html">Create account</a>
+          <a class="btn" href="pages/signup.html">Get Started</a>
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section class="bento-grid">
+        <div class="metrics">
+          <article class="card reveal" aria-labelledby="m1">
+            <div class="metric-label" id="m1">Active tasks</div>
+            <div class="metric-value">24</div>
+            <div class="metric-footnote">Next due: 3 tasks today • Manage from your user dashboard</div>
+          </article>
+
+          <article class="card reveal" aria-labelledby="m2">
+            <div class="metric-label" id="m2">Rooms monitored</div>
+            <div class="metric-value">12</div>
+            <div class="metric-footnote">Sensors online: 11 • Coverage: perimeter & common areas</div>
+          </article>
+
+          <article class="card reveal" aria-labelledby="m3">
+            <div class="metric-label" id="m3">Monthly expenses</div>
+            <div class="metric-value">$1,420</div>
+            <div class="metric-footnote">Track repairs, subscriptions, and utilities — export as CSV</div>
+          </article>
+
+          <article class="card reveal" aria-labelledby="m4">
+            <div class="metric-label" id="m4">Upcoming maintenance</div>
+            <div class="metric-value">5 items</div>
+            <div class="metric-footnote">Schedule, assign, and log completion in the user dashboard</div>
+          </article>
+        </div>
+
+        <!-- Feature list and API connect side by side (bento) -->
+        <div style="display:grid;gap:12px;grid-template-columns:1fr;">
+          <section class="card features-list reveal" id="features" aria-labelledby="featuresHeading">
+            <h3 id="featuresHeading" style="margin:0 0 8px 0;font-family:var(--font-display);">Platform capabilities</h3>
+            <p class="small" style="margin:0 0 12px 0">Everything you need to manage home operations: tasks, inventory, reminders and data export.</p>
+            <ul>
+              <li>
+                <div class="feature-tag">A</div>
+                <div class="feature-body">
+                  <strong>Core functionality</strong>
+                  <span class="small">Task automation, recurring events, and shared household checklists.</span>
+                </div>
+              </li>
+              <li>
+                <div class="feature-tag">D</div>
+                <div class="feature-body">
+                  <strong>User dashboard</strong>
+                  <span class="small">Personalized view for each household member with assignments and timelines.</span>
+                </div>
+              </li>
+              <li>
+                <div class="feature-tag">E</div>
+                <div class="feature-body">
+                  <strong>Data export</strong>
+                  <span class="small">Download expense and maintenance logs as CSV for quick reporting.</span>
+                </div>
+              </li>
+              <li>
+                <div class="feature-tag" style="background:var(--color-accent-pink)">I</div>
+                <div class="feature-body">
+                  <strong>Inventory & assets</strong>
+                  <span class="small">Track appliances, warranties, and replacement schedules in one place.</span>
+                </div>
+              </li>
+              <li>
+                <div class="feature-tag" style="background:var(--color-secondary)">R</div>
+                <div class="feature-body">
+                  <strong>Reminders & alerts</strong>
+                  <span class="small">Push and email notifications for upcoming maintenance and tasks.</span>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="card connect-card reveal" aria-labelledby="connectHeading">
+            <h3 id="connectHeading" style="margin:0 0 8px 0;font-family:var(--font-display);">Connect your API</h3>
+            <p class="small" style="margin:0 0 10px 0">Integrate third-party tools or home devices. Provide a token to enable automated sync and secure data export.</p>
+            <form id="apiForm" onsubmit="return false;">
+              <label class="small" for="apiToken">API token</label>
+              <div class="input" role="group" aria-labelledby="apiTokenHelper">
+                <input id="apiToken" name="apiToken" placeholder="paste token here" aria-describedby="apiTokenHelper" />
+                <button class="btn secondary" id="saveToken" type="button">Save</button>
+              </div>
+              <div id="apiTokenHelper" class="small">Tokens are stored locally in your browser. Use a service token for scheduled exports.</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn" id="testConnection" type="button">Test connection</button>
+                <button class="btn secondary" id="revokeToken" type="button">Revoke</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section class="card reveal" id="settings" aria-labelledby="settingsHeading">
+        <h3 id="settingsHeading" style="margin:0 0 8px 0;font-family:var(--font-display);">Quick settings</h3>
+        <p class="small" style="margin:0 0 12px 0">Fine-tune the platform: notification cadence, export formats, and household roles.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <a class="btn secondary" href="app.html#features">Manage automations</a>
+          <a class="btn secondary" href="app.html#features">Export data</a>
+          <a class="btn" href="pages/signup.html">Invite a member</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Mobile off-canvas sidebar -->
+  <div class="mobile-sidebar" id="mobileSidebar" aria-hidden="true">
+    <div class="panel" role="dialog" aria-label="Mobile navigation">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-weight:700;font-family:var(--font-display)">Home Management</div>
+        <button class="ghost" id="closeSidebar" aria-label="Close navigation">✕</button>
+      </div>
+      <nav style="display:flex;flex-direction:column;gap:8px">
+        <a href="app.html" style="padding:8px;border-radius:8px;text-decoration:none;color:var(--color-text);font-weight:600">Dashboard</a>
+        <a href="app.html#features" style="padding:8px;border-radius:8px;text-decoration:none;color:var(--color-text);font-weight:600">Features</a>
+        <a href="app.html#settings" style="padding:8px;border-radius:8px;text-decoration:none;color:var(--color-text);font-weight:600">Settings</a>
+        <a href="index.html" style="padding:8px;border-radius:8px;text-decoration:none;color:var(--color-text);font-weight:600">Back to site</a>
+        <a class="btn" href="pages/signup.html" style="margin-top:12px">Get Started</a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    // Sticky header: toggle .scrolled when scroll > 14px
+    (function(){
+      const header = document.getElementById('siteHeader');
+      function onScroll(){
+        if(window.scrollY > 14) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+      document.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Reveal-on-scroll using IntersectionObserver
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+          }
+        });
+      }, {threshold: 0.12});
+      reveals.forEach(r=>obs.observe(r));
+    })();
+
+    // Mobile sidebar toggle
+    (function(){
+      const openBtn = document.getElementById('openSidebar');
+      const closeBtn = document.getElementById('closeSidebar');
+      const mobile = document.getElementById('mobileSidebar');
+      openBtn && openBtn.addEventListener('click', ()=>{ mobile.classList.add('open'); mobile.setAttribute('aria-hidden','false'); });
+      closeBtn && closeBtn.addEventListener('click', ()=>{ mobile.classList.remove('open'); mobile.setAttribute('aria-hidden','true'); });
+      // close when clicking overlay
+      mobile && mobile.addEventListener('click', (e)=>{
+        if(e.target === mobile){ mobile.classList.remove('open'); mobile.setAttribute('aria-hidden','true'); }
+      });
+    })();
+
+    // Simple API token handling (local storage)
+    (function(){
+      const input = document.getElementById('apiToken');
+      const saveBtn = document.getElementById('saveToken');
+      const testBtn = document.getElementById('testConnection');
+      const revokeBtn = document.getElementById('revokeToken');
+
+      const STORAGE_KEY = 'hm_api_token_v1';
+
+      // Load token if present
+      try{
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if(saved) input.value = saved;
+      }catch(e){ /* ignore private mode */ }
+
+      saveBtn.addEventListener('click', ()=>{
+        const token = input.value.trim();
+        if(!token){ alert('Enter a valid token to save.'); return; }
+        try{
+          localStorage.setItem(STORAGE_KEY, token);
+          saveBtn.textContent = 'Saved';
+          setTimeout(()=> saveBtn.textContent = 'Save', 1200);
+        }catch(e){
+          alert('Unable to save token locally.');
+        }
+      });
+
+      testBtn.addEventListener('click', ()=>{
+        const token = input.value.trim();
+        if(!token){ alert('No token provided. Paste a service token to test.'); return; }
+        // Simulate a small async validation for UX
+        testBtn.textContent = 'Testing...';
+        testBtn.disabled = true;
+        setTimeout(()=>{
+          // Fake validation: token length check
+          if(token.length > 10){
+            alert('Connection successful. You can enable scheduled data export.');
+          }else{
+            alert('Connection failed. Check the token and permissions.');
+          }
+          testBtn.textContent = 'Test connection';
+          testBtn.disabled = false;
+        }, 900);
+      });
+
+      revokeBtn.addEventListener('click', ()=>{
+        if(!confirm('Revoke stored API token?')) return;
+        try{
+          localStorage.removeItem(STORAGE_KEY);
+          input.value = '';
+          alert('Token revoked and removed from local storage.');
+        }catch(e){
+          alert('Unable to revoke token.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

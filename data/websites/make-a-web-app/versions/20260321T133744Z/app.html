@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Make A Web App — App Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@300;400;600;700&family=Manrope:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #4338ca;
+      --color-secondary: #7c3aed;
+      --color-accent-pink: #ec4899;
+      --color-bg: #0f0a2e;
+      --color-surface: #1e1652;
+      --color-text: #eef2ff;
+      --color-muted: #818cf8;
+      --color-border: #e2e8f0;
+      --accent-gradient: linear-gradient(135deg, #4338ca, #7c3aed);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.08), transparent),
+                  linear-gradient(180deg, rgba(7,6,23,1) 0%, rgba(15,10,46,1) 100%);
+      background-color:var(--color-bg);
+      color:var(--color-text);
+      font-family:var(--font-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      -webkit-font-feature-settings: "liga" 1;
+    }
+
+    /* Layout */
+    .app-shell{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap: clamp(12px, calc(var(--spacing) * 0.9rem), 24px);
+      min-height:100vh;
+      padding: clamp(16px, calc(var(--spacing) * 1rem), 32px);
+      align-items:start;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius-lg);
+      padding: clamp(16px, calc(var(--spacing) * 0.9rem), 24px);
+      box-shadow: var(--shadow-md);
+      position:relative;
+      transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .2s;
+      min-height: calc(100vh - 2 * clamp(16px, calc(var(--spacing) * 1rem), 32px));
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      background:var(--accent-gradient);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-family:var(--font-display);
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+    }
+    .brand h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:1.05rem;
+      letter-spacing:-0.02em;
+      color:var(--color-text);
+    }
+    .brand p{margin:0;font-size:.78rem;color:var(--color-muted)}
+
+    nav.side-nav{
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    nav.side-nav a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      color:var(--color-text);
+      text-decoration:none;
+      border-radius:8px;
+      font-weight:600;
+      background:transparent;
+      transition:background .18s, transform .12s;
+      font-size:.95rem;
+    }
+    nav.side-nav a:hover{ background: rgba(255,255,255,0.02); transform:translateY(-2px) }
+    nav.side-nav a.active{
+      background: linear-gradient(90deg, rgba(67,56,202,0.12), rgba(124,58,237,0.06));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+      color:var(--color-text);
+    }
+    .side-footer{
+      margin-top:auto;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      font-size:.85rem;
+      color:var(--color-muted);
+    }
+
+    /* Header / Topbar */
+    header.navbar{
+      position:sticky;
+      top:calc(clamp(16px, calc(var(--spacing) * 1rem), 32px) - clamp(16px, calc(var(--spacing) * 1rem), 32px)); /* visually sticky within padding */
+      z-index:30;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:8px 12px;
+      border-radius:12px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      transition: box-shadow .18s, transform .18s, background .18s;
+    }
+
+    header.navbar.scrolled{
+      box-shadow: var(--shadow-lg);
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      transform: translateY(-1px);
+    }
+
+    .header-left{display:flex;align-items:center;gap:12px}
+    .mobile-toggle{
+      display:none;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--color-text);
+      padding:8px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .header-actions{margin-left:auto; display:flex; gap:10px; align-items:center}
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      background:var(--accent-gradient);
+      color:white;
+      border:none;
+      padding:0 14px;
+      min-height:44px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
+      box-shadow: var(--shadow-sm);
+      text-decoration:none;
+    }
+    .btn.secondary{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      color:var(--color-text);
+      font-weight:600;
+    }
+    .btn:active{ transform:translateY(1px) }
+    .btn:hover{ transform:translateY(-2px) }
+
+    /* Main content */
+    main.content{
+      min-height:70vh;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .hero{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:center;
+      padding:18px;
+      border-radius:var(--radius-md);
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      box-shadow: var(--shadow-sm);
+    }
+    .hero h2{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:clamp(1.1rem, calc(var(--spacing) * 1.15rem), 1.8rem);
+      color:var(--color-text);
+    }
+    .hero p{
+      margin:6px 0 0 0;
+      color:var(--color-muted);
+      font-weight:600;
+    }
+
+    /* Grid sections */
+    .grid{
+      display:grid;
+      gap:16px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .metrics{
+      display:grid;
+      gap:12px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border-radius: var(--radius-md);
+      padding:14px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+
+    .metric{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+    .metric .value{
+      font-family:var(--font-display);
+      font-size:1.45rem;
+      font-weight:700;
+      color:var(--color-text);
+    }
+    .metric .label{
+      color:var(--color-muted);
+      font-weight:600;
+      font-size:.9rem;
+    }
+
+    .feature-list ul{
+      list-style:none;
+      padding:0;
+      margin:12px 0 0 0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .feature-list li{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      background:rgba(255,255,255,0.01);
+      padding:10px;
+      border-radius:10px;
+      font-weight:600;
+    }
+    .feature-list li .dot{
+      min-width:36px;
+      height:36px;
+      border-radius:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      display:grid;
+      place-items:center;
+      color:var(--color-primary);
+      font-weight:700;
+      box-shadow: var(--shadow-sm);
+    }
+    .muted{ color:var(--color-muted); font-weight:600 }
+
+    /* Connect card */
+    .connect{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .connect form{ display:flex; gap:8px; align-items:center; flex:1; min-width:220px }
+    .input{
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:10px 12px;
+      border-radius:8px;
+      color:var(--color-text);
+      min-height:44px;
+      flex:1;
+      font-weight:600;
+    }
+    .small{
+      font-size:.85rem;
+      color:var(--color-muted);
+    }
+
+    /* Responsive */
+    @media (max-width:1024px){
+      .app-shell{ grid-template-columns: 220px 1fr; }
+    }
+    @media (max-width:640px){
+      .app-shell{ grid-template-columns: 1fr; padding:12px }
+      .sidebar{ display:none }
+      .mobile-toggle{ display:inline-flex }
+      header.navbar{ border-radius:10px }
+      .hero{ flex-direction:column; align-items:flex-start }
+    }
+
+    /* Reveal on scroll */
+    .reveal{ opacity:0; transform:translateY(18px) scale(.995); transition: opacity .6s cubic-bezier(.2,.9,.2,1), transform .6s cubic-bezier(.2,.9,.2,1) }
+    .reveal.visible{ opacity:1; transform:none }
+
+    /* Misc */
+    .kpi-note{ font-size:.85rem; color:var(--color-muted) }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      background:linear-gradient(90deg, rgba(67,56,202,0.12), rgba(124,58,237,0.08));
+      color:var(--color-text);
+      font-weight:700;
+      font-size:.85rem;
+    }
+
+    footer.app-footer{
+      margin-top:18px;
+      color:var(--color-muted);
+      font-size:.9rem;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">MA</div>
+        <div>
+          <h1>Make A Web App</h1>
+          <p>Build web apps without complexity</p>
+        </div>
+      </div>
+
+      <nav class="side-nav" aria-label="Main navigation">
+        <a href="app.html" class="active" aria-current="page">Dashboard</a>
+        <a href="app.html#features">Features</a>
+        <a href="app.html#settings">Settings</a>
+        <a href="index.html">Back to site</a>
+        <a href="pages/signup.html" style="margin-top:8px" class="btn" role="button">Get Started</a>
+      </nav>
+
+      <div class="side-footer">
+        <div class="small">Version 1.0 — Secure</div>
+        <div class="muted">© Make A Web App</div>
+      </div>
+    </aside>
+
+    <div class="main-area" style="display:flex;flex-direction:column;gap:12px">
+      <header class="navbar" id="topbar">
+        <div class="header-left">
+          <button class="mobile-toggle" id="mobile-toggle" aria-label="Open menu">☰</button>
+          <div style="display:flex;flex-direction:column">
+            <div style="font-weight:700">App Dashboard</div>
+            <div class="small">Core workspace for your projects</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <a href="pages/signup.html" class="btn secondary">Invite team</a>
+          <a href="pages/signup.html" class="btn">Get Started</a>
+        </div>
+      </header>
+
+      <main class="content" id="main">
+        <section class="hero reveal">
+          <div>
+            <h2>Control your core functionality. Ship faster.</h2>
+            <p class="small">Make A Web App centralizes the user dashboard, API connections, and data export — so you focus on outcomes, not infrastructure.</p>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="badge">Realtime</div>
+            <div class="kpi-note">Last updated: <strong style="color:var(--color-text)">2 minutes ago</strong></div>
+          </div>
+        </section>
+
+        <section class="grid metrics" aria-label="Key metrics">
+          <div class="card metric reveal">
+            <div>
+              <div class="label">Active Projects</div>
+              <div class="value">24</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">projects running</div>
+              <div class="kpi-note">Scoped to your account</div>
+            </div>
+          </div>
+
+          <div class="card metric reveal">
+            <div>
+              <div class="label">API Requests Today</div>
+              <div class="value">18,432</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">through connected APIs</div>
+              <div class="kpi-note">Core functionality for integrations</div>
+            </div>
+          </div>
+
+          <div class="card metric reveal">
+            <div>
+              <div class="label">Users on Dashboard</div>
+              <div class="value">3,128</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">active this week</div>
+              <div class="kpi-note">Monitor user engagement</div>
+            </div>
+          </div>
+
+          <div class="card metric reveal">
+            <div>
+              <div class="label">Exported Files</div>
+              <div class="value">1,204</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">data export operations</div>
+              <div class="kpi-note">CSV, JSON, or custom formats</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid" style="align-items:start;">
+          <div class="card feature-list reveal" id="features">
+            <h3 style="margin:0 0 8px 0; font-family:var(--font-display)">Platform capabilities</h3>
+            <p class="muted" style="margin:0 0 12px 0">Make A Web App provides the tools you need for production-grade applications.</p>
+            <ul>
+              <li>
+                <div class="dot">A</div>
+                <div>
+                  <div style="font-weight:700">Core functionality</div>
+                  <div class="small muted">Robust primitives for routing, state, and storage.</div>
+                </div>
+              </li>
+
+              <li>
+                <div class="dot">U</div>
+                <div>
+                  <div style="font-weight:700">User dashboard</div>
+                  <div class="small muted">Customizable workspace showing projects, metrics, and alerts.</div>
+                </div>
+              </li>
+
+              <li>
+                <div class="dot">D</div>
+                <div>
+                  <div style="font-weight:700">Data export</div>
+                  <div class="small muted">Export datasets to CSV, JSON, and external sinks for analysis.</div>
+                </div>
+              </li>
+
+              <li>
+                <div class="dot">I</div>
+                <div>
+                  <div style="font-weight:700">Integrations</div>
+                  <div class="small muted">Connect to third-party APIs and services with secure tokens.</div>
+                </div>
+              </li>
+
+              <li>
+                <div class="dot">S</div>
+                <div>
+                  <div style="font-weight:700">Security & Settings</div>
+                  <div class="small muted">Role-based access, audit logs, and key management.</div>
+                </div>
+              </li>
+            </ul>
+            <div style="margin-top:12px; display:flex; gap:10px">
+              <a href="pages/signup.html" class="btn">Start a project</a>
+              <a href="app.html#settings" class="btn secondary">Configure</a>
+            </div>
+          </div>
+
+          <div class="card connect reveal" id="settings" aria-labelledby="connect-title">
+            <div style="flex:1;min-width:260px">
+              <h3 id="connect-title" style="margin:0 0 8px 0; font-family:var(--font-display)">Connect your API</h3>
+              <p class="small muted" style="margin:0 0 12px 0">Provide a secure token to enable integrations and data export. Tokens are encrypted and stored securely.</p>
+
+              <form id="token-form" onsubmit="return false;">
+                <input class="input" id="api-token" name="token" type="password" placeholder="Enter API token" aria-label="API token" required />
+                <button class="btn" id="save-token">Save</button>
+              </form>
+
+              <div id="token-feedback" class="small muted" style="margin-top:8px">No token saved.</div>
+            </div>
+
+            <div style="width:220px; display:flex;flex-direction:column;gap:10px; align-items:flex-end">
+              <div style="width:100%">
+                <div style="font-weight:700">Status</div>
+                <div class="small muted">Disconnected</div>
+              </div>
+              <div style="width:100%">
+                <div style="font-weight:700">Permissions</div>
+                <div class="small muted">Read / Write / Export</div>
+              </div>
+              <div style="width:100%">
+                <div style="font-weight:700">Tip</div>
+                <div class="small muted">Rotate tokens regularly for security.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="app-footer reveal">
+          <div>Make A Web App — Focus on building. We handle the platform.</div>
+          <div class="small muted">Need help? Visit <a href="index.html" style="color:var(--color-accent-pink); text-decoration:none">Support</a></div>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Mobile sidebar toggle
+    (function(){
+      const toggle = document.getElementById('mobile-toggle');
+      const sidebar = document.getElementById('sidebar');
+      let overlay;
+      toggle && toggle.addEventListener('click', ()=> {
+        if(!sidebar) return;
+        // create overlay when opening
+        if (sidebar.style.display === 'block') {
+          sidebar.style.display = '';
+          if (overlay){ overlay.remove(); overlay=null; }
+          return;
+        }
+        sidebar.style.display = 'block';
+        sidebar.style.position = 'fixed';
+        sidebar.style.left = '12px';
+        sidebar.style.top = '12px';
+        sidebar.style.bottom = '12px';
+        sidebar.style.width = 'calc(100% - 24px)';
+        sidebar.style.maxWidth = '400px';
+        sidebar.style.zIndex = 120;
+        sidebar.style.transform = 'translateY(0)';
+        overlay = document.createElement('div');
+        overlay.style.position='fixed';
+        overlay.style.inset='0';
+        overlay.style.zIndex=100;
+        overlay.style.background='rgba(0,0,0,0.45)';
+        overlay.addEventListener('click', ()=> {
+          sidebar.style.display='';
+          sidebar.style.position='';
+          sidebar.style.left='';
+          sidebar.style.top='';
+          sidebar.style.bottom='';
+          sidebar.style.width='';
+          sidebar.style.maxWidth='';
+          sidebar.style.zIndex='';
+          overlay.remove();
+        });
+        document.body.appendChild(overlay);
+      });
+    })();
+
+    // Sticky navbar class toggling
+    (function(){
+      const topbar = document.getElementById('topbar');
+      if(!topbar) return;
+      function onScroll(){
+        if(window.scrollY > 14){
+          topbar.classList.add('scrolled');
+        } else {
+          topbar.classList.remove('scrolled');
+        }
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Reveal on scroll
+    (function(){
+      const reveals = document.querySelectorAll('.reveal');
+      const opts = { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.06 };
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, opts);
+      reveals.forEach(r => io.observe(r));
+    })();
+
+    // Token save handler
+    (function(){
+      const form = document.getElementById('token-form');
+      const tokenInput = document.getElementById('api-token');
+      const feedback = document.getElementById('token-feedback');
+      const saveBtn = document.getElementById('save-token');
+
+      if(!form || !tokenInput) return;
+      saveBtn.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const val = tokenInput.value.trim();
+        if(!val){
+          feedback.textContent = 'Provide a valid token.';
+          feedback.style.color = 'var(--color-accent-pink)';
+          return;
+        }
+        // Simulate secure save (no external calls). Store masked in session.
+        try{
+          sessionStorage.setItem('mawa_token_masked', '••••••••' + val.slice(-4));
+          feedback.textContent = 'Token saved. Connection will be established automatically.';
+          feedback.style.color = 'var(--color-text)';
+          tokenInput.value = '';
+        }catch(err){
+          feedback.textContent = 'Unable to save token locally.';
+          feedback.style.color = 'var(--color-accent-pink)';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

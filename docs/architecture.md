@@ -11,7 +11,7 @@ START
   │
   ▼
 PlannerNode ────────────────────────────────────────────────────────┐
-  │  FLock model (or mock)                                          │
+  │  FLock model                                                     │
   │  core/prompts.build_planner_prompt()                            │
   │  safe_parse_planner() → PlannerOutput (Pydantic)               │
   │  Stagnation override: forces domain rotation if MRR is flat    │
@@ -28,8 +28,8 @@ RouterNode                                                           │
   └─► OpsExecutorNode (analytics_tool)                      │       │
   └──────────────────────────┬──────────────────────────────┘       │
                              ▼                                       │
-                     EvaluatorNode                                   │
-                       │  FLock model (or mock)                      │
+                    EvaluatorNode                                   │
+                      │  FLock model                                │
                        │  Weighted KPI: MRR(45%) + Rev(25%)         │
                        │  + Signups(20%) + Traffic(10%)             │
                        │  Trend detection, stagnation tracking       │
@@ -78,9 +78,9 @@ class CEOClawState(TypedDict, total=False):
     circuit_breaker_active: bool
 
     # Budget transparency
-    tokens_used: int                    # heuristic token estimate (mock=0)
+    tokens_used: int                    # heuristic token estimate
     external_calls: int                 # live HTTP calls to FLock
-    model_mode: str                     # "live" | "mock" | "fallback" | "unknown"
+    model_mode: str                     # "live" | "fallback" | "unknown"
     fallback_count: int                 # fallbacks this run
 
     # Error accumulation (append reducer)
@@ -97,11 +97,7 @@ class CEOClawState(TypedDict, total=False):
 
 ```
 invoke(messages)
-  ├── mock_mode=True → _mock_generate()
-  │     classify prompt (planner|evaluator)
-  │     return deterministic JSON + metadata(model_mode="mock", tokens=0)
-  │
-  └── mock_mode=False → _generate() with retry loop
+  └── _generate() with retry loop
         for attempt in range(max_retries):
             try → _http_generate()
                   httpx.post(endpoint, json=payload)
@@ -110,8 +106,8 @@ invoke(messages)
                   })
             except → sleep(0.5 * attempt)
         # All retries exhausted:
-        → _mock_generate(prefix="[FALLBACK]", model_mode="fallback",
-                         external_calls_delta=max_retries)
+        → _template_generate(prefix="[FALLBACK]", model_mode="fallback",
+                             external_calls_delta=max_retries)
 ```
 
 Budget metadata flows via `AIMessage.response_metadata` → extracted in PlannerNode / EvaluatorNode → accumulated into state as `tokens_used`, `external_calls`, `fallback_count`.
@@ -192,7 +188,7 @@ GET /summary/latest        → one-shot: run + trend + artifacts + budget (never
 `services/provider_router.py` — `call_llm(messages) -> LLMResult`:
 
 ```
-Flock (live endpoint)  →  OpenAI (chat completions | responses API)  →  deterministic mock
+Flock (live endpoint)  →  OpenAI (chat completions | responses API)  →  deterministic template fallback
 ```
 
 OpenAI routing:

@@ -78,7 +78,7 @@ _green "  Database ready: data/ceoclaw.db"
 echo
 _bold "── Bootstrap complete ──"
 _info "Activate:  source $VENV_DIR/bin/activate"
-_info "Demo run:  python main.py demo --cycles 5 --mock-model"
+_info "Demo run:  python main.py demo --cycles 5"
 _info "API:       uvicorn api.server:app --port 8000"
 _info "Tests:     pytest -q"
 echo

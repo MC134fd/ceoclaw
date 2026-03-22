@@ -1,19 +1,18 @@
 """
-CEOClaw JWT authentication — Supabase Google OAuth support.
+CEOClaw JWT authentication — Supabase auth verification via REST API.
 
-Verifies Supabase-issued JWTs (HS256, signed with SUPABASE_JWT_SECRET).
-The dependency `get_current_user` is used in FastAPI endpoint signatures via
-`Depends(get_current_user)`.
+Verifies tokens by calling Supabase's /auth/v1/user endpoint directly,
+so it works regardless of whether the project uses legacy HS256 or the
+new RS256 JWT Signing Keys.
 
 Feature flag: when AUTH_REQUIRED=false (default), all endpoints receive
-ANONYMOUS_USER without performing any token validation — preserving current
-anonymous builder behaviour during rollout.
+ANONYMOUS_USER without performing any token validation.
 """
 
 import logging
 from typing import Any, Optional
 
-import jwt as _jwt  # PyJWT
+import httpx
 import config.settings as _settings_mod  # runtime lookup — avoids stale binding in tests
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -36,57 +35,58 @@ ANONYMOUS_USER: dict[str, Any] = {
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 
-def _verify_supabase_jwt(token: str) -> dict[str, Any]:
-    """Decode and verify a Supabase JWT.
+def _verify_supabase_token(token: str) -> dict[str, Any]:
+    """Verify a Supabase access token by calling /auth/v1/user.
 
-    Supabase signs user JWTs with HS256 using the JWT secret found in
-    Supabase Dashboard → Settings → API → JWT Settings.
-
+    This works with both legacy HS256 and new RS256 JWT Signing Keys.
     Raises HTTPException(401) on any validation failure.
     """
-    jwt_secret = _settings_mod.settings.supabase_jwt_secret
-    if not jwt_secret:
+    supabase_url = _settings_mod.settings.supabase_url
+    anon_key = _settings_mod.settings.supabase_anon_key
+
+    if not supabase_url or not anon_key:
         raise HTTPException(
             status_code=401,
-            detail="SUPABASE_JWT_SECRET not configured — cannot verify token",
+            detail="SUPABASE_URL / SUPABASE_ANON_KEY not configured on server",
         )
 
     try:
-        payload = _jwt.decode(
-            token,
-            jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-            options={"require": ["sub", "exp"]},
+        resp = httpx.get(
+            f"{supabase_url}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": anon_key,
+            },
+            timeout=10,
         )
-    except _jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except _jwt.InvalidAudienceError:
-        raise HTTPException(status_code=401, detail="Token has invalid audience")
-    except _jwt.InvalidTokenError as exc:
-        logger.debug("JWT validation failed: %s", exc)
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except httpx.RequestError as exc:
+        logger.warning("Supabase auth request failed: %s", exc)
+        raise HTTPException(status_code=401, detail="Could not reach auth server")
 
-    return payload
+    if resp.status_code == 401:
+        raise HTTPException(status_code=401, detail="Token expired or invalid")
+    if not resp.is_success:
+        raise HTTPException(status_code=401, detail="Token verification failed")
+
+    return resp.json()
 
 
-def _extract_user_claims(payload: dict[str, Any]) -> dict[str, Any]:
-    """Pull user info out of Supabase JWT claims."""
-    user_metadata = payload.get("user_metadata") or {}
-    app_metadata = payload.get("app_metadata") or {}
+def _extract_user_claims(user: dict[str, Any]) -> dict[str, Any]:
+    """Pull user info out of Supabase /auth/v1/user response."""
+    user_metadata = user.get("user_metadata") or {}
+    app_metadata = user.get("app_metadata") or {}
 
-    # Google OAuth stores name / picture in user_metadata
     display_name = (
         user_metadata.get("full_name")
         or user_metadata.get("name")
-        or (payload.get("email", "") or "").split("@")[0]
+        or (user.get("email", "") or "").split("@")[0]
     )
     avatar_url = user_metadata.get("avatar_url") or user_metadata.get("picture")
-    provider = app_metadata.get("provider", "google")
+    provider = app_metadata.get("provider", "email")
 
     return {
-        "id": payload["sub"],
-        "email": payload.get("email", ""),
+        "id": user["id"],
+        "email": user.get("email", ""),
         "display_name": display_name,
         "avatar_url": avatar_url,
         "provider": provider,
@@ -113,8 +113,8 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    payload = _verify_supabase_jwt(credentials.credentials)
-    claims = _extract_user_claims(payload)
+    user_data = _verify_supabase_token(credentials.credentials)
+    claims = _extract_user_claims(user_data)
 
     # Upsert the local user record and seed default credits on first login.
     try:

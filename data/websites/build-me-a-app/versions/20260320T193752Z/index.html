@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Me A App — Publish dog blogs with ease</title>
+  <style>
+    /* Fonts (required @import inside <style>) */
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    /* DESIGN TOKENS (all tokens in :root) */
+    :root{
+      /* Colors (palette: sage) */
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+
+      /* Spacing scale (fluid) */
+      --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+      --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+      --space-md: clamp(0.75rem, 1.5vw, 1.25rem);
+      --space-lg: clamp(1rem, 2vw, 1.75rem);
+      --space-xl: clamp(1.5rem, 3vw, 2.5rem);
+      --space-2xl: clamp(2rem, 5vw, 4rem);
+
+      /* Type scale */
+      --text-sm: clamp(0.85rem, 1vw, 0.95rem);
+      --text-md: clamp(1rem, 1.2vw, 1.05rem);
+      --text-lg: clamp(1.125rem, 1.5vw, 1.25rem);
+      --text-xl: clamp(1.5rem, 2.5vw, 2rem);
+      --text-2xl: clamp(2rem, 4vw, 2.75rem);
+      --text-3xl: clamp(2.5rem, 5vw, 3.5rem);
+      --text-4xl: clamp(3rem, 6.5vw, 4.5rem);
+
+      /* Container */
+      --container-width: clamp(320px, 90vw, 1200px);
+
+      /* Radii & shadows */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+
+      /* Motion */
+      --motion: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Touch targets */
+      --min-touch: 44px;
+
+      /* Layout policy */
+      --gutter: var(--space-md);
+
+      /* Misc */
+      --letter-tight: -0.022em;
+    }
+
+    /* Base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background:var(--color-bg);
+      color:var(--color-text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+
+    a{color:inherit;text-decoration:none}
+
+    /* Content container */
+    .wrap{max-width:var(--container-width);margin-inline:auto;padding-inline:var(--space-md)}
+
+    /* Navbar */
+    nav{position:sticky;top:0;z-index:60;padding:block var(--space-sm);background:transparent;display:flex;align-items:center;gap:var(--space-md);}
+    nav.scrolled{backdrop-filter: blur(12px);box-shadow:0 2px 8px rgba(0,0,0,0.08);background:rgba(255,255,255,0.6)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:var(--container-width);margin-inline:auto}
+    .brand{display:flex;align-items:center;gap:var(--space-sm);font-family:'Cormorant Garamond', serif;font-weight:600;font-size:var(--text-lg);letter-spacing:var(--letter-tight);color:var(--color-text)}
+    .nav-links{display:flex;gap:var(--space-sm);align-items:center}
+    .nav-links a{padding:8px 10px;border-radius:8px;color:var(--color-text);font-size:var(--text-md)}
+    .nav-cta .btn{min-height:var(--min-touch);}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.6rem 1rem;border-radius:var(--radius-md);cursor:pointer;transition:var(--motion);font-weight:600}
+    .btn:active{transform:scale(0.97)}
+    .btn:focus-visible{outline:3px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);outline-offset:3px}
+    .btn-primary{background:var(--accent-gradient);color:var(--color-surface);border:1px solid transparent}
+    .btn-primary:hover{filter:brightness(0.95);transform:scale(1.02)}
+    .btn-secondary{background:transparent;border:1.5px solid var(--color-secondary);color:var(--color-secondary)}
+
+    /* Hero */
+    .hero{padding-block:var(--space-2xl);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:var(--space-lg);align-items:center}
+    .hero-cta{display:flex;gap:var(--space-sm);align-items:center;margin-top:var(--space-md)}
+    .hero h1{font-family:'Cormorant Garamond', serif;font-size:var(--text-4xl);margin:0;letter-spacing:var(--letter-tight);color:var(--color-text)}
+    .hero p{margin-top:var(--space-sm);color:var(--color-muted);font-size:var(--text-md)}
+    .hero-card{background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));backdrop-filter: blur(6px);padding:var(--space-lg);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+    .hero-img{max-width:100%;height:auto;border-radius:var(--radius-md)}
+
+    /* Feature grid (bento_grid feel) */
+    .features{padding-block:var(--space-2xl)}
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:var(--space-lg)}
+    .card{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);transition:var(--motion)}
+    .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+    .feature-icon{width:48px;height:48px;border-radius:12px;background:var(--color-bg);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--color-primary)}
+    .feature h3{margin:0 0 var(--space-xs) 0;font-size:var(--text-lg);font-family:'Cormorant Garamond', serif}
+    .feature p{color:var(--color-muted);font-size:var(--text-sm)}
+
+    /* Metrics strip */
+    .metrics{display:flex;gap:var(--space-lg);align-items:center;justify-content:space-between;background:transparent;padding:block var(--space-md);margin:var(--space-lg) 0}
+    .metric{background:var(--color-surface);padding:var(--space-md);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:140px;text-align:center}
+    .metric .num{font-size:var(--text-2xl);font-weight:700;color:var(--color-primary)}
+    .metric .label{font-size:var(--text-sm);color:var(--color-muted)}
+
+    /* Testimonials carousel */
+    .carousel{position:relative;padding:block var(--space-md);overflow:hidden}
+    .testimonial-track{display:flex;gap:var(--space-md);transition:transform 300ms ease}
+    .testimonial{min-width:100%;flex:0 0 100%;background:var(--color-surface);padding:var(--space-lg);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+    .carousel-controls{display:flex;gap:var(--space-sm);align-items:center;margin-top:var(--space-sm)}
+    .dots{display:flex;gap:0.5rem}
+    .dot{width:10px;height:10px;border-radius:10px;background:rgba(0,0,0,0.12);cursor:pointer}
+    .dot.active{background:var(--color-primary)}
+
+    /* Pricing */
+    .pricing{padding-block:var(--space-2xl)}
+    .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:var(--space-lg)}
+    .price-card{position:relative;background:var(--color-surface);padding:var(--space-lg);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:visible}
+    .price-card.pro{border:2px solid transparent;background-image:var(--accent-gradient);background-origin:border-box;padding:calc(var(--space-lg) - 2px)}
+    .price-inner{background:var(--color-surface);border-radius:calc(var(--radius-lg) - 6px);padding:var(--space-md)}
+    .price{font-family:'Cormorant Garamond', serif;font-size:var(--text-2xl);margin:0}
+    .price-features{color:var(--color-muted);font-size:var(--text-sm)}
+
+    /* Footer */
+    footer{padding-block:var(--space-xl);border-top:1px solid rgba(0,0,0,0.04);margin-top:var(--space-2xl)}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity 0.4s ease, transform 0.4s ease}
+    .reveal.visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.reveal,.reveal.visible{opacity:1;transform:none;transition:none}}
+
+    /* Responsive helpers */
+    @media (max-width:1024px){
+      .hero h1{font-size:var(--text-3xl)}
+    }
+    @media (max-width:640px){
+      nav{padding:block var(--space-xs)}
+      .hero{padding-block:var(--space-xl)}
+      .hero h1{font-size:var(--text-2xl)}
+      .nav-links{display:none}
+    }
+
+    /* Accessibility & overflow safety */
+    img,video{max-width:100%;height:auto}
+    p,li{overflow-wrap:break-word}
+  </style>
+</head>
+<body>
+  <nav id="nav" aria-label="Primary">
+    <div class="nav-inner wrap">
+      <div class="brand"><span aria-hidden="true">🐾</span> Build Me A App</div>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a class="btn btn-primary nav-cta" href="pages/signup.html">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="wrap hero">
+      <div class="hero-card reveal">
+        <h1>Build Me A App — Simple tools to publish dog blogs</h1>
+        <p>Publish stories, build series, and manage audience notes from a single editor. Our core functionality focuses on writing, scheduling, and delivering posts while you care for pups.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="pages/signup.html" id="hero-primary-cta">Get Started</a>
+          <a class="btn btn-secondary" href="#features">View features</a>
+        </div>
+      </div>
+
+      <div class="reveal" aria-hidden="true">
+        <!-- If assets/hero.svg exists it will be used naturally; otherwise this is a friendly illustrational card -->
+        <div class="card">
+          <img src="assets/hero.svg" alt="Build Me A App hero illustration" class="hero-img" style="max-width:100%;height:auto;" onerror="this.style.display='none'">
+          <div style="margin-top:var(--space-sm);color:var(--color-muted);font-size:var(--text-sm)">Write in plain text, schedule posts, and preview responsive layouts for readers on mobile and desktop.</div>
+        </div>
+      </div>
+    </header>
+
+    <section id="features" class="wrap features">
+      <h2 class="reveal" style="font-family:'Cormorant Garamond', serif;font-size:var(--text-2xl);margin-bottom:var(--space-md)">What Build Me A App gives you</h2>
+      <div class="features-grid">
+        <article class="card feature reveal">
+          <div class="feature-icon">✍️</div>
+          <h3>Core functionality</h3>
+          <p>Rich editor tailored for dog-related posts: image captions for pets, tagging by breed, and scheduling so your series publishes on time.</p>
+        </article>
+
+        <article class="card feature reveal">
+          <div class="feature-icon">🧭</div>
+          <h3>User dashboard</h3>
+          <p>One dashboard to track drafts, scheduled posts, comments, and readership trends — your editorial control center.</p>
+        </article>
+
+        <article class="card feature reveal">
+          <div class="feature-icon">📤</div>
+          <h3>Data export</h3>
+          <p>Export posts, subscriber lists, and engagement reports in CSV so you can back up or analyze offline.</p>
+        </article>
+
+        <article class="card feature reveal">
+          <div class="feature-icon">📅</div>
+          <h3>Scheduling & series</h3>
+          <p>Create multi-post series for training tips, breed spotlights, or adoption stories and schedule them with a calendar view.</p>
+        </article>
+
+        <article class="card feature reveal">
+          <div class="feature-icon">🔎</div>
+          <h3>Reader previews</h3>
+          <p>See exactly how posts look on phones and desktops, and preview AMP-friendly summaries for fast reads.</p>
+        </article>
+
+        <article class="card feature reveal">
+          <div class="feature-icon">🔒</div>
+          <h3>Permissions & collaborators</h3>
+          <p>Invite co-authors, set publishing roles, and keep an audit trail for content edits.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap metrics reveal" aria-hidden="false">
+      <div class="metric">
+        <div class="num"><span class="counter" data-target="4200">0</span></div>
+        <div class="label">Dog posts published</div>
+      </div>
+      <div class="metric">
+        <div class="num"><span class="counter" data-target="1800">0</span></div>
+        <div class="label">Active user dashboards</div>
+      </div>
+      <div class="metric">
+        <div class="num"><span class="counter" data-target="320">0</span>GB</div>
+        <div class="label">Monthly data export</div>
+      </div>
+    </section>
+
+    <section class="wrap carousel-section reveal" aria-label="Testimonials">
+      <h2 style="font-family:'Cormorant Garamond', serif;font-size:var(--text-2xl);margin-bottom:var(--space-md)">People who post about dogs trust Build Me A App</h2>
+      <div class="carousel" role="region" aria-label="Testimonials">
+        <div class="testimonial-track" id="track" tabindex="0">
+          <figure class="testimonial" aria-hidden="false">
+            <blockquote>"Scheduling posts for our adoption stories used to take hours; Build Me A App’s scheduling and user dashboard cut the time in half."</blockquote>
+            <figcaption>- Ana, shelter volunteer</figcaption>
+          </figure>
+
+          <figure class="testimonial" aria-hidden="true">
+            <blockquote>"The editor's image captions and breed tags made cataloguing adoptable pets a breeze — and exports mean our records are safe."</blockquote>
+            <figcaption>- Leo, community blogger</figcaption>
+          </figure>
+
+          <figure class="testimonial" aria-hidden="true">
+            <blockquote>"I love the data export for monthly reports — I can hand off engagement CSVs to partners without fuss."</blockquote>
+            <figcaption>- Priya, independent writer</figcaption>
+          </figure>
+        </div>
+        <div class="carousel-controls">
+          <button class="btn" id="prev" aria-label="Previous testimonial">◀</button>
+          <div class="dots" role="tablist" aria-label="Testimonial pages">
+            <button class="dot active" data-index="0" aria-label="Go to testimonial 1"></button>
+            <button class="dot" data-index="1" aria-label="Go to testimonial 2"></button>
+            <button class="dot" data-index="2" aria-label="Go to testimonial 3"></button>
+          </div>
+          <button class="btn" id="next" aria-label="Next testimonial">▶</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="wrap pricing reveal">
+      <h2 style="font-family:'Cormorant Garamond', serif;font-size:var(--text-2xl);margin-bottom:var(--space-md)">Pricing</h2>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-inner">
+            <h3>Free</h3>
+            <p class="price">$0 / mo</p>
+            <p class="price-features">Up to 3 published posts, basic editor, community support.</p>
+            <div style="margin-top:var(--space-md)"><a class="btn btn-primary" href="pages/signup.html">Get Started</a></div>
+          </div>
+        </div>
+
+        <div class="price-card pro">
+          <div class="price-inner">
+            <h3>Pro</h3>
+            <p class="price">$12 / mo</p>
+            <p class="price-features">Unlimited posts, user dashboard analytics, CSV exports, scheduling calendar.</p>
+            <div style="margin-top:var(--space-md)"><a class="btn btn-primary stripe-ready" href="pages/signup.html">Start free trial</a></div>
+          </div>
+        </div>
+
+        <div class="price-card">
+          <div class="price-inner">
+            <h3>Enterprise</h3>
+            <p class="price">Custom</p>
+            <p class="price-features">Team roles, priority support, on-premise export & migrations.</p>
+            <div style="margin-top:var(--space-md)"><a class="btn btn-secondary" href="pages/signup.html">Contact us</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="wrap footer">
+      <div style="display:flex;flex-wrap:wrap;gap:var(--space-md);justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:700">Build Me A App</div>
+          <div style="color:var(--color-muted);font-size:var(--text-sm)">The smart app platform for general users publishing dog blogs.</div>
+        </div>
+        <div style="display:flex;gap:var(--space-sm);align-items:center">
+          <a href="index.html">Home</a>
+          <a href="#features">Features</a>
+          <a href="pages/signup.html">Sign up</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Sticky nav
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      if(window.scrollY > 14) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const rObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, {threshold:0.15});
+    reveals.forEach(r => rObserver.observe(r));
+
+    // Animated counters
+    const counters = document.querySelectorAll('.counter');
+    const countObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          const el = entry.target;
+          const target = +el.dataset.target;
+          const duration = 1200;
+          let start = null;
+          const step = (ts) => {
+            if(!start) start = ts;
+            const progress = Math.min((ts - start) / duration, 1);
+            el.textContent = Math.floor(progress * target);
+            if(progress < 1) requestAnimationFrame(step);
+          };
+          if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = target; } else { requestAnimationFrame(step); }
+          obs.unobserve(el);
+        }
+      });
+    }, {threshold:0.25});
+    counters.forEach(c => countObserver.observe(c));
+
+    // Testimonial carousel (no autoplay)
+    (function(){
+      const track = document.getElementById('track');
+      const items = Array.from(track.children);
+      const prev = document.getElementById('prev');
+      const next = document.getElementById('next');
+      const dots = Array.from(document.querySelectorAll('.dot'));
+      let index = 0;
+
+      function update(){
+        track.style.transform = `translateX(-${index * 100}%)`;
+        items.forEach((it,i)=> it.setAttribute('aria-hidden', i!==index));
+        dots.forEach((d,i)=> d.classList.toggle('active', i===index));
+      }
+      prev.addEventListener('click', ()=>{ index = (index-1+items.length)%items.length; update(); dots[index].focus(); });
+      next.addEventListener('click', ()=>{ index = (index+1)%items.length; update(); dots[index].focus(); });
+      dots.forEach(d => d.addEventListener('click', (e)=>{ index = +e.currentTarget.dataset.index; update(); }));
+
+      // Keyboard support
+      track.addEventListener('keydown', (e)=>{
+        if(e.key === 'ArrowLeft'){ index = (index-1+items.length)%items.length; update(); }
+        if(e.key === 'ArrowRight'){ index = (index+1)%items.length; update(); }
+      });
+      // initial
+      update();
+    })();
+
+    // Smooth internal link fallback
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const id = a.getAttribute('href').slice(1);
+        const target = document.getElementById(id);
+        if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth',block:'start'}); }
+      });
+    });
+  </script>
+</body>
+</html>

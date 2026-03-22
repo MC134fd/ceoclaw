@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Management — Streamline your household</title>
+  <meta name="description" content="Home Management app: centralize chores, schedules, invoices and appliance histories. Fast setup, clear user dashboard, secure data export." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root{
+      --color-primary: #16a34a;
+      --color-secondary: #15803d;
+      --color-accent-pink: #ec4899;
+      --color-bg: #f0fdf4;
+      --color-surface: #ffffff;
+      --color-text: #14532d;
+      --color-muted: #6b7280;
+      --color-border: #bbf7d0;
+      --accent-gradient: linear-gradient(135deg, #16a34a, #15803d);
+      --font-display: 'Cormorant Garamond', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+      --spacing: 1.5;
+    }
+
+    :root{
+      /* Utility sizes derived from spacing token */
+      --gap: clamp(12px, calc(var(--spacing) * 5px + 0.6vw), 28px);
+      --pad-page: clamp(16px, calc(var(--spacing) * 8px + 1vw), 48px);
+      --hero-pad: clamp(20px, calc(var(--spacing) * 10px + 2vw), 80px);
+      --max-width: 1200px;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+    }
+
+    a{ color: inherit; text-decoration: none; }
+
+    .container{
+      width: min(96%, var(--max-width));
+      margin: 0 auto;
+      padding: var(--pad-page) 0;
+    }
+
+    /* NAVBAR */
+    .navbar{
+      position: sticky;
+      top:0;
+      z-index: 60;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--gap);
+      padding: 12px clamp(12px, 2vw, 24px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.45));
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+      transition: box-shadow .25s ease, background .25s ease, transform .2s ease;
+    }
+
+    .navbar.scrolled{
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+      transform: translateY(0);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius: 10px;
+      background: var(--accent-gradient);
+      box-shadow: var(--shadow-sm);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      font-family: var(--font-display);
+      font-size:20px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-family:var(--font-display);
+      font-size: clamp(16px, 1.6vw, 20px);
+      color: var(--color-text);
+    }
+
+    nav.navlinks{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin-left: 8px;
+    }
+
+    nav.navlinks a{
+      padding:8px 10px;
+      color: var(--color-text);
+      border-radius: 8px;
+      font-weight:500;
+      font-size:14px;
+    }
+    nav.navlinks a:hover{
+      background: rgba(22,163,74,0.06);
+    }
+
+    .nav-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .12s ease;
+    }
+
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-ghost{
+      background: transparent;
+      color: var(--color-text);
+      border: 1px solid rgba(20,83,45,0.06);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary{
+      color: white;
+      background: var(--accent-gradient);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .btn-primary:hover{ transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn-ghost:hover{ transform: translateY(-1px); }
+
+    /* HERO */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap);
+      align-items:center;
+      padding: var(--hero-pad) 0;
+    }
+
+    .hero-inner{
+      display:flex;
+      flex-direction:column;
+      gap: clamp(12px, calc(var(--spacing) * 6px + 0.6vw), 24px);
+      max-width: 720px;
+    }
+
+    .hero h2{
+      font-family: var(--font-display);
+      margin:0;
+      font-weight:700;
+      font-size: clamp(28px, 5.2vw, 56px);
+      line-height:1.02;
+      color: var(--color-text);
+    }
+
+    .hero p.lead{
+      margin:0;
+      color: var(--color-muted);
+      font-size: clamp(15px, 1.6vw, 18px);
+      max-width: 62ch;
+    }
+
+    .hero-ctas{
+      display:flex;
+      gap:12px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+
+    .hero-visual{
+      background: radial-gradient(1200px 500px at 10% 10%, rgba(22,163,74,0.06), transparent 20%), var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding:18px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--color-border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:220px;
+    }
+
+    .dash-mock{
+      width:100%;
+      max-width:520px;
+      background: linear-gradient(180deg, #fff, #fbfff9);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(20,83,45,0.04);
+    }
+
+    .dash-row{
+      display:flex;
+      gap:10px;
+      margin-bottom:10px;
+      align-items:center;
+    }
+    .dash-chip{
+      flex:1;
+      background: linear-gradient(180deg, rgba(22,163,74,0.06), rgba(22,163,74,0.02));
+      border-radius:10px;
+      padding:10px;
+      font-size:13px;
+      color: var(--color-text);
+    }
+    .dash-graph{
+      height:64px;
+      border-radius:10px;
+      background: linear-gradient(90deg, rgba(22,163,74,0.12), rgba(236,72,153,0.06));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--color-muted);
+      font-size:12px;
+    }
+
+    /* FEATURES - bento grid */
+    .features{
+      margin-top: var(--gap);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: var(--gap);
+      align-items:stretch;
+    }
+
+    .card{
+      background: var(--color-surface);
+      padding: 18px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .card .icon{
+      width:52px;
+      height:52px;
+      border-radius:12px;
+      background: rgba(22,163,74,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--color-primary);
+      flex-shrink:0;
+      font-size:20px;
+    }
+
+    .card h3{
+      margin:0 0 6px 0;
+      color: var(--color-text);
+      font-size:16px;
+      font-weight:600;
+    }
+    .card p{ margin:0; color:var(--color-muted); font-size:14px; }
+
+    /* Testimonials */
+    .testimonials{
+      margin-top: var(--gap);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: var(--gap);
+    }
+
+    .testimonial{
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, #fff, rgba(240,253,244,0.9));
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(20,83,45,0.03);
+    }
+
+    .quote{
+      font-size:14px;
+      color:var(--color-text);
+      margin:0 0 10px 0;
+    }
+    .who{
+      font-size:13px;
+      color:var(--color-muted);
+    }
+
+    /* PRICING */
+    .pricing{
+      margin-top: var(--gap);
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+      gap: var(--gap);
+      align-items:start;
+    }
+
+    .plan{
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding:18px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .plan h4{ margin:0; color:var(--color-text); font-size:18px; }
+    .price{
+      font-size:20px;
+      font-weight:700;
+      color:var(--color-primary);
+    }
+    .plan ul{
+      margin:0;
+      padding-left:18px;
+      color:var(--color-muted);
+    }
+    .plan .plan-cta{
+      margin-top:auto;
+    }
+
+    /* Pre-footer CTA */
+    .prefooter{
+      margin-top: clamp(20px, calc(var(--spacing) * 12px + 1vw), 48px);
+      background: linear-gradient(90deg, rgba(22,163,74,0.06), rgba(236,72,153,0.03));
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .prefooter .cta-copy{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .prefooter h4{ margin:0; font-size:18px; color: var(--color-text); font-weight:600; }
+    .prefooter p{ margin:0; color:var(--color-muted); font-size:14px; }
+
+    /* Footer */
+    footer{
+      margin-top: var(--gap);
+      padding: 18px 0;
+      border-top: 1px solid rgba(20,83,45,0.03);
+    }
+    .footer-inner{
+      display:flex;
+      gap:18px;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .footer-links{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .muted{ color:var(--color-muted); font-size:13px; }
+
+    /* Reveal on scroll */
+    .reveal{ opacity:0; transform:translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.9,.2,1); will-change: transform, opacity; }
+    .reveal.visible{ opacity:1; transform:none; }
+
+    @media (min-width:1024px){
+      .hero{ grid-template-columns: 1fr 480px; }
+      .navlinks{ gap:14px; }
+    }
+
+    @media (max-width:640px){
+      .brand h1{ font-size:16px; }
+      .hero{ padding-top: clamp(18px, calc(var(--spacing) * 8px + 2vw), 40px); }
+      .prefooter{ flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar" id="siteNav">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">HM</div>
+      <h1>Home Management</h1>
+      <nav class="navlinks" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="app.html">App</a>
+        <a href="pages/signup.html">Sign up</a>
+      </nav>
+    </div>
+
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="app.html">Open app</a>
+      <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="reveal">
+          <h2>One place for every household task.</h2>
+          <p class="lead">Home Management brings chores, maintenance records, invoices and schedules into a single user dashboard. Quick setup, clear responsibilities, and reliable data export when you need the numbers.</p>
+        </div>
+
+        <div class="hero-ctas reveal" style="margin-top:6px;">
+          <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+          <a class="btn btn-ghost" href="app.html">Explore the dashboard</a>
+        </div>
+
+        <div class="reveal" style="margin-top:12px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span style="background:rgba(22,163,74,0.08);padding:8px 10px;border-radius:10px;font-size:13px;color:var(--color-text);">Core functionality: schedules, inventory, bills</span>
+            <span style="background:rgba(236,72,153,0.06);padding:8px 10px;border-radius:10px;font-size:13px;color:var(--color-muted);">Data export ready</span>
+            <span style="background:rgba(20,83,45,0.04);padding:8px 10px;border-radius:10px;font-size:13px;color:var(--color-muted);">Multi-user access</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal" aria-hidden="true">
+        <div class="dash-mock" role="img" aria-label="Screenshot of the Home Management user dashboard">
+          <div class="dash-row">
+            <div class="dash-chip">Next: AC filter — Due in 3 days</div>
+            <div class="dash-chip">Groceries list — 12 items</div>
+          </div>
+          <div class="dash-row">
+            <div class="dash-graph">Activity overview • Tasks completed 42</div>
+          </div>
+          <div class="dash-row">
+            <div class="dash-chip">Invoices • 2 unpaid</div>
+            <div class="dash-chip">Appliance history • 5 records</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section style="margin-top: calc(var(--gap) * 1.2);">
+      <div class="reveal" style="margin-bottom:8px;">
+        <h3 style="margin:0;font-family:var(--font-display);font-size:20px;">Core features that keep homes running</h3>
+        <p class="muted" style="margin-top:6px;">Designed to simplify upkeep — visible at a glance, exportable when required.</p>
+      </div>
+
+      <div class="features">
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true">
+            <!-- calendar SVG -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div>
+            <h3>Shared schedules</h3>
+            <p>Assign chores, set due dates and reminders for household members. Schedules sync to the user dashboard and mobile alerts.</p>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true">
+            <!-- file export SVG -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div>
+            <h3>Data export</h3>
+            <p>Download CSV or PDF summaries of expenses, maintenance logs and task history for tax, warranty or sharing purposes.</p>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true">
+            <!-- dashboard SVG -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h18"/><path d="M7 13v8"/><path d="M17 13v4"/><path d="M12 3v10"/></svg>
+          </div>
+          <div>
+            <h3>User dashboard</h3>
+            <p>Customizable user dashboard surfaces priority tasks, bills and appliance histories so you never miss a deadline.</p>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true">
+            <!-- lock SVG -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div>
+            <h3>Secure records</h3>
+            <p>Encrypted backups and role-based access protect invoices, receipts and warranty documents tied to your property.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section style="margin-top: calc(var(--gap) * 1.2);">
+      <div class="reveal" style="margin-bottom:8px;">
+        <h3 style="margin:0;font-family:var(--font-display);font-size:20px;">Trusted by households that want simplicity</h3>
+      </div>
+
+      <div class="testimonials">
+        <div class="testimonial reveal">
+          <p class="quote">“We consolidated utilities, maintenance reminders and invoices into one user dashboard. Setting recurring tasks took ten minutes.”</p>
+          <div class="who">— Maria P., homeowner</div>
+        </div>
+
+        <div class="testimonial reveal">
+          <p class="quote">“Data export was a lifesaver for warranty claims. We pulled all service records and invoices in seconds.”</p>
+          <div class="who">— Aaron L., property manager</div>
+        </div>
+
+        <div class="testimonial reveal">
+          <p class="quote">“Clear responsibilities for roommates reduced friction. The core functionality is focused and reliable.”</p>
+          <div class="who">— Sam K., tenant</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section style="margin-top: calc(var(--gap) * 1.2);">
+      <div class="reveal" style="margin-bottom:8px;">
+        <h3 style="margin:0;font-family:var(--font-display);font-size:20px;">Pricing built for every household</h3>
+        <p class="muted" style="margin-top:6px;">Start free or scale to Pro and Enterprise for advanced exports and team controls.</p>
+      </div>
+
+      <div class="pricing">
+        <div class="plan reveal">
+          <h4>Free</h4>
+          <div class="price">$0 / month</div>
+          <p class="muted">Ideal for single households testing the essentials.</p>
+          <ul>
+            <li>Shared schedules</li>
+            <li>Basic user dashboard</li>
+            <li>Manual data export (limited)</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-ghost" href="pages/signup.html">Start free</a>
+          </div>
+        </div>
+
+        <div class="plan reveal" style="border: 1px solid rgba(22,163,74,0.12); box-shadow: var(--shadow-md);">
+          <h4>Pro</h4>
+          <div class="price">$6 / month</div>
+          <p class="muted">For busy households that need automation and reliable exports.</p>
+          <ul>
+            <li>Recurring tasks & reminders</li>
+            <li>Priority support</li>
+            <li>Full CSV/PDF data export</li>
+            <li>Appliance history tracking</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-primary" href="pages/signup.html">Get Pro</a>
+          </div>
+        </div>
+
+        <div class="plan reveal">
+          <h4>Enterprise</h4>
+          <div class="price">Contact us</div>
+          <p class="muted">For property managers and multi-home operations.</p>
+          <ul>
+            <li>Team access & roles</li>
+            <li>Automated data export pipelines</li>
+            <li>Account onboarding & SLA</li>
+          </ul>
+          <div class="plan-cta">
+            <a class="btn btn-ghost" href="pages/signup.html">Contact sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRE-FOOTER CTA -->
+    <section class="prefooter reveal" style="margin-top: calc(var(--gap) * 1.4);">
+      <div class="cta-copy">
+        <h4>Ready to take control of your household?</h4>
+        <p>Sign up in minutes and get a clear, shareable user dashboard with easy data export.</p>
+      </div>
+      <div>
+        <a class="btn btn-primary" href="pages/signup.html">Get Started</a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-inner container">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="logo" style="width:40px;height:40px;border-radius:8px;font-size:16px;">HM</div>
+          <div>
+            <div style="font-weight:600;color:var(--color-text);">Home Management</div>
+            <div class="muted">Household operations made simple</div>
+          </div>
+        </div>
+
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="app.html">App</a>
+          <a href="pages/signup.html">Sign up</a>
+        </div>
+
+        <div class="muted">© <span id="year"></span> Home Management — All rights reserved.</div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Sticky navbar - toggle .scrolled when scroll > 14px
+    (function(){
+      const nav = document.getElementById('siteNav');
+      function updateNav(){
+        if(window.scrollY > 14) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      }
+      updateNav();
+      window.addEventListener('scroll', updateNav, {passive:true});
+    })();
+
+    // Reveal on scroll for elements with .reveal
+    (function(){
+      const opts = { threshold: 0.08 };
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, opts);
+
+      document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    })();
+
+    // optional: keyboard accessible focus ring for primary buttons
+    (function(){
+      const btns = document.querySelectorAll('.btn');
+      btns.forEach(btn => {
+        btn.addEventListener('focus', () => btn.style.boxShadow = '0 6px 18px rgba(22,163,74,0.12)');
+        btn.addEventListener('blur', () => btn.style.boxShadow = '');
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — CEOClaw</title>
+  <meta name="description" content="Why we built CEOClaw, what we believe about founders, and how we think about the future of building companies." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #F6F8FF; --color-bg-2: #EEF2FF;
+      --color-surface: rgba(255,255,255,0.62);
+      --color-surface-strong: rgba(255,255,255,0.82);
+      --color-text: #1C2440; --color-text-dim: #5A6280;
+      --color-primary: #7C8BFF; --color-secondary: #A27BFF;
+      --color-tertiary: #5FD3FF; --color-accent: #6BE2C6;
+      --shadow-soft: 0 20px 60px rgba(100,120,255,0.16);
+      --shadow-card: 0 16px 40px rgba(82,99,180,0.14);
+      --accent-gradient: linear-gradient(120deg,#7C8BFF 0%,#A27BFF 35%,#5FD3FF 70%,#6BE2C6 100%);
+      --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --transition: 0.22s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,139,255,0.14) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(162,123,255,0.10) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; line-height: 1.15; }
+    .container { width: min(100%, 1120px); margin-inline: auto; padding-inline: clamp(1rem,5vw,3rem); position: relative; z-index: 1; }
+    section { position: relative; z-index: 1; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    .gradient-text { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 1rem; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; padding: 0.875rem 0; transition: background var(--transition), box-shadow var(--transition); }
+    nav.scrolled { background: rgba(246,248,255,0.88); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 1px 0 rgba(124,139,255,0.12), 0 4px 24px rgba(100,120,255,0.08); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .nav-logo { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--color-text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .nav-logo-mark { width: 28px; height: 28px; background: var(--accent-gradient); border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; align-items: center; }
+    .nav-links a { padding: 0.5rem 0.875rem; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition), background var(--transition); min-height: 44px; display: inline-flex; align-items: center; }
+    .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--color-text); background: var(--color-surface); }
+    .nav-actions { display: flex; align-items: center; gap: 0.625rem; }
+    .btn-ghost { padding: 0.5rem 1.125rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; border: 1px solid transparent; transition: all var(--transition); min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; background: none; }
+    .btn-ghost:hover { color: var(--color-text); border-color: rgba(124,139,255,0.25); background: var(--color-surface); }
+    .btn-ghost:focus-visible, .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-logo:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+    .nav-hamburger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .footer-nav-sm a:focus-visible,
+    .footer-bottom-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .btn-primary { padding: 0.5rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; color: #fff; background: var(--accent-gradient); text-decoration: none; border: none; cursor: pointer; transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(124,139,255,0.35); }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,139,255,0.4); }
+    .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--color-text); }
+    @media (max-width: 1023px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-mobile-open .nav-links { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(246,248,255,0.96); backdrop-filter: blur(18px); padding: 1rem 1.5rem 1.5rem; border-top: 1px solid rgba(124,139,255,0.12); box-shadow: 0 8px 32px rgba(100,120,255,0.1); gap: 0.25rem; }
+      .nav-mobile-open .nav-links a { width: 100%; }
+    }
+
+    /* Page hero */
+    .page-hero { padding: clamp(4rem,10vw,7rem) 0 clamp(2.5rem,6vw,4rem); }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: 1.5rem; font-family: 'IBM Plex Mono', monospace; }
+    .breadcrumb a { color: var(--color-primary); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { opacity: 0.5; }
+    .page-headline { font-size: clamp(2rem,5.5vw,3.75rem); font-weight: 800; letter-spacing: -0.025em; max-width: 720px; margin-bottom: 1.25rem; line-height: 1.1; }
+    .page-sub { font-size: clamp(1rem,2vw,1.2rem); color: var(--color-text-dim); max-width: 580px; }
+
+    /* Mission */
+    .mission-section { padding: clamp(3rem,8vw,6rem) 0; }
+    .mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(3rem,7vw,6rem); align-items: start; }
+    .mission-lead { font-size: clamp(1.1rem,2.5vw,1.35rem); font-weight: 500; line-height: 1.65; color: var(--color-text); margin-bottom: 1.5rem; }
+    .mission-body { font-size: 0.95rem; color: var(--color-text-dim); line-height: 1.75; display: flex; flex-direction: column; gap: 1rem; }
+    .mission-visual { position: sticky; top: 5rem; }
+    .belief-card { background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.16); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-card); }
+    .belief-card-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 1.25rem; }
+    .belief-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+    .belief-item { display: flex; gap: 0.875rem; align-items: flex-start; }
+    .belief-marker { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--color-primary); opacity: 0.6; padding-top: 3px; flex-shrink: 0; }
+    .belief-text { font-size: 0.875rem; color: var(--color-text); line-height: 1.6; }
+    .belief-text strong { font-weight: 600; color: var(--color-text); display: block; margin-bottom: 0.2rem; }
+    @media (max-width: 1023px) { .mission-grid { grid-template-columns: 1fr; } .mission-visual { position: static; } }
+
+    /* Principles */
+    .principles-section { padding: clamp(3rem,8vw,6rem) 0; background: var(--color-bg-2); }
+    .principles-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; margin-top: 2.5rem; }
+    .principle-card { background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.14); border-radius: var(--radius-lg); padding: 2rem; transition: transform var(--transition), box-shadow var(--transition); }
+    .principle-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+    .principle-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--color-primary); opacity: 0.6; margin-bottom: 0.875rem; }
+    .principle-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.625rem; }
+    .principle-desc { font-size: 0.875rem; color: var(--color-text-dim); line-height: 1.65; }
+    @media (max-width: 639px) { .principles-grid { grid-template-columns: 1fr; } }
+
+    /* Who we serve */
+    .serve-section { padding: clamp(3rem,8vw,6rem) 0; }
+    .serve-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; margin-top: 2.5rem; }
+    .serve-card { background: var(--color-surface); border: 1px solid rgba(124,139,255,0.12); border-radius: var(--radius-lg); padding: 1.75rem; transition: transform var(--transition), box-shadow var(--transition); }
+    .serve-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+    .serve-emoji { font-size: 2rem; margin-bottom: 1rem; }
+    .serve-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .serve-desc { font-size: 0.875rem; color: var(--color-text-dim); line-height: 1.6; }
+    @media (max-width: 1023px) { .serve-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 639px) { .serve-grid { grid-template-columns: 1fr; } }
+
+    /* CTA */
+    .about-cta { padding: clamp(3rem,8vw,6rem) 0; }
+    .about-cta-inner { background: var(--accent-gradient); border-radius: var(--radius-lg); padding: clamp(2.5rem,7vw,5rem); text-align: center; position: relative; overflow: hidden; }
+    .about-cta-inner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%); }
+    .about-cta-inner > * { position: relative; }
+    .cta-headline { font-size: clamp(1.5rem,4vw,2.5rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.875rem; }
+    .cta-sub { font-size: 1rem; color: rgba(255,255,255,0.82); margin-bottom: 1.75rem; }
+    .btn-white { padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; color: var(--color-primary); background: #fff; text-decoration: none; border: none; cursor: pointer; transition: transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .btn-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    /* Footer */
+    footer { padding: clamp(2rem,5vw,3.5rem) 0 2rem; border-top: 1px solid rgba(124,139,255,0.1); }
+    .footer-nav-sm { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 1.5rem; }
+    .footer-nav-sm a { font-size: 0.875rem; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition); }
+    .footer-nav-sm a:hover { color: var(--color-text); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-dim); flex-wrap: wrap; gap: 0.75rem; }
+    .footer-bottom-links { display: flex; gap: 1.5rem; }
+    .footer-bottom-links a { color: var(--color-text-dim); text-decoration: none; }
+    .footer-bottom-links a:hover { color: var(--color-text); }
+  </style>
+</head>
+<body>
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo" aria-label="CEOClaw home">
+        <span class="nav-logo-mark" aria-hidden="true">C</span>CEOClaw
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="platform.html">Platform</a></li>
+        <li><a href="about.html" aria-current="page">About</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="docs.html">Docs</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="auth.html" class="btn-ghost">Sign In</a>
+        <a href="auth.html" class="btn-primary">Start Free</a>
+      </div>
+      <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect y="3" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="9" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="15" width="20" height="2" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+  <section class="page-hero" aria-labelledby="about-headline">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">About</span>
+      </nav>
+      <div class="reveal">
+        <p class="section-label">Our story</p>
+        <h1 class="page-headline" id="about-headline">
+          Built for the founder<br /><span class="gradient-text">who does everything.</span>
+        </h1>
+        <p class="page-sub">CEOClaw exists because the gap between a great idea and real revenue is mostly an execution problem — not a creativity problem. We're here to close that gap.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mission-section" aria-labelledby="mission-heading">
+    <div class="container">
+      <div class="mission-grid">
+        <div>
+          <div class="reveal">
+            <p class="section-label">Mission</p>
+            <h2 id="mission-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:1.25rem;">Give every founder the operational leverage of a full team.</h2>
+          </div>
+          <p class="mission-lead reveal">Most great ideas don't fail because they're bad ideas. They fail because the founder runs out of bandwidth before they reach the market.</p>
+          <div class="mission-body reveal">
+            <p>The solo founder is expected to do market research on Monday, build the product on Tuesday, write the website on Wednesday, send cold outreach on Thursday, and track the numbers on Friday. Without dropping quality in any of them.</p>
+            <p>The problem isn't that founders aren't capable. The problem is that this model is structurally broken. Execution bandwidth is finite. Cognitive switching is expensive. And the cost of doing any one of these things poorly compounds across all the others.</p>
+            <p>We built CEOClaw to give founders an execution layer that handles the structured, repeatable parts of building a company — so they can focus on the parts that only they can do. Taste. Judgment. Relationships. The creative leaps that no AI can replicate.</p>
+          </div>
+        </div>
+        <div class="mission-visual reveal">
+          <div class="belief-card">
+            <p class="belief-card-title">What we believe</p>
+            <ul class="belief-list">
+              <li class="belief-item">
+                <span class="belief-marker">01</span>
+                <span class="belief-text"><strong>Execution bandwidth is the real bottleneck.</strong> The bottleneck for most founders isn't ideas, capital, or ambition — it's how much they can execute in parallel without losing coherence.</span>
+              </li>
+              <li class="belief-item">
+                <span class="belief-marker">02</span>
+                <span class="belief-text"><strong>Context is everything.</strong> Five isolated AI tools are worse than one system with shared memory. Coordination compounds value.</span>
+              </li>
+              <li class="belief-item">
+                <span class="belief-marker">03</span>
+                <span class="belief-text"><strong>Founders should stay in the high-leverage zone.</strong> AI handles the structured execution. Founders handle judgment, taste, and creative direction.</span>
+              </li>
+              <li class="belief-item">
+                <span class="belief-marker">04</span>
+                <span class="belief-text"><strong>Revenue is the only real signal.</strong> Everything in CEOClaw routes toward a measurable revenue goal — not vanity metrics.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="principles-section" aria-labelledby="principles-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">How we build</p>
+        <h2 id="principles-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;max-width:560px;">Principles that shape every decision.</h2>
+      </div>
+      <div class="principles-grid">
+        <article class="principle-card reveal">
+          <p class="principle-num">01</p>
+          <h3 class="principle-title">Coherence over features</h3>
+          <p class="principle-desc">We build fewer things that work together deeply, rather than more things that coexist loosely. Every operator must earn its place in the loop.</p>
+        </article>
+        <article class="principle-card reveal">
+          <p class="principle-num">02</p>
+          <h3 class="principle-title">Measure what matters</h3>
+          <p class="principle-desc">MRR is the north star. Everything we build traces back to how it moves that number. Progress without revenue is not progress.</p>
+        </article>
+        <article class="principle-card reveal">
+          <p class="principle-num">03</p>
+          <h3 class="principle-title">Respect the founder's time</h3>
+          <p class="principle-desc">Every interaction with CEOClaw should save time, not cost it. If a feature requires more cognitive load than it saves, we rethink it.</p>
+        </article>
+        <article class="principle-card reveal">
+          <p class="principle-num">04</p>
+          <h3 class="principle-title">Transparent execution</h3>
+          <p class="principle-desc">Founders don't hand off to a black box. CEOClaw shows what it's doing, why, and what the output is — at every step of the loop.</p>
+        </article>
+        <article class="principle-card reveal">
+          <p class="principle-num">05</p>
+          <h3 class="principle-title">Ship beats perfect</h3>
+          <p class="principle-desc">A working site, a sent sequence, a scored cycle — these beat a perfect plan sitting in a doc. CEOClaw is optimized for shipped output, not polished drafts.</p>
+        </article>
+        <article class="principle-card reveal">
+          <p class="principle-num">06</p>
+          <h3 class="principle-title">Opinionated defaults</h3>
+          <p class="principle-desc">We make strong decisions on behalf of the founder — about structure, routing, format, and flow — so they don't have to configure their way to productivity.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="serve-section" aria-labelledby="serve-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Who we serve</p>
+        <h2 id="serve-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;max-width:560px;">The founders CEOClaw is built for.</h2>
+      </div>
+      <div class="serve-grid">
+        <article class="serve-card reveal">
+          <div class="serve-emoji" aria-hidden="true">🚀</div>
+          <h3 class="serve-title">The solo founder</h3>
+          <p class="serve-desc">One person, one vision, a finite number of hours. CEOClaw gives them the operational capacity of a team without the coordination overhead.</p>
+        </article>
+        <article class="serve-card reveal">
+          <div class="serve-emoji" aria-hidden="true">⚡</div>
+          <h3 class="serve-title">The indie hacker</h3>
+          <p class="serve-desc">Moving fast, validating multiple ideas, shipping in public. CEOClaw is the execution layer that lets them do more bets with less burnout.</p>
+        </article>
+        <article class="serve-card reveal">
+          <div class="serve-emoji" aria-hidden="true">◆</div>
+          <h3 class="serve-title">The lean team</h3>
+          <p class="serve-desc">Two to five people stretching across every function. CEOClaw fills the operational gaps so the team focuses on differentiated work, not repeatable tasks.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-cta" aria-labelledby="about-cta-heading">
+    <div class="container">
+      <div class="about-cta-inner reveal">
+        <h2 class="cta-headline" id="about-cta-heading">Join founders who execute faster.</h2>
+        <p class="cta-sub">Start free. Your first execution cycle is on us.</p>
+        <a href="../index.html" class="btn-white">Back to Home &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-nav-sm" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="platform.html">Platform</a>
+        <a href="about.html" aria-current="page">About</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="docs.html">Docs</a>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CEOClaw. All rights reserved.</span>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      var nav=document.getElementById('main-nav');
+      if(!nav)return;
+      window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>12);},{passive:true});
+      var btn=nav.querySelector('.nav-hamburger');
+      if(btn){
+        btn.addEventListener('click',function(){var open=nav.classList.toggle('nav-mobile-open');btn.setAttribute('aria-expanded',String(open));});
+        document.addEventListener('click',function(e){if(nav.classList.contains('nav-mobile-open')&&!nav.contains(e.target)){nav.classList.remove('nav-mobile-open');btn.setAttribute('aria-expanded','false');}});
+      }
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible');});return;
+      }
+      var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -32px 0px'});
+      document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+    }());
+  </script>
+</body>
+</html>

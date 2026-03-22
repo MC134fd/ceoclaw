@@ -1,5 +1,6 @@
 import type {
   ChatResponse,
+  ProjectFile,
   ProviderStatus,
   Session,
   SessionHistory,
@@ -90,13 +91,11 @@ export class InsufficientCreditsError extends ApiError {
 export async function sendMessage(
   sessionId: string,
   message: string,
-  mockMode: boolean = false,
   styleSeed?: StyleSeed,
 ): Promise<ChatResponse> {
   const body: Record<string, unknown> = {
     session_id: sessionId,
     message,
-    mock_mode: mockMode,
   };
   if (styleSeed) body.style_seed = styleSeed;
 
@@ -196,4 +195,74 @@ export async function getAccountMe(): Promise<AccountMe> {
 export async function getAccountCredits(): Promise<AccountCredits> {
   const res = await fetch(`${BASE_URL}/account/credits`, { headers: await authHeaders() });
   return handleResponse<AccountCredits>(res);
+}
+
+// ---------------------------------------------------------------------------
+// Project file API
+// ---------------------------------------------------------------------------
+
+export async function listProjectFiles(sessionId: string): Promise<ProjectFile[]> {
+  const res = await fetch(
+    `${BASE_URL}/builder/sessions/${encodeURIComponent(sessionId)}/files`,
+    { headers: await authHeaders() },
+  );
+  const body = await handleResponse<{ session_id: string; files: ProjectFile[] }>(res);
+  return body.files ?? [];
+}
+
+export async function getFileContent(
+  sessionId: string,
+  filePath: string,
+): Promise<{ session_id: string; file_path: string; content: string; file_type: string; size_bytes: number; updated_at: string }> {
+  const res = await fetch(
+    `${BASE_URL}/builder/sessions/${encodeURIComponent(sessionId)}/files/${filePath}`,
+    { headers: await authHeaders() },
+  );
+  return handleResponse<{ session_id: string; file_path: string; content: string; file_type: string; size_bytes: number; updated_at: string }>(res);
+}
+
+export async function updateFileContent(
+  sessionId: string,
+  filePath: string,
+  content: string,
+): Promise<void> {
+  const res = await fetch(
+    `${BASE_URL}/builder/sessions/${encodeURIComponent(sessionId)}/files/${filePath}`,
+    {
+      method: 'PUT',
+      headers: await authHeaders(),
+      body: JSON.stringify({ content }),
+    },
+  );
+  await handleResponse<{ status: string }>(res);
+}
+
+export async function createProjectFile(
+  sessionId: string,
+  filePath: string,
+  content: string = '',
+): Promise<void> {
+  const res = await fetch(
+    `${BASE_URL}/builder/sessions/${encodeURIComponent(sessionId)}/files`,
+    {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({ path: filePath, content }),
+    },
+  );
+  await handleResponse<{ status: string }>(res);
+}
+
+export async function deleteProjectFile(
+  sessionId: string,
+  filePath: string,
+): Promise<void> {
+  const res = await fetch(
+    `${BASE_URL}/builder/sessions/${encodeURIComponent(sessionId)}/files/${filePath}`,
+    {
+      method: 'DELETE',
+      headers: await authHeaders(),
+    },
+  );
+  await handleResponse<{ status: string }>(res);
 }

@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 _MAX_VERSIONS = 10
 
 # Security allowlists
-_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg"}
+_ALLOWED_EXTENSIONS = {".html", ".css", ".js", ".json", ".md", ".txt", ".svg", ".png", ".webp", ".jpg", ".jpeg",
+                       ".jsx", ".tsx", ".ts", ".py", ".sql"}
 _ALLOWED_SUBPATHS = {"", "pages", "components", "assets", "data", "scripts"}
 
 # Max file size: 1 MB
@@ -33,10 +34,10 @@ _MAX_FILE_SIZE = 1_000_000
 _ALLOWED_FILENAMES = {"index.html", "app.html"}
 
 
-def save_website_files(slug: str, files: dict[str, str]) -> dict:
+def save_website_files(slug: str, files: dict[str, str | bytes]) -> dict:
     """Write files to disk under data/websites/<slug>/.
 
-    files: {relative_path: content}  e.g. {"index.html": "...", "pages/terms.html": "..."}
+    files: {relative_path: content}  where content is str (text) or bytes (binary images).
 
     - Validates each path's extension and subdir against allowlists
     - Creates slug dir and any needed subdirs
@@ -58,17 +59,22 @@ def save_website_files(slug: str, files: dict[str, str]) -> dict:
         if err:
             logger.warning("file_persistence: skipping %r — %s", rel_path, err)
             continue
-        if len(content.encode("utf-8")) > _MAX_FILE_SIZE:
+
+        is_binary = isinstance(content, bytes)
+        content_size = len(content) if is_binary else len(content.encode("utf-8"))
+        if content_size > _MAX_FILE_SIZE:
             logger.warning("file_persistence: skipping %r — exceeds 1 MB size limit", rel_path)
             continue
 
         dest = page_dir / rel_path
         dest.parent.mkdir(parents=True, exist_ok=True)
         tmp = dest.with_suffix(dest.suffix + ".tmp")
-        tmp.write_text(content, encoding="utf-8")
+        if is_binary:
+            tmp.write_bytes(content)
+        else:
+            tmp.write_text(content, encoding="utf-8")
         tmp.replace(dest)
 
-        # relative to project root for logging/response
         try:
             rel = str(dest.relative_to(websites_dir.parent.parent))
         except ValueError:
@@ -94,7 +100,11 @@ def read_current_file(slug: str, relative_path: str) -> Optional[str]:
         return None
     path = settings.resolve_websites_dir() / safe_slug / relative_path
     if path.exists():
-        return path.read_text(encoding="utf-8")
+        try:
+            return path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            # Binary file (e.g. PNG image) — not readable as text
+            return None
     return None
 
 
@@ -138,11 +148,16 @@ def _validate_relative_path(rel_path: str) -> Optional[str]:
     ext = PurePosixPath(rel_path).suffix.lower()
     if ext not in _ALLOWED_EXTENSIONS:
         return f"extension {ext!r} not in allowlist"
-    # Check subdir prefix
-    if len(parts) > 1:
-        subdir = parts[0]
-        if subdir not in _ALLOWED_SUBPATHS:
-            return f"subdirectory {subdir!r} not in allowlist"
+    # Depth limit
+    if len(parts) > 6:
+        return "path too deeply nested (max 6 segments)"
+    # Reject hidden files/dirs and reserved names
+    _BLOCKED_SEGMENTS = {"node_modules", "__pycache__", "versions"}
+    for segment in parts:
+        if segment.startswith("."):
+            return f"hidden file or directory not allowed: {segment!r}"
+        if segment in _BLOCKED_SEGMENTS:
+            return f"reserved directory not allowed: {segment!r}"
     return None
 
 

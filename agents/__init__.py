@@ -97,7 +97,7 @@ class CEOClawState(TypedDict, total=False):
     # ------------------------------------------------------------------
     # Model mode / fallback transparency
     # ------------------------------------------------------------------
-    model_mode: str        # "live" | "mock" | "fallback" | "unknown"
+    model_mode: str        # "live" | "fallback" | "unknown"
     fallback_count: int    # accumulated across all model calls this run
 
     # ------------------------------------------------------------------

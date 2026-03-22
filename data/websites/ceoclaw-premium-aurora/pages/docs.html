@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — CEOClaw</title>
+  <meta name="description" content="CEOClaw documentation. Getting started guides, operator references, integrations, workflow recipes, and security notes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #F6F8FF; --color-bg-2: #EEF2FF;
+      --color-surface: rgba(255,255,255,0.62);
+      --color-surface-strong: rgba(255,255,255,0.82);
+      --color-text: #1C2440; --color-text-dim: #5A6280;
+      --color-primary: #7C8BFF; --color-secondary: #A27BFF;
+      --color-tertiary: #5FD3FF; --color-accent: #6BE2C6;
+      --shadow-soft: 0 20px 60px rgba(100,120,255,0.16);
+      --shadow-card: 0 16px 40px rgba(82,99,180,0.14);
+      --accent-gradient: linear-gradient(120deg,#7C8BFF 0%,#A27BFF 35%,#5FD3FF 70%,#6BE2C6 100%);
+      --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --transition: 0.22s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; overflow-x: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,139,255,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 20%, rgba(162,123,255,0.08) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+    h1,h2,h3,h4 { font-family: 'Sora', sans-serif; line-height: 1.15; }
+    .container { width: min(100%, 1120px); margin-inline: auto; padding-inline: clamp(1rem,5vw,3rem); position: relative; z-index: 1; }
+    section { position: relative; z-index: 1; }
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    .gradient-text { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 1rem; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; padding: 0.875rem 0; transition: background var(--transition), box-shadow var(--transition); }
+    nav.scrolled { background: rgba(246,248,255,0.88); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 1px 0 rgba(124,139,255,0.12), 0 4px 24px rgba(100,120,255,0.08); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+    .nav-logo { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--color-text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .nav-logo-mark { width: 28px; height: 28px; background: var(--accent-gradient); border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; align-items: center; }
+    .nav-links a { padding: 0.5rem 0.875rem; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition), background var(--transition); min-height: 44px; display: inline-flex; align-items: center; }
+    .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--color-text); background: var(--color-surface); }
+    .nav-actions { display: flex; align-items: center; gap: 0.625rem; }
+    .btn-ghost { padding: 0.5rem 1.125rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; color: var(--color-text-dim); text-decoration: none; border: 1px solid transparent; transition: all var(--transition); min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; background: none; }
+    .btn-ghost:hover { color: var(--color-text); border-color: rgba(124,139,255,0.25); background: var(--color-surface); }
+    .btn-ghost:focus-visible, .btn-primary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .nav-logo:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+    .nav-hamburger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .footer-nav-sm a:focus-visible,
+    .footer-bottom-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+    .btn-primary { padding: 0.5rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; color: #fff; background: var(--accent-gradient); text-decoration: none; border: none; cursor: pointer; transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(124,139,255,0.35); }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,139,255,0.4); }
+    .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--color-text); }
+    @media (max-width: 1023px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-mobile-open .nav-links { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(246,248,255,0.96); backdrop-filter: blur(18px); padding: 1rem 1.5rem 1.5rem; border-top: 1px solid rgba(124,139,255,0.12); box-shadow: 0 8px 32px rgba(100,120,255,0.1); gap: 0.25rem; }
+      .nav-mobile-open .nav-links a { width: 100%; }
+    }
+
+    /* Docs hero */
+    .docs-hero { padding: clamp(4rem,10vw,7rem) 0 clamp(2.5rem,6vw,4rem); }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: 1.5rem; font-family: 'IBM Plex Mono', monospace; }
+    .breadcrumb a { color: var(--color-primary); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { opacity: 0.5; }
+    .docs-headline { font-size: clamp(2rem,5.5vw,3.75rem); font-weight: 800; letter-spacing: -0.025em; max-width: 720px; margin-bottom: 1.25rem; line-height: 1.1; }
+    .docs-sub { font-size: clamp(1rem,2vw,1.15rem); color: var(--color-text-dim); max-width: 560px; margin-bottom: 2rem; }
+
+    /* Search */
+    .search-wrapper {
+      position: relative; max-width: 520px;
+    }
+    .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-dim); pointer-events: none; }
+    .search-input {
+      width: 100%; padding: 0.875rem 1rem 0.875rem 2.875rem;
+      border-radius: var(--radius-md); border: 1px solid rgba(124,139,255,0.2);
+      background: var(--color-surface-strong); color: var(--color-text);
+      font-size: 0.95rem; font-family: 'Inter', sans-serif;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      min-height: 52px; outline: none;
+      box-shadow: 0 4px 16px rgba(82,99,180,0.06);
+    }
+    .search-input::placeholder { color: rgba(90,98,128,0.5); }
+    .search-input:focus { border-color: rgba(124,139,255,0.5); background: #fff; box-shadow: 0 0 0 3px rgba(124,139,255,0.12), 0 4px 16px rgba(82,99,180,0.08); }
+    .search-results {
+      display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+      background: #fff; border: 1px solid rgba(124,139,255,0.2);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-card);
+      overflow: hidden; z-index: 50;
+    }
+    .search-results.visible { display: block; }
+    .search-result-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; cursor: pointer; transition: background var(--transition); border-bottom: 1px solid rgba(124,139,255,0.06); }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: var(--color-bg); }
+    .search-result-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(124,139,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+    .search-result-text { font-size: 0.875rem; font-weight: 500; }
+    .search-result-cat { font-size: 0.75rem; color: var(--color-text-dim); font-family: 'IBM Plex Mono', monospace; }
+    .search-empty { padding: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--color-text-dim); }
+
+    /* Getting started */
+    .gs-section { padding: clamp(2.5rem,6vw,4rem) 0; }
+    .gs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+    .gs-card { background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.16); border-radius: var(--radius-lg); padding: 1.75rem; transition: transform var(--transition), box-shadow var(--transition); text-decoration: none; color: inherit; display: block; }
+    .gs-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); border-color: rgba(124,139,255,0.3); }
+    .gs-card:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .gs-step { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--color-primary); margin-bottom: 0.75rem; opacity: 0.7; }
+    .gs-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+    .gs-desc { font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; }
+    .gs-arrow { display: flex; align-items: center; margin-top: 1rem; font-size: 0.8rem; font-weight: 500; color: var(--color-primary); gap: 0.25rem; }
+    @media (max-width: 1023px) { .gs-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 639px) { .gs-grid { grid-template-columns: 1fr; } }
+
+    /* Categories */
+    .categories-section { padding: clamp(3rem,7vw,5rem) 0; }
+    .categories-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 1rem; margin-top: 2rem; }
+    .cat-card { background: var(--color-surface); border: 1px solid rgba(124,139,255,0.12); border-radius: var(--radius-md); padding: 1.5rem; transition: transform var(--transition), box-shadow var(--transition); }
+    .cat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+    .cat-icon { font-size: 1.5rem; margin-bottom: 0.875rem; }
+    .cat-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; }
+    .cat-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--color-text-dim); margin-bottom: 0.875rem; }
+    .cat-links { list-style: none; display: flex; flex-direction: column; gap: 0.375rem; }
+    .cat-links a { font-size: 0.82rem; color: var(--color-text-dim); text-decoration: none; display: flex; align-items: center; gap: 0.375rem; transition: color var(--transition); min-height: 24px; }
+    .cat-links a::before { content: '›'; color: var(--color-primary); font-size: 0.9rem; }
+    .cat-links a:hover { color: var(--color-text); }
+    .cat-links a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+
+    /* Popular docs */
+    .popular-section { padding: clamp(3rem,7vw,5rem) 0; background: var(--color-bg-2); }
+    .popular-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
+    .doc-row { display: flex; align-items: center; gap: 0.875rem; background: var(--color-surface-strong); border: 1px solid rgba(124,139,255,0.12); border-radius: var(--radius-md); padding: 1rem 1.25rem; text-decoration: none; color: inherit; transition: transform var(--transition), box-shadow var(--transition); }
+    .doc-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); border-color: rgba(124,139,255,0.25); }
+    .doc-row:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .doc-row-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(124,139,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .doc-row-content { flex: 1; }
+    .doc-row-title { font-weight: 600; font-size: 0.875rem; margin-bottom: 0.15rem; }
+    .doc-row-cat { font-size: 0.72rem; color: var(--color-text-dim); font-family: 'IBM Plex Mono', monospace; }
+    .doc-row-arrow { color: var(--color-primary); font-size: 1rem; opacity: 0.6; }
+    @media (max-width: 639px) { .popular-grid { grid-template-columns: 1fr; } }
+
+    /* CTA */
+    .docs-cta { padding: clamp(3rem,8vw,6rem) 0; }
+    .docs-cta-inner { background: var(--accent-gradient); border-radius: var(--radius-lg); padding: clamp(2.5rem,7vw,5rem); text-align: center; position: relative; overflow: hidden; }
+    .docs-cta-inner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%); }
+    .docs-cta-inner > * { position: relative; }
+    .cta-headline { font-size: clamp(1.5rem,4vw,2.5rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.875rem; }
+    .cta-sub { font-size: 1rem; color: rgba(255,255,255,0.82); margin-bottom: 1.75rem; }
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-white { padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; color: var(--color-primary); background: #fff; text-decoration: none; border: none; cursor: pointer; transition: transform var(--transition), box-shadow var(--transition); min-height: 44px; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .btn-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    .btn-outline-white { padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; color: #fff; background: rgba(255,255,255,0.15); text-decoration: none; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: background var(--transition), transform var(--transition); min-height: 44px; display: inline-flex; align-items: center; backdrop-filter: blur(6px); }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.25); transform: translateY(-1px); }
+    .btn-outline-white:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+    /* Footer */
+    footer { padding: clamp(2rem,5vw,3.5rem) 0 2rem; border-top: 1px solid rgba(124,139,255,0.1); }
+    .footer-nav-sm { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 1.5rem; }
+    .footer-nav-sm a { font-size: 0.875rem; color: var(--color-text-dim); text-decoration: none; transition: color var(--transition); }
+    .footer-nav-sm a:hover { color: var(--color-text); }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-dim); flex-wrap: wrap; gap: 0.75rem; }
+    .footer-bottom-links { display: flex; gap: 1.5rem; }
+    .footer-bottom-links a { color: var(--color-text-dim); text-decoration: none; }
+    .footer-bottom-links a:hover { color: var(--color-text); }
+  </style>
+</head>
+<body>
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo" aria-label="CEOClaw home">
+        <span class="nav-logo-mark" aria-hidden="true">C</span>CEOClaw
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="platform.html">Platform</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="docs.html" aria-current="page">Docs</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="auth.html" class="btn-ghost">Sign In</a>
+        <a href="auth.html" class="btn-primary">Start Free</a>
+      </div>
+      <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect y="3" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="9" width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="15" width="20" height="2" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main-content">
+  <section class="docs-hero" aria-labelledby="docs-headline">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Docs</span>
+      </nav>
+      <div class="reveal">
+        <p class="section-label">Documentation</p>
+        <h1 class="docs-headline" id="docs-headline">
+          Everything you need<br /><span class="gradient-text">to run the system.</span>
+        </h1>
+        <p class="docs-sub">Guides, operator references, integration recipes, and security notes — all in one place.</p>
+      </div>
+      <!-- Search -->
+      <div class="search-wrapper reveal" role="search" aria-label="Documentation search">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12.5 12.5L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input
+          class="search-input" type="search" id="docs-search"
+          placeholder="Search documentation…"
+          aria-label="Search documentation"
+          autocomplete="off"
+        />
+        <div class="search-results" id="search-results" role="listbox" aria-label="Search results" aria-live="polite">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Getting started -->
+  <section class="gs-section" aria-labelledby="gs-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Getting started</p>
+        <h2 id="gs-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:2rem;">From zero to first cycle in minutes.</h2>
+      </div>
+      <div class="gs-grid">
+        <a href="#" class="gs-card reveal" aria-label="Quick start guide">
+          <p class="gs-step">Step 01</p>
+          <h3 class="gs-title">Quick Start</h3>
+          <p class="gs-desc">Create your account, set your first goal, and run your first CEOClaw cycle in under five minutes.</p>
+          <span class="gs-arrow">Read guide &rarr;</span>
+        </a>
+        <a href="#" class="gs-card reveal" aria-label="Understanding operators guide">
+          <p class="gs-step">Step 02</p>
+          <h3 class="gs-title">Understanding Operators</h3>
+          <p class="gs-desc">Learn how the five operators interact, what each one produces, and how to read cycle output.</p>
+          <span class="gs-arrow">Read guide &rarr;</span>
+        </a>
+        <a href="#" class="gs-card reveal" aria-label="Setting your MRR goal guide">
+          <p class="gs-step">Step 03</p>
+          <h3 class="gs-title">Setting Your MRR Goal</h3>
+          <p class="gs-desc">How the goal-aware router uses your target MRR to make routing decisions each cycle.</p>
+          <span class="gs-arrow">Read guide &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="categories-section" aria-labelledby="categories-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Browse by topic</p>
+        <h2 id="categories-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;">Documentation categories.</h2>
+      </div>
+      <div class="categories-grid">
+        <article class="cat-card reveal" aria-labelledby="cat-platform">
+          <div class="cat-icon" aria-hidden="true">⚙️</div>
+          <h3 class="cat-title" id="cat-platform">Platform</h3>
+          <p class="cat-count">8 articles</p>
+          <ul class="cat-links" aria-label="Platform articles">
+            <li><a href="#">Agent loop architecture</a></li>
+            <li><a href="#">State management</a></li>
+            <li><a href="#">Planner &amp; router behavior</a></li>
+            <li><a href="#">Evaluator scoring</a></li>
+          </ul>
+        </article>
+        <article class="cat-card reveal" aria-labelledby="cat-operators">
+          <div class="cat-icon" aria-hidden="true">🔬</div>
+          <h3 class="cat-title" id="cat-operators">Operators</h3>
+          <p class="cat-count">12 articles</p>
+          <ul class="cat-links" aria-label="Operators articles">
+            <li><a href="#">Research operator reference</a></li>
+            <li><a href="#">Brand operator reference</a></li>
+            <li><a href="#">Website operator reference</a></li>
+            <li><a href="#">Outreach operator reference</a></li>
+          </ul>
+        </article>
+        <article class="cat-card reveal" aria-labelledby="cat-integrations">
+          <div class="cat-icon" aria-hidden="true">🔌</div>
+          <h3 class="cat-title" id="cat-integrations">Integrations</h3>
+          <p class="cat-count">6 articles</p>
+          <ul class="cat-links" aria-label="Integrations articles">
+            <li><a href="#">OpenAI configuration</a></li>
+            <li><a href="#">API key setup</a></li>
+            <li><a href="#">Environment variables</a></li>
+            <li><a href="#">Webhook endpoints</a></li>
+          </ul>
+        </article>
+        <article class="cat-card reveal" aria-labelledby="cat-workflows">
+          <div class="cat-icon" aria-hidden="true">🔁</div>
+          <h3 class="cat-title" id="cat-workflows">Workflows</h3>
+          <p class="cat-count">9 articles</p>
+          <ul class="cat-links" aria-label="Workflows articles">
+            <li><a href="#">Running your first cycle</a></li>
+            <li><a href="#">Iterative site editing</a></li>
+            <li><a href="#">Multi-project management</a></li>
+            <li><a href="#">Exporting run summaries</a></li>
+          </ul>
+        </article>
+        <article class="cat-card reveal" aria-labelledby="cat-security">
+          <div class="cat-icon" aria-hidden="true">🔒</div>
+          <h3 class="cat-title" id="cat-security">Security</h3>
+          <p class="cat-count">4 articles</p>
+          <ul class="cat-links" aria-label="Security articles">
+            <li><a href="#">Auth &amp; session model</a></li>
+            <li><a href="#">Credits enforcement</a></li>
+            <li><a href="#">Data privacy model</a></li>
+            <li><a href="#">Output validation</a></li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular docs -->
+  <section class="popular-section" aria-labelledby="popular-heading">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Most read</p>
+        <h2 id="popular-heading" style="font-size:clamp(1.5rem,3.5vw,2.25rem);font-weight:700;letter-spacing:-0.02em;">Popular documentation.</h2>
+      </div>
+      <div class="popular-grid">
+        <a href="#" class="doc-row reveal" aria-label="Quick Start guide — Getting started">
+          <div class="doc-row-icon" aria-hidden="true">🚀</div>
+          <div class="doc-row-content">
+            <div class="doc-row-title">Quick Start Guide</div>
+            <div class="doc-row-cat">Getting Started</div>
+          </div>
+          <span class="doc-row-arrow" aria-hidden="true">›</span>
+        </a>
+        <a href="#" class="doc-row reveal" aria-label="Understanding the agent loop — Platform">
+          <div class="doc-row-icon" aria-hidden="true">🧠</div>
+          <div class="doc-row-content">
+            <div class="doc-row-title">Understanding the Agent Loop</div>
+            <div class="doc-row-cat">Platform</div>
+          </div>
+          <span class="doc-row-arrow" aria-hidden="true">›</span>
+        </a>
+        <a href="#" class="doc-row reveal" aria-label="Website operator reference — Operators">
+          <div class="doc-row-icon" aria-hidden="true">⬡</div>
+          <div class="doc-row-content">
+            <div class="doc-row-title">Website Operator Reference</div>
+            <div class="doc-row-cat">Operators</div>
+          </div>
+          <span class="doc-row-arrow" aria-hidden="true">›</span>
+        </a>
+        <a href="#" class="doc-row reveal" aria-label="Setting up your OpenAI key — Integrations">
+          <div class="doc-row-icon" aria-hidden="true">🔑</div>
+          <div class="doc-row-content">
+            <div class="doc-row-title">Setting Up Your OpenAI Key</div>
+            <div class="doc-row-cat">Integrations</div>
+          </div>
+          <span class="doc-row-arrow" aria-hidden="true">›</span>
+        </a>
+        <a href="#" class="doc-row reveal" aria-label="Exporting run summaries — Workflows">
+          <div class="doc-row-icon" aria-hidden="true">📄</div>
+          <div class="doc-row-content">
+            <div class="doc-row-title">Exporting Run Summaries</div>
+            <div class="doc-row-cat">Workflows</div>
+          </div>
+          <span class="doc-row-arrow" aria-hidden="true">›</span>
+        </a>
+        <a href="#" class="doc-row reveal" aria-label="Auth and session model — Security">
+          <div class="doc-row-icon" aria-hidden="true">🔒</div>
+          <div class="doc-row-content">
+            <div class="doc-row-title">Auth &amp; Session Model</div>
+            <div class="doc-row-cat">Security</div>
+          </div>
+          <span class="doc-row-arrow" aria-hidden="true">›</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="docs-cta" aria-labelledby="docs-cta-heading">
+    <div class="container">
+      <div class="docs-cta-inner reveal">
+        <h2 class="cta-headline" id="docs-cta-heading">Ready to run your first cycle?</h2>
+        <p class="cta-sub">The quickest way to learn CEOClaw is to use it. Start free and run a cycle in minutes.</p>
+        <div class="cta-buttons">
+          <a href="auth.html" class="btn-white">Start Free &rarr;</a>
+          <a href="platform.html" class="btn-outline-white">Explore Platform</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-nav-sm" aria-label="Footer navigation">
+        <a href="../index.html">Home</a>
+        <a href="platform.html">Platform</a>
+        <a href="about.html">About</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="docs.html" aria-current="page">Docs</a>
+        <a href="auth.html">Sign Up</a>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 CEOClaw. All rights reserved.</span>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      // Nav
+      var nav=document.getElementById('main-nav');
+      if(nav){
+        window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>12);},{passive:true});
+        var btn=nav.querySelector('.nav-hamburger');
+        if(btn){
+          btn.addEventListener('click',function(){var open=nav.classList.toggle('nav-mobile-open');btn.setAttribute('aria-expanded',String(open));});
+          document.addEventListener('click',function(e){if(nav.classList.contains('nav-mobile-open')&&!nav.contains(e.target)){nav.classList.remove('nav-mobile-open');btn.setAttribute('aria-expanded','false');}});
+        }
+      }
+
+      // Search
+      var searchDocs = [
+        {title:'Quick Start Guide',cat:'Getting Started',icon:'🚀'},
+        {title:'Understanding the Agent Loop',cat:'Platform',icon:'🧠'},
+        {title:'Planner & Router Behavior',cat:'Platform',icon:'⚡'},
+        {title:'Research Operator Reference',cat:'Operators',icon:'🔬'},
+        {title:'Brand Operator Reference',cat:'Operators',icon:'✦'},
+        {title:'Website Operator Reference',cat:'Operators',icon:'⬡'},
+        {title:'Outreach Operator Reference',cat:'Operators',icon:'◈'},
+        {title:'Analytics Operator Reference',cat:'Operators',icon:'◉'},
+        {title:'Setting Up Your OpenAI Key',cat:'Integrations',icon:'🔑'},
+        {title:'Environment Variables',cat:'Integrations',icon:'🔌'},
+        {title:'Running Your First Cycle',cat:'Workflows',icon:'🔁'},
+        {title:'Exporting Run Summaries',cat:'Workflows',icon:'📄'},
+        {title:'Auth & Session Model',cat:'Security',icon:'🔒'},
+        {title:'Output Validation',cat:'Security',icon:'✅'},
+        {title:'Setting Your MRR Goal',cat:'Getting Started',icon:'🎯'},
+        {title:'Iterative Site Editing',cat:'Workflows',icon:'✏️'},
+      ];
+      var input=document.getElementById('docs-search');
+      var results=document.getElementById('search-results');
+      if(input&&results){
+        input.addEventListener('input',function(){
+          var q=input.value.trim().toLowerCase();
+          if(!q){results.classList.remove('visible');results.innerHTML='';return;}
+          var filtered=searchDocs.filter(function(d){return d.title.toLowerCase().includes(q)||d.cat.toLowerCase().includes(q);});
+          if(!filtered.length){
+            results.innerHTML='<div class="search-empty">No results for "'+q.replace(/</g,'&lt;')+'"</div>';
+          } else {
+            results.innerHTML=filtered.slice(0,6).map(function(d){
+              return '<div class="search-result-item" role="option" tabindex="0" data-close="true">'+
+                '<div class="search-result-icon" aria-hidden="true">'+d.icon+'</div>'+
+                '<div><div class="search-result-text">'+d.title+'</div>'+
+                '<div class="search-result-cat">'+d.cat+'</div></div>'+
+              '</div>';
+            }).join('');
+          results.querySelectorAll('.search-result-item').forEach(function(item){
+            item.addEventListener('click', function(){
+              results.classList.remove('visible');
+              input.value='';
+            });
+            item.addEventListener('keydown', function(e){
+              if(e.key==='Enter'||e.key===' '){ results.classList.remove('visible'); input.value=''; }
+            });
+          });
+          }
+          results.classList.add('visible');
+        });
+        document.addEventListener('click',function(e){
+          if(!input.contains(e.target)&&!results.contains(e.target)){
+            results.classList.remove('visible');
+          }
+        });
+        input.addEventListener('keydown',function(e){
+          if(e.key==='Escape'){results.classList.remove('visible');input.blur();}
+        });
+      }
+
+      // Reveal
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible');});return;
+      }
+      var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.1,rootMargin:'0px 0px -32px 0px'});
+      document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+    }());
+  </script>
+</body>
+</html>

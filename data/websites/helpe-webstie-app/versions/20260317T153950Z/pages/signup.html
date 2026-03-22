@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - Dog Blog</title>
+  <style>
+    :root {
+      --color-bg: #f8f9fa;
+      --color-text: #1e293b;
+      --color-muted: #64748b;
+      --color-accent: #6366f1;
+      --color-accent-hover: #585cf4;
+      --color-surface: #ffffff;
+      --color-success: #10b981;
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+      --space-xs: clamp(0.5rem, 1vw + 0.25rem, 1rem);
+      --space-sm: clamp(1rem, 1.5vw + 0.5rem, 1.5rem);
+      --space-md: clamp(1.5rem, 2vw + 1rem, 2.5rem);
+      --space-lg: clamp(2rem, 3vw + 1.5rem, 4rem);
+      --space-xl: clamp(3rem, 4vw + 2rem, 6rem);
+      --space-2xl: clamp(4rem, 6vw + 3rem, 8rem);
+      --text-sm: clamp(0.8rem, 1vw + 0.5rem, 1rem);
+      --text-base: clamp(1rem, 1.25vw + 0.75rem, 1.125rem);
+      --text-lg: clamp(1.125rem, 1.5vw + 1rem, 1.25rem);
+      --text-xl: clamp(1.25rem, 1.75vw + 1.25rem, 1.5rem);
+      --text-2xl: clamp(1.5rem, 2vw + 1.5rem, 1.75rem);
+      --text-3xl: clamp(1.75rem, 2.25vw + 1.75rem, 2.25rem);
+      --text-4xl: clamp(2.25rem, 2.75vw + 2.25rem, 3rem);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,.5);
+      --shadow-lg: 0 16px 64px rgba(0,0,0,.6);
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --transition-fast: all 0.15s ease;
+      --transition-normal: all 0.2s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-sm);
+    }
+
+    h1 { font-size: var(--text-4xl); }
+    h2 { font-size: var(--text-3xl); }
+    h3 { font-size: var(--text-2xl); }
+    h4 { font-size: var(--text-xl); }
+
+    .btn-primary {
+      background-color: var(--color-accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: var(--space-sm) var(--space-lg);
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: var(--text-base);
+      cursor: pointer;
+      transition: var(--transition-normal);
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:focus-visible {
+      outline-color: var(--color-accent);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--color-accent);
+      border: 1.5px solid var(--color-accent);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm) var(--space-lg);
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: var(--text-base);
+      cursor: pointer;
+      transition: var(--transition-normal);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(99, 102, 241, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active,
+    .btn-secondary:active {
+      transform: scale(0.97);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-sm);
+    }
+
+    .section {
+      padding: var(--space-xl) 0;
+      position: relative;
+    }
+
+    .section--dark {
+      background-color: var(--color-surface);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .auth-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-2xl) 0;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      width: 100%;
+      max-width: 480px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+
+    .card h2 {
+      margin-bottom: var(--space-md);
+      color: var(--color-accent);
+    }
+
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+
+    label {
+      display: block;
+      font-size: var(--text-base);
+      margin-bottom: var(--space-xs);
+      color: var(--color-text);
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: var(--space-sm);
+      font-size: var(--text-base);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      background-color: rgba(255,255,255,0.05);
+      color: var(--color-text);
+      transition: var(--transition-normal);
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: var(--text-sm);
+      margin-top: var(--space-xs);
+      display: none;
+    }
+
+    .form-footer {
+      margin-top: var(--space-lg);
+      font-size: var(--text-sm);
+      color: var(--color-muted);
+    }
+
+    .form-footer a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .auth-container {
+        padding: var(--space-lg) 0;
+      }
+
+      .card {
+        padding: var(--space-md);
+      }
+
+      h2 {
+        font-size: var(--text-3xl);
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="card">
+      <h2>Create Your Account</h2>
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required aria-describedby="username-error">
+          <div class="error-message" id="username-error">Please enter a username</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required aria-describedby="email-error">
+          <div class="error-message" id="email-error">Please enter a valid email address</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required aria-describedby="password-error">
+          <div class="error-message" id="password-error">Password must be at least 8 characters</div>
+        </div>
+        
+        <button type="submit" class="btn-primary">Create Account</button>
+      </form>
+      
+      <div class="form-footer">
+        Already have an account? <a href="../index.html">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      
+      // Reset error messages
+      document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+      
+      let isValid = true;
+      
+      if (!username) {
+        document.getElementById('username-error').style.display = 'block';
+        isValid = false;
+      }
+      
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('email-error').style.display = 'block';
+        isValid = false;
+      }
+      
+      if (password.length < 8) {
+        document.getElementById('password-error').style.display = 'block';
+        isValid = false;
+      }
+      
+      if (isValid) {
+        alert('Account created successfully! You can now start posting about your dogs.');
+        // In a real app, this would send data to a server
+        // window.location.href = '../pages/dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>
